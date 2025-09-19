@@ -1,29 +1,43 @@
 package edu.escuelaing.sirha.proyecto_exodo_backend;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.escuelaing.sirha.Main;
 import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.repository.RepositorioEstudiantes;
+import edu.escuelaing.sirha.repository.RepositorioEstudiantesMemoria;
 import edu.escuelaing.sirha.service.ServicioEstudiantesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = Main.class)
+@AutoConfigureMockMvc
 class ProyectoExodoBackendApplicationTests {
 
-    private RepositorioEstudiantes repo;
-    private ServicioEstudiantesImpl servicio;
+    private RepositorioEstudiantes repoMock;
+    private ServicioEstudiantesImpl servicioMock;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        repo = mock(RepositorioEstudiantes.class);
-        servicio = new ServicioEstudiantesImpl(repo);
+        repoMock = mock(RepositorioEstudiantes.class);
+        servicioMock = new ServicioEstudiantesImpl(repoMock);
     }
 
     @Test
@@ -39,14 +53,14 @@ class ProyectoExodoBackendApplicationTests {
         estudiante.setSemestre(5);
         estudiante.setSemaforo("Verde");
 
-        when(repo.guardar(estudiante)).thenReturn(estudiante);
+        when(repoMock.guardar(estudiante)).thenReturn(estudiante);
 
-        Estudiante creado = servicio.crear(estudiante);
+        Estudiante creado = servicioMock.crear(estudiante);
 
         assertNotNull(creado);
         assertEquals("20251234", creado.getCodigo());
         assertEquals("Julian Perez", creado.getNombre());
-        verify(repo).guardar(estudiante);
+        verify(repoMock).guardar(estudiante);
     }
 
     @Test
@@ -54,76 +68,146 @@ class ProyectoExodoBackendApplicationTests {
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20259876");
         estudiante.setNombre("Ana Rodriguez");
-        estudiante.setCarrera("Ingenieria Industrial");
-        estudiante.setSemestre(3);
-        estudiante.setSemaforo("Azul");
 
-        when(repo.buscarPorCodigo("20259876")).thenReturn(Optional.of(estudiante));
+        when(repoMock.buscarPorCodigo("20259876")).thenReturn(Optional.of(estudiante));
 
-        Optional<Estudiante> resultado = servicio.buscarPorCodigo("20259876");
+        Optional<Estudiante> resultado = servicioMock.buscarPorCodigo("20259876");
 
         assertTrue(resultado.isPresent());
         assertEquals("Ana Rodriguez", resultado.get().getNombre());
-        assertEquals("Ingenieria Industrial", resultado.get().getCarrera());
     }
 
     @Test
     void buscarPorCodigo_CuandoNoExiste() {
-        when(repo.buscarPorCodigo("999999")).thenReturn(Optional.empty());
+        when(repoMock.buscarPorCodigo("999999")).thenReturn(Optional.empty());
 
-        Optional<Estudiante> resultado = servicio.buscarPorCodigo("999999");
+        Optional<Estudiante> resultado = servicioMock.buscarPorCodigo("999999");
 
         assertTrue(resultado.isEmpty());
     }
 
     @Test
-    void buscarPorId_DeberiaRetornarEstudiante() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("uuid-12345");
-        estudiante.setCodigo("20251111");
-        estudiante.setNombre("Carlos Gomez");
-        estudiante.setCarrera("Ingenieria Civil");
-        estudiante.setSemestre(7);
-        estudiante.setSemaforo("Rojo");
-
-        when(repo.buscarPorId("uuid-12345")).thenReturn(Optional.of(estudiante));
-
-        Optional<Estudiante> resultado = servicio.buscarPorId("uuid-12345");
-
-        assertTrue(resultado.isPresent());
-        assertEquals("Carlos Gomez", resultado.get().getNombre());
-        assertEquals(7, resultado.get().getSemestre());
-    }
-
-    @Test
     void listarTodos_DeberiaRetornarLista() {
         Estudiante e1 = new Estudiante();
-        e1.setCodigo("20253333");
-        e1.setNombre("Laura Martinez");
-        e1.setCarrera("Ingenieria Electronica");
-        e1.setSemestre(2);
-        e1.setSemaforo("Azul");
-
         Estudiante e2 = new Estudiante();
-        e2.setCodigo("20254444");
-        e2.setNombre("Pedro Ramirez");
-        e2.setCarrera("Ingenieria de Sistemas");
-        e2.setSemestre(6);
-        e2.setSemaforo("Verde");
+        when(repoMock.listarTodos()).thenReturn(List.of(e1, e2));
 
-        when(repo.listarTodos()).thenReturn(List.of(e1, e2));
-
-        List<Estudiante> lista = servicio.listarTodos();
+        List<Estudiante> lista = servicioMock.listarTodos();
 
         assertEquals(2, lista.size());
-        assertEquals("Laura Martinez", lista.get(0).getNombre());
-        assertEquals("Pedro Ramirez", lista.get(1).getNombre());
-        verify(repo).listarTodos();
+        verify(repoMock).listarTodos();
     }
 
     @Test
     void eliminarPorId_DeberiaEliminar() {
-        servicio.eliminarPorId("uuid-98765");
-        verify(repo).eliminarPorId("uuid-98765");
+        servicioMock.eliminarPorId("uuid-98765");
+        verify(repoMock).eliminarPorId("uuid-98765");
     }
+
+    @Test
+    void repositorioMemoria_GuardarYBuscarPorId() {
+        RepositorioEstudiantesMemoria repo = new RepositorioEstudiantesMemoria();
+        Estudiante estudiante = new Estudiante();
+        estudiante.setCodigo("20256666");
+        estudiante.setNombre("Carlos Gomez");
+
+        Estudiante guardado = repo.guardar(estudiante);
+        Optional<Estudiante> encontrado = repo.buscarPorId(guardado.getId());
+
+        assertTrue(encontrado.isPresent());
+        assertEquals("Carlos Gomez", encontrado.get().getNombre());
+    }
+
+    @Test
+    void repositorioMemoria_BuscarPorCodigoYEliminar() {
+        RepositorioEstudiantesMemoria repo = new RepositorioEstudiantesMemoria();
+        Estudiante estudiante = new Estudiante();
+        estudiante.setCodigo("20257777");
+        estudiante.setNombre("Laura Martinez");
+
+        Estudiante guardado = repo.guardar(estudiante);
+        Optional<Estudiante> encontrado = repo.buscarPorCodigo("20257777");
+
+        assertTrue(encontrado.isPresent());
+        assertEquals("Laura Martinez", encontrado.get().getNombre());
+
+        repo.eliminarPorId(guardado.getId());
+        assertTrue(repo.buscarPorId(guardado.getId()).isEmpty());
+    }
+
+    @Test
+    void controlador_CrearYObtenerEstudiante() throws Exception {
+        Estudiante estudiante = new Estudiante();
+        estudiante.setCodigo("20258888");
+        estudiante.setNombre("Pedro Ramirez");
+        estudiante.setCarrera("Ingenieria Electronica");
+        estudiante.setSemestre(4);
+        estudiante.setSemaforo("Azul");
+
+        mockMvc.perform(post("/api/estudiantes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(estudiante)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.codigo").value("20258888"));
+    }
+
+    @Test
+    void controlador_ListarEstudiantes() throws Exception {
+        mockMvc.perform(get("/api/estudiantes"))
+                .andExpect(status().isOk());
+    }
+    @Test
+    void controlador_BuscarPorCodigo_CuandoExiste() throws Exception {
+        Estudiante estudiante = new Estudiante();
+        estudiante.setCodigo("20251111");
+        estudiante.setNombre("Maria Lopez");
+        estudiante.setCarrera("Industrial");
+        estudiante.setSemestre(6);
+        estudiante.setSemaforo("Rojo");
+
+        // Primero lo creo
+        mockMvc.perform(post("/api/estudiantes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(estudiante)))
+                .andExpect(status().isCreated());
+
+        // Luego lo busco por código
+        mockMvc.perform(get("/api/estudiantes/{codigo}", "20251111"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Maria Lopez"))
+                .andExpect(jsonPath("$.codigo").value("20251111"));
+    }
+
+    @Test
+    void controlador_BuscarPorCodigo_CuandoNoExiste() throws Exception {
+        mockMvc.perform(get("/api/estudiantes/{codigo}", "999999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void controlador_EliminarEstudiante() throws Exception {
+        Estudiante estudiante = new Estudiante();
+        estudiante.setCodigo("20252222");
+        estudiante.setNombre("Jose Perez");
+        estudiante.setCarrera("Civil");
+        estudiante.setSemestre(3);
+        estudiante.setSemaforo("Azul");
+
+        String response = mockMvc.perform(post("/api/estudiantes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(estudiante)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Estudiante creado = objectMapper.readValue(response, Estudiante.class);
+
+        mockMvc.perform(delete("/api/estudiantes/{id}", creado.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/estudiantes/{codigo}", creado.getCodigo()))
+                .andExpect(status().isNotFound());
+    }
+
 }

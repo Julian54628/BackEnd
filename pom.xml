@@ -23,8 +23,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.projectKey>bankify</sonar.projectKey>
-        <sonar.projectName>Bankify</sonar.projectName>
+        <sonar.projectKey>BackEnd</sonar.projectKey>
+        <sonar.projectName>BackEnd</sonar.projectName>
         <sonar.host.url>http://localhost:9000</sonar.host.url>
         <sonar.token>squ_08ed7fc541e7904dc965cc81afb219d0ca02d8b6</sonar.token>
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
@@ -94,7 +94,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <mainClass>edu.dosw.lab.Main</mainClass>
+                    <mainClass>edu.escuelaing.sirha.Main</mainClass>
                 </configuration>
             </plugin>
 

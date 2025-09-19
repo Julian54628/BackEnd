@@ -57,3 +57,32 @@ ServicioEstudiantes.
 
 **Clase Main:** Esta clase ya seria la raiz de todo el proyecto, siendo el punto de entrada para Spring Boot. Esta clase
 uso el principio Single Responsability, ya que solo inicia el proyecto.
+
+## Capturas Pruebas Funcionamiento
+
+### Jacoco
+
+![img_2.png](img_2.png)
+Para poder llegar a la meta de cobertura, realizamos pruebas en las clases propuestas para demostrar su funcionalidad y 
+correcto funcionamiento, para poder ejecutarlas se usó el comando
+**mvn clean test**, el cual dentro al ser ejecutado, en la carpeta de tarjet se generan los siguintes archivos:
+![img_3.png](img_3.png)
+
+En el archivo index, obtenemos una url la cual nos dirige al resumen de cobertura de nuestras pruebas de unidad,logrando
+en este caso exitosamente la cobertura esperada.
+
+### Sonar Qube
+
+![img_4.png](img_4.png)
+
+Ejecutamos el comando **mvn sonar:sonar** para correr sonar qube, cuando este ejecutó, nos mostro la cobertura actual de
+nuestras pruebas frente al codigo del proyecto actual, mostrando una cobertura del 87.7% la cual supera la meta esperada.
+
+### Swagger 
+
+![img_5.png](img_5.png)
+
+Swagger tiene la particularidad que solo es posible ejecutarlo cuando se llega a la meta de cobertura de las pruebas del programa,
+al culminar y verificar la cobertura esperada, ejecutamos el comando **mvn spring-boot:run** el cual levanta la aplicacion
+Spring Boot usando maven, con esto, usamos el puerto que especificamos en la carpeta de properties del projecto y accedememos
+al link **http://localhost:8080/swagger-ui/index.html** usando el puerto definido, el cual nos manda directamente a swagger.
