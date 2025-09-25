@@ -1,7 +1,7 @@
 package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.repository.RepositorioEstudiantes;
+import edu.escuelaing.sirha.repository.RepositorioCursos;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,9 +10,9 @@ import java.util.Optional;
 @Service
 public class ServicioEstudiantesImpl implements ServicioEstudiantes {
 
-    private final RepositorioEstudiantes repo;
+    private final RepositorioCursos repo;
 
-    public ServicioEstudiantesImpl(RepositorioEstudiantes repo) {
+    public ServicioEstudiantesImpl(RepositorioCursos repo) {
         this.repo = repo;
     }
 
