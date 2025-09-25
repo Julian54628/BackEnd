@@ -2,6 +2,9 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.escuelaing.sirha.Main;
+import edu.escuelaing.sirha.model.Estudiante;
+import edu.escuelaing.sirha.repository.RepositorioCursos;
+import edu.escuelaing.sirha.repository.RepositorioProfesores;
 import edu.escuelaing.sirha.service.ServicioEstudiantesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProyectoExodoBackendApplicationTests {
 
-    private RepositorioEstudiantes repoMock;
+    private RepositorioCursos repoMock;
     private ServicioEstudiantesImpl servicioMock;
 
     @Autowired
@@ -33,7 +36,7 @@ class ProyectoExodoBackendApplicationTests {
 
     @BeforeEach
     void setUp() {
-        repoMock = mock(RepositorioEstudiantes.class);
+        repoMock = mock(RepositorioCursos.class);
         servicioMock = new ServicioEstudiantesImpl(repoMock);
     }
 
@@ -93,7 +96,7 @@ class ProyectoExodoBackendApplicationTests {
 
     @Test
     void repositorioMemoria_GuardarYBuscarPorId() {
-        RepositorioEstudiantesMemoria repo = new RepositorioEstudiantesMemoria();
+        RepositorioProfesores repo = new RepositorioProfesores();
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20256666");
         estudiante.setNombre("Carlos Gomez");
@@ -105,7 +108,7 @@ class ProyectoExodoBackendApplicationTests {
 
     @Test
     void repositorioMemoria_BuscarPorCodigoYEliminar() {
-        RepositorioEstudiantesMemoria repo = new RepositorioEstudiantesMemoria();
+        RepositorioProfesores repo = new RepositorioProfesores();
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20257777");
         estudiante.setNombre("Laura Martinez");
