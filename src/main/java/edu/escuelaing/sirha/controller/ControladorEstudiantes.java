@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.service.ServicioEstudiantes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

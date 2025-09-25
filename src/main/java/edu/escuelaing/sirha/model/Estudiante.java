@@ -1,31 +1,43 @@
 package edu.escuelaing.sirha.model;
 
-public class Estudiante {
+import java.util.ArrayList;
+import java.util.List;
 
-    private String id;
-    private String codigo;
+public class Estudiante extends Usuario {
+    private int idEstudiante;
     private String nombre;
+    private String codigo;
     private String carrera;
-    private Integer semestre;
-    private String semaforo;
+    private int semestre;
+    private String correoInstitucional;
+    private String planEstudios;
 
-    public Estudiante() {}
+    private List<SolicitudCambio> solicitudes = new ArrayList<>();
+    private List<Horario> horarios = new ArrayList<>();
+    private SemaforoAcademico semaforo;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Estudiante(int idUsuario, String username, String passwordHash, int idEstudiante, String nombre, String codigo) {
+        super(idUsuario, username, passwordHash, Rol.ESTUDIANTE);
+        this.idEstudiante = idEstudiante;
+        this.nombre = nombre;
+        this.codigo = codigo;
+    }
 
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public SolicitudCambio crearSolicitudCambio(Materia origen, Grupo gOrigen, Materia destino, Grupo gDestino) {
+        SolicitudCambio solicitud = new SolicitudCambio(this, origen, gOrigen, destino, gDestino);
+        solicitudes.add(solicitud);
+        return solicitud;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public List<Horario> consultarHorarioActual() {
+        return horarios;
+    }
 
-    public String getCarrera() { return carrera; }
-    public void setCarrera(String carrera) { this.carrera = carrera; }
+    public SemaforoAcademico consultarSemaforoAcademico() {
+        return semaforo;
+    }
 
-    public Integer getSemestre() { return semestre; }
-    public void setSemestre(Integer semestre) { this.semestre = semestre; }
-
-    public String getSemaforo() { return semaforo; }
-    public void setSemaforo(String semaforo) { this.semaforo = semaforo; }
+    public List<SolicitudCambio> consultarHistorialSolicitudes() {
+        return solicitudes;
+    }
 }

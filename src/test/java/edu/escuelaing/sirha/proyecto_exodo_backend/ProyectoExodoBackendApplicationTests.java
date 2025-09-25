@@ -2,9 +2,6 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.escuelaing.sirha.Main;
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.repository.RepositorioEstudiantes;
-import edu.escuelaing.sirha.repository.RepositorioEstudiantesMemoria;
 import edu.escuelaing.sirha.service.ServicioEstudiantesImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,11 +49,8 @@ class ProyectoExodoBackendApplicationTests {
         estudiante.setCarrera("Ingenieria de Sistemas");
         estudiante.setSemestre(5);
         estudiante.setSemaforo("Verde");
-
         when(repoMock.guardar(estudiante)).thenReturn(estudiante);
-
         Estudiante creado = servicioMock.crear(estudiante);
-
         assertNotNull(creado);
         assertEquals("20251234", creado.getCodigo());
         assertEquals("Julian Perez", creado.getNombre());
@@ -68,11 +62,8 @@ class ProyectoExodoBackendApplicationTests {
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20259876");
         estudiante.setNombre("Ana Rodriguez");
-
         when(repoMock.buscarPorCodigo("20259876")).thenReturn(Optional.of(estudiante));
-
         Optional<Estudiante> resultado = servicioMock.buscarPorCodigo("20259876");
-
         assertTrue(resultado.isPresent());
         assertEquals("Ana Rodriguez", resultado.get().getNombre());
     }
@@ -80,9 +71,7 @@ class ProyectoExodoBackendApplicationTests {
     @Test
     void buscarPorCodigo_CuandoNoExiste() {
         when(repoMock.buscarPorCodigo("999999")).thenReturn(Optional.empty());
-
         Optional<Estudiante> resultado = servicioMock.buscarPorCodigo("999999");
-
         assertTrue(resultado.isEmpty());
     }
 
@@ -91,9 +80,7 @@ class ProyectoExodoBackendApplicationTests {
         Estudiante e1 = new Estudiante();
         Estudiante e2 = new Estudiante();
         when(repoMock.listarTodos()).thenReturn(List.of(e1, e2));
-
         List<Estudiante> lista = servicioMock.listarTodos();
-
         assertEquals(2, lista.size());
         verify(repoMock).listarTodos();
     }
@@ -110,10 +97,8 @@ class ProyectoExodoBackendApplicationTests {
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20256666");
         estudiante.setNombre("Carlos Gomez");
-
         Estudiante guardado = repo.guardar(estudiante);
         Optional<Estudiante> encontrado = repo.buscarPorId(guardado.getId());
-
         assertTrue(encontrado.isPresent());
         assertEquals("Carlos Gomez", encontrado.get().getNombre());
     }
@@ -124,13 +109,10 @@ class ProyectoExodoBackendApplicationTests {
         Estudiante estudiante = new Estudiante();
         estudiante.setCodigo("20257777");
         estudiante.setNombre("Laura Martinez");
-
         Estudiante guardado = repo.guardar(estudiante);
         Optional<Estudiante> encontrado = repo.buscarPorCodigo("20257777");
-
         assertTrue(encontrado.isPresent());
         assertEquals("Laura Martinez", encontrado.get().getNombre());
-
         repo.eliminarPorId(guardado.getId());
         assertTrue(repo.buscarPorId(guardado.getId()).isEmpty());
     }
@@ -143,7 +125,6 @@ class ProyectoExodoBackendApplicationTests {
         estudiante.setCarrera("Ingenieria Electronica");
         estudiante.setSemestre(4);
         estudiante.setSemaforo("Azul");
-
         mockMvc.perform(post("/api/estudiantes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(estudiante)))
@@ -164,14 +145,10 @@ class ProyectoExodoBackendApplicationTests {
         estudiante.setCarrera("Industrial");
         estudiante.setSemestre(6);
         estudiante.setSemaforo("Rojo");
-
-        // Primero lo creo
         mockMvc.perform(post("/api/estudiantes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(estudiante)))
                 .andExpect(status().isCreated());
-
-        // Luego lo busco por código
         mockMvc.perform(get("/api/estudiantes/{codigo}", "20251111"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Maria Lopez"))
@@ -192,7 +169,6 @@ class ProyectoExodoBackendApplicationTests {
         estudiante.setCarrera("Civil");
         estudiante.setSemestre(3);
         estudiante.setSemaforo("Azul");
-
         String response = mockMvc.perform(post("/api/estudiantes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(estudiante)))
@@ -200,12 +176,9 @@ class ProyectoExodoBackendApplicationTests {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-
         Estudiante creado = objectMapper.readValue(response, Estudiante.class);
-
         mockMvc.perform(delete("/api/estudiantes/{id}", creado.getId()))
                 .andExpect(status().isNoContent());
-
         mockMvc.perform(get("/api/estudiantes/{codigo}", creado.getCodigo()))
                 .andExpect(status().isNotFound());
     }

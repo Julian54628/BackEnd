@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.repository.RepositorioEstudiantes;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
