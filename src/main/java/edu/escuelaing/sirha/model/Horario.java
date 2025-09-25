@@ -1,6 +1,9 @@
 package edu.escuelaing.sirha.model;
 
 import java.sql.Time;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "Horario")
 
 public class Horario {
     private int idHorario;

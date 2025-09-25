@@ -2,6 +2,9 @@ package edu.escuelaing.sirha.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "Materia")
 
 public class Materia {
     private int idMateria;

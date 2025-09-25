@@ -1,6 +1,9 @@
 package edu.escuelaing.sirha.model;
 
 import java.util.Date;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "PeriodoCambio")
 
 public class PeriodoCambio {
     private int idPeriodo;

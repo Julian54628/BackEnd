@@ -1,6 +1,9 @@
 package edu.escuelaing.sirha.model;
 
 import java.util.Date;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+@Document(collection = "SolicitudCambio")
 
 public class SolicitudCambio {
     private static int contador = 0;
@@ -11,7 +14,6 @@ public class SolicitudCambio {
     private String observaciones;
     private Date fechaRespuesta;
     private String respuesta;
-
     private Estudiante estudiante;
     private Materia materiaOrigen;
     private Grupo grupoOrigen;
