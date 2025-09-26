@@ -14,7 +14,7 @@ import java.util.Optional;
 public class MateriaController {
 
     @Autowired
-    private MateriaService materiaService;
+    public MateriaService materiaService;
 
     @GetMapping
     public List<Materia> listarTodos() {

@@ -15,7 +15,7 @@ import java.util.Optional;
 public class DecanaturaController {
 
     @Autowired
-    private DecanaturaService decanaturaService;
+    public DecanaturaService decanaturaService;
 
     @GetMapping
     public List<Decanatura> getAll() {

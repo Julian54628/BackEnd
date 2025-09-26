@@ -14,7 +14,7 @@ import java.util.Optional;
 public class ProfesorController {
 
     @Autowired
-    private ProfesorService profesorService;
+    public ProfesorService profesorService;
 
     @GetMapping
     public List<Profesor> listarTodos() {

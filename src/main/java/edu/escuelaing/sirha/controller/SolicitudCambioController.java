@@ -14,7 +14,7 @@ import java.util.Optional;
 public class SolicitudCambioController {
 
     @Autowired
-    private SolicitudCambioService solicitudService;
+    public SolicitudCambioService solicitudService;
 
     @GetMapping
     public List<SolicitudCambio> listarTodos() {

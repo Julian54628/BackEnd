@@ -14,7 +14,7 @@ import java.util.Optional;
 public class GrupoController {
 
     @Autowired
-    private GrupoService grupoService;
+    public GrupoService grupoService;
 
     @GetMapping
     public List<Grupo> getAll() {

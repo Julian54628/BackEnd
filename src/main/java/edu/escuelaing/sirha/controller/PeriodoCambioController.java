@@ -13,7 +13,7 @@ import java.util.Optional;
 public class PeriodoCambioController {
 
     @Autowired
-    private PeriodoCambioService periodoService;
+    public PeriodoCambioService periodoService;
 
     @GetMapping
     public List<PeriodoCambio> getAll() {

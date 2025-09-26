@@ -12,7 +12,7 @@ import java.util.Optional;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    public UsuarioService usuarioService;
 
     @PostMapping("/login")
     public Optional<Usuario> login(@RequestParam String username, @RequestParam String password) {

@@ -16,7 +16,7 @@ import java.util.Optional;
 public class AdministradorController {
 
     @Autowired
-    private AdministradorService administradorService;
+    public AdministradorService administradorService;
 
     @GetMapping
     public List<Administrador> getAll() {
