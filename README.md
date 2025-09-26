@@ -35,3 +35,25 @@ El diagrama de clases representa la estructura estática del sistema SIRHA, most
 - Enumeraciones para Estados: Uso de enums para garantizar consistencia en estados del sistema.
 #### Imagen del Diagrama
 ![diagramaClases.png](img%2Fdiagramas%2FdiagramaClases.png)
+### Diagrama de Casos de Uso
+#### Descripción
+Representa las funcionalidades del sistema desde la perspectiva de los usuarios, mostrando qué actores pueden realizar qué acciones en el sistema.
+#### Actores
+- Estudiante
+  - Descripción: Usuario principal que realiza solicitudes de cambio de horario
+  - Responsabilidades: Gestionar su perfil, crear solicitudes, consultar estados
+  - Cantidad: Múltiples (todos los estudiantes de la institución)
+
+    ![estudianteUso.png](img%2Fdiagramas%2FestudianteUso.png)
+- Decanatura
+  - Descripción: Usuario administrativo que gestiona y aprueba solicitudes
+  - Responsabilidades: Revisar solicitudes, tomar decisiones, generar reportes
+  - Restricciones: Solo puede gestionar materias de su facultad
+
+    ![decanaturaUso.png](img%2Fdiagramas%2FdecanaturaUso.png)
+- Administrador
+  - Descripción: Usuario con privilegios completos del sistema
+  - Responsabilidades: Configuración global, gestión de usuarios, supervisión
+  - Cantidad: Limitada (personal administrativo especializado)
+
+    ![administradorUso.png](img%2Fdiagramas%2FadministradorUso.png)
