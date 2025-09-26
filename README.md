@@ -1,88 +1,168 @@
-# BackEnd
-En este repositorio, va a estar todo el Backend de este proyecto.
+# Sirha BackEnd
+A continuación, el desarrollo de los puntos propuestos en la documentación técnica:
 
-## Primeros pasos
+---
 
-para este laboratorio, lo primero es generar un repositorio con Spring Boot, y organizar el pom para que tenga jacoco, 
-el maven y el sonarqube y demas.
+## Diseño de los Diagramas
+### Diagrama de Contexto
+#### Descripción
+El diagrama de contexto proporcionado representa la relación fundamental entre el Usuario y el sistema SHIRA para la gestión de Modificaciones académicas. Es un diagrama de contexto simplificado que muestra la interacción principal del sistema.
+#### Elementos
+- Usuario
+- Sirha
+- Modificaciones Académica
+#### Imagen del Diagrama
+![diagramaContexto.png](img%2Fdiagramas%2FdiagramaContexto.png)
+### Diagrama de clases
+#### Descripción
+El diagrama de clases representa la estructura estática del sistema SIRHA, mostrando las clases del paquete model, sus atributos, métodos y las relaciones entre ellas. Este diagrama refleja fielmente la implementación Java proporcionada.
+#### Clases
+- Clase Base:
+    - Usuario: Clase abstracta que representa un usuario del sistema con atributos comunes (id, username, passwordHash, correoInstitucional, rol, activo). Relaciones de herencia con Administrador, Decanatura y Estudiante. 
+- Clases Especializada:
+    - Administrador: Extiende Usuario, representa usuarios con privilegios administrativos.
+    - Decanatura: Extiende Usuario, incluye atributos específicos (idDecanatura, nombre, facultad).
+    - Estudiante: Extiende Usuario, contiene información académica (idEstudiante, nombre, codigo, carrera, semestre) y referencias a otras entidades.
+- Entidades Académicas:
+    - Materia: Representa las materias académicas con sus propiedades (idMateria, nombre, codigo, creditos, facultad, esObligatoria).
+    - Grupo: Modela los grupos de clase con cupos y referencias a estudiantes, profesor y horarios.
+    - Horario: Define los horarios de clase con día, hora inicio/fin, salon y referencias.
+- Gestión de Solicitudes:
+    - SolicitudCambio: Gestiona las solicitudes de cambio con estados, prioridad y referencias a estudiante, materias y grupos.
+    - PeriodoCambio: Controla los periodos habilitados para cambios.
+- Planificación Académica:
+    - PlanAcademico: Define los planes de estudio con materias obligatorias y electivas.
+    - SemaforoAcademico: Representa el estado académico del estudiante (avance, créditos, promedio).
+- Entidades de Soporte:
+    - Profesor: Información de profesores y sus asignaciones.
+    - Enumeraciones: EstadoSolicitud, EstadoMateria, EstadoSemaforo, Rol.
+#### Justificación de Diseño
+- Herencia para Usuarios: Se utiliza herencia para evitar duplicación de código en atributos comunes de usuarios.
+- Referencias por ID: En lugar de relaciones complejas con @DBRef, se usan referencias por ID para mejor performance en MongoDB.
+- Separación de Responsabilidades: Cada clase tiene una responsabilidad única y clara.
+- Validaciones Incorporadas: Métodos esValido() en cada clase para mantener la integridad de datos.
+- Enumeraciones para Estados: Uso de enums para garantizar consistencia en estados del sistema.
+#### Imagen del Diagrama
+![diagramaClases.png](img%2Fdiagramas%2FdiagramaClases.png)
+### Diagrama de Casos de Uso
+#### Descripción
+Representa las funcionalidades del sistema desde la perspectiva de los usuarios, mostrando qué actores pueden realizar qué acciones en el sistema.
+#### Actores
+- Estudiante
+  - Descripción: Usuario principal que realiza solicitudes de cambio de horario
+  - Responsabilidades: Gestionar su perfil, crear solicitudes, consultar estados
+  - Cantidad: Múltiples (todos los estudiantes de la institución)
 
-Lo siguiente fue leer el documento SIRHA, el cual nos dice que es lo que se pide y lo que debemos agregar a este 
-repositorio.
-## Creando el proyecto
+    ![estudianteUso.png](img%2Fdiagramas%2FestudianteUso.png)
+- Decanatura
+  - Descripción: Usuario administrativo que gestiona y aprueba solicitudes
+  - Responsabilidades: Revisar solicitudes, tomar decisiones, generar reportes
+  - Restricciones: Solo puede gestionar materias de su facultad
 
-**1 punto**
+    ![decanaturaUso.png](img%2Fdiagramas%2FdecanaturaUso.png)
+- Administrador
+  - Descripción: Usuario con privilegios completos del sistema
+  - Responsabilidades: Configuración global, gestión de usuarios, supervisión
+  - Cantidad: Limitada (personal administrativo especializado)
 
-En este caso el documento nos pedia usar el patron scallfolding, el cual se maneja de la siguiente manera, el
+    ![administradorUso.png](img%2Fdiagramas%2FadministradorUso.png)
 
-![img_1.png](img_1.png)
+### Diagrama de Componentes Generales
+#### Descripción
+El diagrama de componentes generales representa la arquitectura de tres capas del sistema SIRHA, mostrando los componentes principales y sus relaciones básicas de comunicación. Es una vista de alto nivel que ilustra el flujo de datos entre el frontend, backend y la base de datos.
+#### Imagen del Diagrama
+![diagramaComponentesGeneral.png](img%2Fdiagramas%2FdiagramaComponentesGeneral.png)
 
-**Controller:** Este paquete se creo para manejar las peticiones HTTP y muestra el API REST que se pide. Tiene la clase
-ControladorEstudiantes.
+### Diagrama de Componentes Específicos
+#### Descripción
+Este diagrama muestra la arquitectura interna específica del backend Spring Boot del sistema SIRHA, detallando la estructura de capas (Controller-Service-Repository-Model) y las relaciones entre los componentes dentro de cada paquete.
+#### Capas de la Arquitectura
+1. Capa Controller (Presentation Layer)
+    - Propósito: Manejar las requests HTTP y exponer APIs REST
+    - Componentes:
+      - UsuarioController, EstudianteController, DecanaturaController, etc.
+    - Tecnologías: Anotaciones @RestController, @RequestMapping
+    - Responsabilidad: Recepción y validación básica de requests
+2. Capa Service (Business Layer)
+    - Propósito: Contener la lógica de negocio y reglas de aplicación
+    - Componentes:
+      - UsuarioService, EstudianteService, SolicitudCambioService, etc.
+    - Patrón: Interface-Implementation (Service + ServiceImpl)
+    - Responsabilidad: Validaciones complejas, coordinación de operaciones
+3. Capa Repository (Persistence Layer)
+    - Propósito: Abstraer el acceso a la base de datos MongoDB
+    - Componentes:
+      - UsuarioRepository, EstudianteRepository, MateriaRepository, etc.
+    - Tecnologías: Spring Data MongoDB, MongoRepository
+    - Responsabilidad: Operaciones CRUD y queries personalizadas
+4. Capa Model (Domain Layer)
+    - Propósito: Representar las entidades del dominio del sistema
+    - Componentes:
+      - Usuario, Estudiante, Materia, SolicitudCambio, etc.
+      - Anotaciones: @Document, @Id para mapeo MongoDB
+      - Responsabilidad: Definir estructura de datos y relaciones
+#### Relaciones y Dependencias
+Inyección de Dependencias
+- Controller → Service: @Autowired de interfaces de servicio
+- Service → Repository: @Autowired de interfaces de repositorio
+- Repository → Model: Extienden MongoRepository<Model, String>
+- 
+Relaciones de Herencia entre Módelos
+- Estudiante, Decanatura, Administrador heredan de Usuario
+- Permite reutilización de atributos comunes y polimorfismo
 
-**Model:** Este paquete tiene el funcionamiento de los datos que manejara el sistema. Tiene la clase Estudiante.
+Relaciones de Referencia
+- SolicitudCambio referencia Estudiante, Materia, Grupo
+- Grupo referencia Materia y Profesor
+- SemaforoAcademico referencia Estudiante y PlanAcademico
 
-**Repository:** Este paquete es la que gestiona el manejo de los datos. Tiene las clases RepositorioEstudiantesMemoria y 
-RepositorioEstudiantes
+Flujo de Datos Típico
+1. Request HTTP → Controller (valida formato)
+2. Controller → Service (delega lógica de negocio)
+3. Service → Repository (accede a datos)
+4. Repository → MongoDB (persistencia)
+5. MongoDB → Repository → Service → Controller → Response JSON
 
-**Service:** Este paquete es el que ya tiene mas encargado el como se manejara el proyecto. Las clases que tiene son 
-ServicioEstudiantesImpl y ServicioEstudiantes
+#### Justificación de Diseño
+Separación de Concerns
+- Cada capa tiene responsabilidad única
+- Facilita testing unitario e independient
+- Permite evolución tecnológica por capas
 
-## Creamos las siguientes clases
+Patrón MVC Adaptado
+- Model: Entidades de dominio + Repositories
+- View: Controllers REST (API como vista)
+- Controller: Manejo de requests/responses
 
-**Clase estudiante:** Esta clase es la que representa a los estudiantes, la que tiene su informacion. Para esta clase se
-utiizo el principio Single Responsability.
+Arquitectura Escalable
+- Nuevas entidades siguen el mismo patrón
+- Capas desacopladas permiten modificaciones aisladas
+- Spring IoC gestiona dependencias automáticamente
 
-**Clase repositorioEstudiantes:** Esta es la interfaz para los estudiantes, la cual abstrae las operaciones basicas que
-serian las del CRUD. Para esta clase se uso el principio Interface Segregation, el principio Dependency Inversion (los 
-servivios dependen de la abstraccion, como ya se habia mencionado).
+Alineación con Spring Boot Best Practices
+- Spring Data MongoDB para persistencia
+- Dependency Injection para desacoplamiento
+- Annotation-based configuration
 
-**Clase RepositorioEstudiantesMemoria:** Esta clase guarda los datos de la clase anterior RepositorioEstudiantes, 
-tambien permite hacer el CRUD en la memoria, y si un usuario no tiene un ID, lo coloca automaticamente.
-Para esta clase se uso el principio Single Responsability, al solo tener la funcion del alamcenamiento, y se uso el 
-principio Liskov Substitution, para reemplazar alguna implementacion de la clase RepositorioEstudiantes.
+#### Imagen del Diagrama
+![diagramaComponentesEspecifico.png](img%2Fdiagramas%2FdiagramaComponentesEspecifico.png)
 
-**Clase servicioCliente:** Esta clase es la interfaz de el servicio que se prestara, en este caso la inscripcion de 
-materias. Para esta se usaron los principios Interface Segregation la cual tiene metodos especificos para los 
-estudiantes y Dependency Inversion, ya que los controladores dependen de na clase concreta por su abstraccion.
-
-**Clase ServicioClienteImpl:** Esta clase tiene la implementacion del servicio que se realizara, la cual delega al 
-repositorio. Para esta clase se usaron los principios Single responsability, por lo que se encarga solo de la logica de 
-los estudiantes, Se uso Open/Close, ya que puede extenderse implementando nuevas reglas sin que se tengan que modificar 
-la interfaz ni los controladores, y se uso Dependency Inversion, ya que depende de la abstraccion de la clase 
-RepositorioEstudiantes.
-
-**Clase ControladorEstudiantes:** Esta clase controla el REST que expone el API. Esta clase uso los principios Single 
-Responsability, ya que solo maneja las peticiones HTTP, y Dependency Inversion, ya que depende de la interfaz 
-ServicioEstudiantes.
-
-**Clase Main:** Esta clase ya seria la raiz de todo el proyecto, siendo el punto de entrada para Spring Boot. Esta clase
-uso el principio Single Responsability, ya que solo inicia el proyecto.
-
-## Capturas Pruebas Funcionamiento
-
-### Jacoco
-
-![img_2.png](img_2.png)
-Para poder llegar a la meta de cobertura, realizamos pruebas en las clases propuestas para demostrar su funcionalidad y 
-correcto funcionamiento, para poder ejecutarlas se usó el comando
-**mvn clean test**, el cual dentro al ser ejecutado, en la carpeta de tarjet se generan los siguintes archivos:
-![img_3.png](img_3.png)
-
-En el archivo index, obtenemos una url la cual nos dirige al resumen de cobertura de nuestras pruebas de unidad,logrando
-en este caso exitosamente la cobertura esperada.
-
-### Sonar Qube
-
-![img_4.png](img_4.png)
-
-Ejecutamos el comando **mvn sonar:sonar** para correr sonar qube, cuando este ejecutó, nos mostro la cobertura actual de
-nuestras pruebas frente al codigo del proyecto actual, mostrando una cobertura del 87.7% la cual supera la meta esperada.
-
-### Swagger 
-
-![img_5.png](img_5.png)
-
-Swagger tiene la particularidad que solo es posible ejecutarlo cuando se llega a la meta de cobertura de las pruebas del programa,
-al culminar y verificar la cobertura esperada, ejecutamos el comando **mvn spring-boot:run** el cual levanta la aplicacion
-Spring Boot usando maven, con esto, usamos el puerto que especificamos en la carpeta de properties del projecto y accedememos
-al link **http://localhost:8080/swagger-ui/index.html** usando el puerto definido, el cual nos manda directamente a swagger.
+### Diagrama de Base de Datos
+#### Descripción
+Este diagrama representa el esquema de base de datos MongoDB del sistema SIRHA, 100% fiel a la implementación real del código. Muestra las collections exactas, campos, tipos de datos y relaciones tal como están definidas en las entidades con anotaciones @Document de Spring Data MongoDB.
+#### Imagen del Diagrama
+![diagramaBaseDatos.png](img%2Fdiagramas%2FdiagramaBaseDatos.png)
+### Diagramas de Secuencia 
+![diagramaSecuencia1.png](img/diagramas/diagramaSecuencia1.png)
+![diagramaSecuencia2.png](img/diagramas/diagramaSecuencia2.png)
+![diagramaSecuencia3.png](img/diagramas/diagramaSecuencia3.png)
+![diagramaSecuencia4.png](img/diagramas/diagramaSecuencia4.png)
+![diagramaSecuencia5.png](img/diagramas/diagramaSecuencia5.png)
+![diagramaSecuencia6.png](img/diagramas/diagramaSecuencia6.png)
+![diagramaSecuencia7.png](img/diagramas/diagramaSecuencia7.png)
+![diagramaSecuencia8.png](img/diagramas/diagramaSecuencia8.png)
+![diagramaSecuencia9.png](img/diagramas/diagramaSecuencia9.png)
+![diagramaSecuencia10.png](img/diagramas/diagramaSecuencia10.png)
+![diagramaSecuencia11.png](img/diagramas/diagramaSecuencia11.png)
+![diagramaSecuencia12.png](img/diagramas/diagramaSecuencia12.png)
+![diagramasSecuencia13.png](img/diagramas/diagramasSecuencia13.png)
