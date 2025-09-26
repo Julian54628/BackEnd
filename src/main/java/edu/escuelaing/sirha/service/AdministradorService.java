@@ -15,3 +15,4 @@ public interface AdministradorService {
     PeriodoCambio configurarPeriodo(PeriodoCambio periodo);
     List<SolicitudCambio> generarReportes();
 }
+

@@ -13,3 +13,4 @@ public interface ProfesorService {
     void eliminarPorId(String id);
     List<Grupo> consultarGruposAsignados(String profesorId);
 }
+

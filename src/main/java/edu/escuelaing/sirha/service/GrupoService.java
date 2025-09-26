@@ -15,3 +15,4 @@ public interface GrupoService {
     float consultarCargaAcademica(String grupoId);
     List<Estudiante> consultarEstudiantesInscritos(String grupoId);
 }
+

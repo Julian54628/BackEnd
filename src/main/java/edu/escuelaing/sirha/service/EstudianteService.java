@@ -2,8 +2,6 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.model.SolicitudCambio;
-import edu.escuelaing.sirha.model.Materia;
-import edu.escuelaing.sirha.model.Grupo;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +13,6 @@ public interface EstudianteService {
     void eliminarPorId(String id);
     Estudiante actualizar(String id, Estudiante estudiante);
     SolicitudCambio crearSolicitudCambio(String estudianteId, String materiaOrigenId,
-                                         String grupoOrigenId, String materiaDestinoId,
-                                         String grupoDestinoId);
+    String grupoOrigenId, String materiaDestinoId, String grupoDestinoId);
     List<SolicitudCambio> consultarSolicitudes(String estudianteId);
 }

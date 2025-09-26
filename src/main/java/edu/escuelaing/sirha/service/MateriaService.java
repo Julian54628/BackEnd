@@ -15,3 +15,4 @@ public interface MateriaService {
     List<Grupo> consultarGruposDisponibles(String materiaId);
     boolean verificarDisponibilidad(String materiaId);
 }
+

@@ -14,3 +14,4 @@ public interface DecanaturaService {
     SolicitudCambio revisarSolicitud(String solicitudId, EstadoSolicitud estado, String respuesta);
     void aprobarSolicitudEspecial(String solicitudId);
 }
+

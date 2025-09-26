@@ -9,3 +9,4 @@ public interface UsuarioService {
     boolean tienePermiso(String usuarioId, String accion);
     void cambiarPassword(String usuarioId, String nuevoPassword);
 }
+
