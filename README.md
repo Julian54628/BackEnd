@@ -66,3 +66,9 @@ Representa las funcionalidades del sistema desde la perspectiva de los usuarios,
   - Cantidad: Limitada (personal administrativo especializado)
 
     ![administradorUso.png](img%2Fdiagramas%2FadministradorUso.png)
+
+### Diagrama de Componentes Generales
+#### Descripción:
+El diagrama de componentes generales representa la arquitectura de tres capas del sistema SIRHA, mostrando los componentes principales y sus relaciones básicas de comunicación. Es una vista de alto nivel que ilustra el flujo de datos entre el frontend, backend y la base de datos.
+#### Imagen del Diagrama
+![diagramaComponentesGeneral.png](img%2Fdiagramas%2FdiagramaComponentesGeneral.png)
