@@ -1,4 +1,3 @@
-// ===== ADMINISTRADOR.JAVA =====
 package edu.escuelaing.sirha.model;
 
 import org.springframework.data.annotation.Id;
