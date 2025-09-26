@@ -4,6 +4,15 @@ A continuación, el desarrollo de los puntos propuestos en la documentación té
 ---
 
 ## Diseño de los Diagramas
+### Diagrama de Contexto
+#### Descripción
+El diagrama de contexto proporcionado representa la relación fundamental entre el Usuario y el sistema SHIRA para la gestión de Modificaciones académicas. Es un diagrama de contexto simplificado que muestra la interacción principal del sistema.
+#### Elementos
+- Usuario
+- Sirha
+- Modificaciones Académica
+#### Imagen del Diagrama
+![diagramaContexto.png](img%2Fdiagramas%2FdiagramaContexto.png)
 ### Diagrama de clases
 #### Descripción
 El diagrama de clases representa la estructura estática del sistema SIRHA, mostrando las clases del paquete model, sus atributos, métodos y las relaciones entre ellas. Este diagrama refleja fielmente la implementación Java proporcionada.
