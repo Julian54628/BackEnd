@@ -43,7 +43,7 @@ El diagrama de clases representa la estructura estática del sistema SIRHA, most
 - Validaciones Incorporadas: Métodos esValido() en cada clase para mantener la integridad de datos.
 - Enumeraciones para Estados: Uso de enums para garantizar consistencia en estados del sistema.
 #### Imagen del Diagrama
-![diagramaClases.png](img%2Fdiagramas%2FdiagramaClases.png)
+![diagramaClases.png](img/diagramas/diagramaClases.png)
 ### Diagrama de Casos de Uso
 #### Descripción
 Representa las funcionalidades del sistema desde la perspectiva de los usuarios, mostrando qué actores pueden realizar qué acciones en el sistema.
