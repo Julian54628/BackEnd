@@ -53,19 +53,17 @@ Representa las funcionalidades del sistema desde la perspectiva de los usuarios,
   - Responsabilidades: Gestionar su perfil, crear solicitudes, consultar estados
   - Cantidad: Múltiples (todos los estudiantes de la institución)
 
-    ![estudianteUso.png](img%2Fdiagramas%2FestudianteUso.png)
 - Decanatura
   - Descripción: Usuario administrativo que gestiona y aprueba solicitudes
   - Responsabilidades: Revisar solicitudes, tomar decisiones, generar reportes
   - Restricciones: Solo puede gestionar materias de su facultad
 
-    ![decanaturaUso.png](img%2Fdiagramas%2FdecanaturaUso.png)
 - Administrador
   - Descripción: Usuario con privilegios completos del sistema
   - Responsabilidades: Configuración global, gestión de usuarios, supervisión
   - Cantidad: Limitada (personal administrativo especializado)
 
-    ![administradorUso.png](img%2Fdiagramas%2FadministradorUso.png)
+![img.png](img/CasosDeUso.png)
 
 ### Diagrama de Componentes Generales
 #### Descripción
@@ -153,16 +151,5 @@ Este diagrama representa el esquema de base de datos MongoDB del sistema SIRHA, 
 #### Imagen del Diagrama
 ![diagramaBaseDatos.png](img%2Fdiagramas%2FdiagramaBaseDatos.png)
 ### Diagramas de Secuencia 
-![diagramaSecuencia1.png](img/diagramas/diagramaSecuencia1.png)
-![diagramaSecuencia2.png](img/diagramas/diagramaSecuencia2.png)
-![diagramaSecuencia3.png](img/diagramas/diagramaSecuencia3.png)
-![diagramaSecuencia4.png](img/diagramas/diagramaSecuencia4.png)
-![diagramaSecuencia5.png](img/diagramas/diagramaSecuencia5.png)
-![diagramaSecuencia6.png](img/diagramas/diagramaSecuencia6.png)
-![diagramaSecuencia7.png](img/diagramas/diagramaSecuencia7.png)
-![diagramaSecuencia8.png](img/diagramas/diagramaSecuencia8.png)
-![diagramaSecuencia9.png](img/diagramas/diagramaSecuencia9.png)
-![diagramaSecuencia10.png](img/diagramas/diagramaSecuencia10.png)
-![diagramaSecuencia11.png](img/diagramas/diagramaSecuencia11.png)
-![diagramaSecuencia12.png](img/diagramas/diagramaSecuencia12.png)
-![diagramasSecuencia13.png](img/diagramas/diagramasSecuencia13.png)
+
+https://www.pdffiller.com/s/EQNk5O-lGh
