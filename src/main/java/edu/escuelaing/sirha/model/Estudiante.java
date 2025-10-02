@@ -7,8 +7,6 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @Document(collection = "Estudiante")
 public class Estudiante extends Usuario {
-    @Id
-    private String id;
     private int idEstudiante;
     private String nombre;
     private String codigo;
@@ -40,8 +38,6 @@ public class Estudiante extends Usuario {
                 semestre > 0 && semestre <= 12;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
     public int getIdEstudiante() { return idEstudiante; }
     public void setIdEstudiante(int idEstudiante) { this.idEstudiante = idEstudiante; }
     public String getNombre() { return nombre; }

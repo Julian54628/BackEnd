@@ -5,8 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Decanatura")
 public class Decanatura extends Usuario {
-    @Id
-    private String id;
+
     private int idDecanatura;
     private String nombre;
     private String facultad;
@@ -30,8 +29,6 @@ public class Decanatura extends Usuario {
                 idDecanatura > 0;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
     public int getIdDecanatura() { return idDecanatura; }
     public void setIdDecanatura(int idDecanatura) { this.idDecanatura = idDecanatura; }
     public String getNombre() { return nombre; }
