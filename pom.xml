@@ -23,11 +23,10 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.projectKey>BackEnd</sonar.projectKey>
-        <sonar.projectName>BackEnd</sonar.projectName>
+        <sonar.projectKey>backend_exodo_dosw2</sonar.projectKey>
+        <sonar.projectName>BackEnd Exodo DOSW2</sonar.projectName>
         <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.token>squ_08ed7fc541e7904dc965cc81afb219d0ca02d8b6</sonar.token>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.login>sqa_e98a67e5390ded6e9a110d0ae7304508c48593ad</sonar.login>
     </properties>
 
     <dependencies>
