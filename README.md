@@ -143,13 +143,16 @@ Alineación con Spring Boot Best Practices
 - Annotation-based configuration
 
 #### Imagen del Diagrama
-![diagramaComponentesEspecifico.png](img%2Fdiagramas%2FdiagramaComponentesEspecifico.png)
+![diagramaComponentesEspecificos.png](img/diagramas/diagramaComponentesEspecificos.png)
 
 ### Diagrama de Base de Datos
 #### Descripción
-Este diagrama representa el esquema de base de datos MongoDB del sistema SIRHA, 100% fiel a la implementación real del código. Muestra las collections exactas, campos, tipos de datos y relaciones tal como están definidas en las entidades con anotaciones @Document de Spring Data MongoDB.
+Este diagrama representa el esquema de base de datos MongoDB del sistema SIRHA, 100% fiel a la 
+implementación real del código. Muestra las collections exactas, campos, tipos de datos y relaciones 
+tal como están definidas en las entidades con anotaciones @Document de Spring Data MongoDB.
 #### Imagen del Diagrama
 ![diagramaBaseDatos.png](img%2Fdiagramas%2FdiagramaBaseDatos.png)
 ### Diagramas de Secuencia 
 
-https://www.pdffiller.com/s/EQNk5O-lGh
+- Link del repositorio de los diagrama de Secuencia:
+  - https://www.pdffiller.com/s/EQNk5O-lGh
