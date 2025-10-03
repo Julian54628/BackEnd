@@ -35,7 +35,18 @@ Las ramas de feature siguen el patrón: `feature/nombre-feature`
 ## Convenciones
 - Las ramas feature deben ser descriptivas.
 - Siempre actualizar con `develop` antes de merge.
-- Usar commits semánticos y descriptivos.
+
+---
+## Estructura de Commits
+- **Formulación:** Manejar una estructura semántica y descriptiva.
+
+### Organización de Commits
+
+- **feat**,  se usa para las nuevas implementaciones de lógica que se realice en el proyecto.
+- **fix**,   se usa para la corrección de errores dentro de la lógica del sistema.
+- **docs**,  se usa para correcciones de errores o adiciones respecto a la documentación, como podria ser el README.
+- **refactor**, se usa cuando se realizan refactorizaciones en el código. 
+- **test**, se usa cuando se implementan o modifican los test.
 ---
 ## Comandos básicos 
 - Comandos para instalar, compilar, testear y ejecutar la aplicación:
