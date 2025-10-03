@@ -2,7 +2,41 @@
 A continuación, el desarrollo de los puntos propuestos en la documentación técnica:
 
 ---
+# Estructura y Flujo de Ramas
 
+## Ramas Principales
+
+###  `origin/main`
+- Rama principal de producción
+- Contiene el código estable y listo para reléase.
+- Solo se actualiza mediante merge desde `develop`.
+
+###  `develop`
+- Rama de desarrolo e integración principal
+- Contiene las features completadas y probadas
+- Sirve como base para nuevas features
+- Se mergea a `main` para releases
+
+## Ramas de Feature
+
+### Estructura de Features
+Las ramas de feature siguen el patrón: `feature/nombre-feature`
+
+#### Features:
+- `feature/classesyMongoDB` - Implementación de clases y configuración MongoDB.
+- `feature/controladores` - Desarrollo de la capa y estructuración de  controladores.
+- `feature/pruevas-jacoco-sonarqube` - Configuración de pruebas y calidad de código.
+- `feature/repositorio` - Desarrollo de la capa y estructuración de repositorio.
+- `feature/servicios` - Desarrollo de la capa y estructuración de la capa de servicios, añadiendo lógica de negocio.
+- `feature/controller` - Se agregan cambios y estructuracion arquitectura de controladores.
+- `feature/refactorizacionDiagramas` - Refactorización y documentación de los diagramas.
+- `feature/service` - Se agregan cambios y estructuracion en la arquitectura de servicios.
+
+## Convenciones
+- Las ramas feature deben ser descriptivas.
+- Siempre actualizar con `develop` antes de merge.
+- Usar commits semánticos y descriptivos.
+---
 ## Diseño de los Diagramas
 ### Diagrama de Contexto
 #### Descripción
