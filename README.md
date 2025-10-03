@@ -40,9 +40,9 @@ Las ramas de feature siguen el patrón: `feature/nombre-feature`
 ## Estructura de Commits
 - **Formulación:** Manejar una estructura semántica y descriptiva.
 
-### Organización commits
+### Organización de Commits
 
-- **feat**,  se us para las nuevas implementaciones de lógica que se realice en el proyecto.
+- **feat**,  se usa para las nuevas implementaciones de lógica que se realice en el proyecto.
 - **fix**,   se usa para la corrección de errores dentro de la lógica del sistema.
 - **docs**,  se usa para correcciones de errores o adiciones respecto a la documentación, como podria ser el README.
 - **refactor**, se usa cuando se realizan refactorizaciones en el código. 
