@@ -37,6 +37,29 @@ Las ramas de feature siguen el patrón: `feature/nombre-feature`
 - Siempre actualizar con `develop` antes de merge.
 - Usar commits semánticos y descriptivos.
 ---
+## Comandos básicos 
+- Comandos para instalar, compilar, testear y ejecutar la aplicación:
+```bash
+# Verificar instalación
+mvn -v
+java -version
+
+# Validar POM
+mvn validate
+
+# Compilar
+mvn clean compile
+
+# Ejecutar pruebas y generar reporte JaCoCo
+mvn clean test
+
+# Arrancar aplicación
+mvn spring-boot:run
+
+# Mirar el sonar
+http://localhost:9000
+```
+---
 ## Diseño de los Diagramas
 ### Diagrama de Contexto
 #### Descripción
@@ -103,7 +126,7 @@ Representa las funcionalidades del sistema desde la perspectiva de los usuarios,
 #### Descripción
 El diagrama de componentes generales representa la arquitectura de tres capas del sistema SIRHA, mostrando los componentes principales y sus relaciones básicas de comunicación. Es una vista de alto nivel que ilustra el flujo de datos entre el frontend, backend y la base de datos.
 #### Imagen del Diagrama
-![diagramaComponentesGeneral.png](img%2Fdiagramas%2FdiagramaComponentesGeneral.png)
+![DiagramadeComponentesGenerales.png](img/diagramas/DiagramadeComponentesGenerales.png)
 
 ### Diagrama de Componentes Específicos
 #### Descripción
