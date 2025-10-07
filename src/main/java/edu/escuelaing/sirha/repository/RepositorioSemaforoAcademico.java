@@ -32,8 +32,6 @@ public interface RepositorioSemaforoAcademico extends MongoRepository<SemaforoAc
     List<SemaforoAcademico> findEstudiantesEnRiesgo(float promedioMaximo, int materiasMinimas);
 
     long countByGrado(String grado);
-
     long countByCambioDePlanTrue();
-
     boolean existsByEstudianteId(String estudianteId);
 }
