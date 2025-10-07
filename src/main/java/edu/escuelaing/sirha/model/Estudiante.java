@@ -1,9 +1,7 @@
 package edu.escuelaing.sirha.model;
 
 import java.util.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @Document(collection = "Estudiante")
 public class Estudiante extends Usuario {
@@ -12,13 +10,14 @@ public class Estudiante extends Usuario {
     private String codigo;
     private String carrera;
     private int semestre;
-    private String planAcademicoId; // Solo referencia por ID
-    private String semaforoAcademicoId; // Solo referencia por ID
-    private List<String> solicitudesIds = new ArrayList<>(); // Solo IDs
-    private List<String> horariosIds = new ArrayList<>(); // Solo IDs
+    private String planAcademicoId;
+    private String semaforoAcademicoId;
+    private List<String> solicitudesIds = new ArrayList<>();
+    private List<String> horariosIds = new ArrayList<>();
 
     public Estudiante() {
         super();
+        setRol(Rol.ESTUDIANTE);
     }
 
     public Estudiante(int idUsuario, String username, String passwordHash, String correoInstitucional,
