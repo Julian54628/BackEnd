@@ -41,7 +41,7 @@ public class ProyectoExodoBackenServiceTest {
         GrupoServiceImpl grupoService = new GrupoServiceImpl();
         MateriaServiceImpl materiaService = new MateriaServiceImpl();
         SolicitudCambioServiceImpl solicitudService = new SolicitudCambioServiceImpl();
-        AdministradorServiceImpl adminService = new AdministradorServiceImpl(mockRepositorioSemaforoAcademico);
+        AdministradorServiceImpl adminService = new AdministradorServiceImpl();
         DecanaturaServiceImpl decanaturaService = new DecanaturaServiceImpl();
         ProfesorServiceImpl profesorService = new ProfesorServiceImpl();
         UsuarioServiceImpl usuarioService = new UsuarioServiceImpl(mockRepositorioUsuario);

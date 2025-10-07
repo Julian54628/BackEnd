@@ -14,5 +14,6 @@ public interface AdministradorService {
     PeriodoCambio configurarPeriodo(PeriodoCambio periodo);
     List<SolicitudCambio> generarReportes();
     Administrador crearDesdeDecanatura(String decanaturaId);
+    Optional<PeriodoCambio> getSemestreActual();
+    Optional<PeriodoCambio> getSemestreAnterior();
 }
-
