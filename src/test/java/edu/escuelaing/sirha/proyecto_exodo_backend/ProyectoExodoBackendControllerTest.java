@@ -33,7 +33,7 @@ class ProyectoExodoBackendControllerTest {
     @Mock private DecanaturaService decanaturaService;
 
     @InjectMocks private AdministradorController administradorController;
-    @InjectMocks private ControladorEstudiantes controladorEstudiantes;
+    @InjectMocks private EstudiantesControlador controladorEstudiantes;
     @InjectMocks private GrupoController grupoController;
     @InjectMocks private MateriaController materiaController;
     @InjectMocks private PeriodoCambioController periodoController;

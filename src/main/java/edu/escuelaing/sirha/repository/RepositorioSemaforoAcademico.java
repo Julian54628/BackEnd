@@ -12,17 +12,11 @@ import java.util.Optional;
 public interface RepositorioSemaforoAcademico extends MongoRepository<SemaforoAcademico, String> {
 
     Optional<SemaforoAcademico> findByEstudianteId(String estudianteId);
-
     List<SemaforoAcademico> findByPlanAcademicoId(String planAcademicoId);
-
     List<SemaforoAcademico> findByGrado(String grado);
-
     List<SemaforoAcademico> findByCambioDePlanTrue();
-
     List<SemaforoAcademico> findByCreditosAprobadosGreaterThanEqual(int creditosMinimos);
-
     List<SemaforoAcademico> findByPromedioAcumuladoGreaterThanEqual(float promedioMinimo);
-
     List<SemaforoAcademico> findByMateriasVistasGreaterThanEqual(int materiasMinimas);
 
     @Query("{ $expr: { $gte: [{ $multiply: [{ $divide: ['$creditosAprobados', '$totalCreditosPlan'] }, 100] }, ?0] } }")

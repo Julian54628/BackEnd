@@ -2,9 +2,11 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 
 import edu.escuelaing.sirha.controller.*;
 import edu.escuelaing.sirha.model.*;
+import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import edu.escuelaing.sirha.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -15,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ProyectoExodoBackenServiceTest {
 
     private PeriodoCambioController periodoController;
-    private ControladorEstudiantes estudianteController;
+    private EstudiantesControlador estudianteController;
     private GrupoController grupoController;
     private MateriaController materiaController;
     private SolicitudCambioController solicitudController;
@@ -23,38 +25,48 @@ public class ProyectoExodoBackenServiceTest {
     private DecanaturaController decanaturaController;
     private ProfesorController profesorController;
     private UsuarioController usuarioController;
+    private RepositorioSemaforoAcademico mockRepositorioSemaforoAcademico;
+    private SemaforoAcademicoService semaforoAcademicoService;
 
     @BeforeEach
     void setup() {
+        mockRepositorioSemaforoAcademico = Mockito.mock(RepositorioSemaforoAcademico.class);
+
+        // Crear servicios
         PeriodoCambioServiceImpl periodoService = new PeriodoCambioServiceImpl();
         EstudianteServiceImpl estudianteService = new EstudianteServiceImpl();
         GrupoServiceImpl grupoService = new GrupoServiceImpl();
         MateriaServiceImpl materiaService = new MateriaServiceImpl();
         SolicitudCambioServiceImpl solicitudService = new SolicitudCambioServiceImpl();
-        AdministradorServiceImpl adminService = new AdministradorServiceImpl();
+        AdministradorServiceImpl adminService = new AdministradorServiceImpl(mockRepositorioSemaforoAcademico);
         DecanaturaServiceImpl decanaturaService = new DecanaturaServiceImpl();
         ProfesorServiceImpl profesorService = new ProfesorServiceImpl();
         UsuarioServiceImpl usuarioService = new UsuarioServiceImpl();
-
+        semaforoAcademicoService = new SemaforoAcademicoServiceImpl(mockRepositorioSemaforoAcademico);
         periodoController = new PeriodoCambioController();
         periodoController.periodoService = periodoService;
-        estudianteController = new ControladorEstudiantes(estudianteService);
+        estudianteController = new EstudiantesControlador(estudianteService, semaforoAcademicoService);
         grupoController = new GrupoController();
         grupoController.grupoService = grupoService;
+
         materiaController = new MateriaController();
         materiaController.materiaService = materiaService;
+
         solicitudController = new SolicitudCambioController();
         solicitudController.solicitudService = solicitudService;
+
         adminController = new AdministradorController();
         adminController.administradorService = adminService;
+
         decanaturaController = new DecanaturaController();
         decanaturaController.decanaturaService = decanaturaService;
+
         profesorController = new ProfesorController();
         profesorController.profesorService = profesorService;
+
         usuarioController = new UsuarioController();
         usuarioController.usuarioService = usuarioService;
     }
-
     @Test
     void testCreacionYBusquedaBasica() {
         PeriodoCambio periodo = new PeriodoCambio();
