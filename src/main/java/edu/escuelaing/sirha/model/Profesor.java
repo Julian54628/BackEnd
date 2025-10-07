@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Profesor")
-public class Profesor {
+public class Profesor extends Usuario{
     @Id
     private String id;
     private int idProfesor;
@@ -41,4 +41,9 @@ public class Profesor {
     public void setMateriasAsignadasIds(List<String> materiasAsignadasIds) { this.materiasAsignadasIds = materiasAsignadasIds; }
     public List<String> getGruposAsignadosIds() { return gruposAsignadosIds; }
     public void setGruposAsignadosIds(List<String> gruposAsignadosIds) { this.gruposAsignadosIds = gruposAsignadosIds; }
+
+    public void setFacultad(String ingenieria) {
+    }
+    public void setActivo(boolean b) {
+    }
 }

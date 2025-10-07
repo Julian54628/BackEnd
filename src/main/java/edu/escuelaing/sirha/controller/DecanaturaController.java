@@ -72,4 +72,14 @@ public class DecanaturaController {
         return estado.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}/otorgar-admin")
+    public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
+        return decanaturaService.otorgarPermisosAdministrador(id);
+    }
+
+    @PutMapping("/{id}/revocar-admin")
+    public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
+        return decanaturaService.revocarPermisosAdministrador(id);
+    }
 }
