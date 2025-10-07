@@ -8,16 +8,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class SemaforoAcademico {
     @Id
     private String id;
-    private String estudianteId; // Referencia al estudiante
-    private String grado; // PREGRADO, MAESTRIA
-    private String planAcademicoId; // Referencia al plan
-    private boolean cambioDePlan; // NUEVO según comentario profesor
-    private String planAnteriorId; // NUEVO según comentario profesor
+    private String estudianteId;
+    private String grado;
+    private String planAcademicoId;
+    private boolean cambioDePlan;
+    private String planAnteriorId;
     private int creditosAprobados;
-    private int totalCreditosPlan; // NUEVO según comentario profesor
-    private int materiasVistas; // NUEVO según comentario profesor
-    private int totalMateriasDelPlan; // NUEVO según comentario profesor
-    private float promedioAcumulado; // NUEVO según comentario profesor
+    private int totalCreditosPlan;
+    private int materiasVistas;
+    private int totalMateriasDelPlan;
+    private float promedioAcumulado;
     private Map<String, EstadoMateria> historialMaterias = new HashMap<>();
 
     public SemaforoAcademico() {}
