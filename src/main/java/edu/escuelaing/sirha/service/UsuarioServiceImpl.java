@@ -1,38 +1,43 @@
 package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Usuario;
+import edu.escuelaing.sirha.repository.RepositorioUsuario;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private final Map<String, Usuario> usuarios = new HashMap<>();
+    private final RepositorioUsuario repositorioUsuario;
+
+    public UsuarioServiceImpl(RepositorioUsuario repositorioUsuario) {
+        this.repositorioUsuario = repositorioUsuario;
+    }
 
     @Override
     public Optional<Usuario> autenticar(String username, String password) {
-        return usuarios.values().stream().filter(u -> username.equals(u.getUsername()) && password.equals(u.getPasswordHash())).findFirst();
+        return repositorioUsuario.findByUsername(username)
+                .filter(u -> password != null && password.equals(u.getPasswordHash()));
     }
 
     @Override
     public Optional<Usuario> buscarPorUsername(String username) {
-        return usuarios.values().stream().filter(u -> username.equals(u.getUsername())).findFirst();
+        return repositorioUsuario.findByUsername(username);
     }
 
     @Override
     public boolean tienePermiso(String usuarioId, String accion) {
-        Usuario usuario = usuarios.get(usuarioId);
-        if (usuario == null) return false;
-        return usuario.getRol() != null;
+        return repositorioUsuario.findById(usuarioId)
+                .map(u -> u.getRol() != null && u.isActivo())
+                .orElse(false);
     }
 
     @Override
     public void cambiarPassword(String usuarioId, String nuevoPassword) {
-        Usuario usuario = usuarios.get(usuarioId);
-        if (usuario != null) {
-            usuario.setPasswordHash(nuevoPassword);
-        }
+        repositorioUsuario.findById(usuarioId).ifPresent(u -> {
+            u.setPasswordHash(nuevoPassword);
+            repositorioUsuario.save(u);
+        });
     }
 }
