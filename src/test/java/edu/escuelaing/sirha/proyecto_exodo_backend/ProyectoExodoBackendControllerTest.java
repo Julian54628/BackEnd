@@ -293,6 +293,7 @@ class ProyectoExodoBackendControllerTest {
         assertFalse(solicitudesPorEstudiante.isEmpty());
     }
 
+
     @Test
     void testUsuarioController() {
         Usuario usuario = crearUsuario();
