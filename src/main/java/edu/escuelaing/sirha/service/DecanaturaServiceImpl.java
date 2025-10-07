@@ -5,27 +5,36 @@ import edu.escuelaing.sirha.model.EstadoSolicitud;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import edu.escuelaing.sirha.repository.RepositorioDecanatura;
 
 @Service
 public class DecanaturaServiceImpl implements DecanaturaService {
 
     private final Map<String, Decanatura> decanaturas = new HashMap<>();
     private final List<SolicitudCambio> solicitudes = new ArrayList<>();
+    private final RepositorioDecanatura repositorioDecanatura;
+
+    @Autowired
+    public DecanaturaServiceImpl(RepositorioDecanatura repositorioDecanatura) {
+        this.repositorioDecanatura = repositorioDecanatura;
+    }
 
     @Override
     public Decanatura crear(Decanatura decanatura) {
-        decanaturas.put(decanatura.getId(), decanatura);
-        return decanatura;
+        Decanatura saved = repositorioDecanatura.save(decanatura);
+        decanaturas.put(saved.getId(), saved);
+        return saved;
     }
 
     @Override
     public Optional<Decanatura> buscarPorId(String id) {
-        return Optional.ofNullable(decanaturas.get(id));
+        return repositorioDecanatura.findById(id);
     }
 
     @Override
     public List<Decanatura> listarTodos() {
-        return new ArrayList<>(decanaturas.values());
+        return repositorioDecanatura.findAll();
     }
 
     @Override
@@ -58,5 +67,25 @@ public class DecanaturaServiceImpl implements DecanaturaService {
                 s.setEstado(EstadoSolicitud.APROBADA);
             }
         }
+    }
+
+    @Override
+    public Decanatura otorgarPermisosAdministrador(String decanaturaId) {
+        Optional<Decanatura> opt = repositorioDecanatura.findById(decanaturaId);
+        if (opt.isEmpty()) return null;
+        Decanatura d = opt.get();
+        d.setEsAdministrador(true);
+        Decanatura updated = repositorioDecanatura.save(d);
+        return updated;
+    }
+
+    @Override
+    public Decanatura revocarPermisosAdministrador(String decanaturaId) {
+        Optional<Decanatura> opt = repositorioDecanatura.findById(decanaturaId);
+        if (opt.isEmpty()) return null;
+        Decanatura d = opt.get();
+        d.setEsAdministrador(false);
+        Decanatura updated = repositorioDecanatura.save(d);
+        return updated;
     }
 }

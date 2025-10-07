@@ -49,4 +49,9 @@ public class AdministradorController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/desde-decanatura/{decanaturaId}")
+    public Administrador crearDesdeDecanatura(@PathVariable String decanaturaId) {
+        return administradorService.crearDesdeDecanatura(decanaturaId);
+    }
 }

@@ -13,5 +13,6 @@ public interface AdministradorService {
     Grupo modificarCupoGrupo(String grupoId, int nuevoCupo);
     PeriodoCambio configurarPeriodo(PeriodoCambio periodo);
     List<SolicitudCambio> generarReportes();
+    Administrador crearDesdeDecanatura(String decanaturaId);
 }
 

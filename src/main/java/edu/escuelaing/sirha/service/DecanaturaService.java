@@ -13,5 +13,8 @@ public interface DecanaturaService {
     List<SolicitudCambio> consultarSolicitudesPendientes();
     SolicitudCambio revisarSolicitud(String solicitudId, EstadoSolicitud estado, String respuesta);
     void aprobarSolicitudEspecial(String solicitudId);
+    Decanatura otorgarPermisosAdministrador(String decanaturaId);
+    Decanatura revocarPermisosAdministrador(String decanaturaId);
 }
+
 

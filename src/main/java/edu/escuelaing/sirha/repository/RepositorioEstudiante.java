@@ -32,4 +32,6 @@ public interface RepositorioEstudiante extends MongoRepository<Estudiante, Strin
     long countByCarrera(String carrera);
 
     long countBySemestreAndActivoTrue(int semestre);
+
+    long countByActivoTrue();
 }

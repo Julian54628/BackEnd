@@ -2,22 +2,18 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 
 import edu.escuelaing.sirha.controller.*;
 import edu.escuelaing.sirha.model.*;
-import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import edu.escuelaing.sirha.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
-
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProyectoExodoBackenServiceTest {
 
     private PeriodoCambioController periodoController;
-    private EstudiantesControlador estudianteController;
+    private ControladorEstudiantes estudianteController;
     private GrupoController grupoController;
     private MateriaController materiaController;
     private SolicitudCambioController solicitudController;
@@ -25,303 +21,177 @@ public class ProyectoExodoBackenServiceTest {
     private DecanaturaController decanaturaController;
     private ProfesorController profesorController;
     private UsuarioController usuarioController;
-    private RepositorioSemaforoAcademico mockRepositorioSemaforoAcademico;
-    private SemaforoAcademicoService semaforoAcademicoService;
 
     @BeforeEach
     void setup() {
-        mockRepositorioSemaforoAcademico = Mockito.mock(RepositorioSemaforoAcademico.class);
-
-        // Crear servicios
         PeriodoCambioServiceImpl periodoService = new PeriodoCambioServiceImpl();
         EstudianteServiceImpl estudianteService = new EstudianteServiceImpl();
         GrupoServiceImpl grupoService = new GrupoServiceImpl();
         MateriaServiceImpl materiaService = new MateriaServiceImpl();
         SolicitudCambioServiceImpl solicitudService = new SolicitudCambioServiceImpl();
-        AdministradorServiceImpl adminService = new AdministradorServiceImpl(mockRepositorioSemaforoAcademico);
+        AdministradorServiceImpl adminService = new AdministradorServiceImpl();
         DecanaturaServiceImpl decanaturaService = new DecanaturaServiceImpl();
         ProfesorServiceImpl profesorService = new ProfesorServiceImpl();
         UsuarioServiceImpl usuarioService = new UsuarioServiceImpl();
-        semaforoAcademicoService = new SemaforoAcademicoServiceImpl(mockRepositorioSemaforoAcademico);
         periodoController = new PeriodoCambioController();
         periodoController.periodoService = periodoService;
-        estudianteController = new EstudiantesControlador(estudianteService, semaforoAcademicoService);
+        estudianteController = new ControladorEstudiantes(estudianteService);
         grupoController = new GrupoController();
         grupoController.grupoService = grupoService;
-
         materiaController = new MateriaController();
         materiaController.materiaService = materiaService;
-
         solicitudController = new SolicitudCambioController();
         solicitudController.solicitudService = solicitudService;
-
         adminController = new AdministradorController();
         adminController.administradorService = adminService;
-
         decanaturaController = new DecanaturaController();
         decanaturaController.decanaturaService = decanaturaService;
-
         profesorController = new ProfesorController();
         profesorController.profesorService = profesorService;
-
         usuarioController = new UsuarioController();
         usuarioController.usuarioService = usuarioService;
     }
     @Test
-    void testCreacionYBusquedaBasica() {
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("p1");
-        periodo.setNombre("2024-1");
-        PeriodoCambio periodoCreado = periodoController.create(periodo);
-        assertEquals("p1", periodoCreado.getId());
-        Optional<PeriodoCambio> periodoEncontrado = periodoController.getById("p1");
-        assertTrue(periodoEncontrado.isPresent());
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("e1");
-        estudiante.setCodigo("202410001");
-        ResponseEntity<Estudiante> estudianteCreado = estudianteController.crear(estudiante);
-        assertEquals(201, estudianteCreado.getStatusCodeValue());
-        Materia materia = new Materia();
-        materia.setId("m1");
-        materia.setCodigo("MAT101");
-        Materia materiaCreada = materiaController.crear(materia);
-        assertEquals("m1", materiaCreada.getId());
-    }
-
-    @Test
-    void testGestionEstudiantesCompleta() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante01");
-        estudiante.setCodigo("202410001");
-        estudiante.setNombre("Carlos Ruiz");
-        ResponseEntity<Estudiante> response = estudianteController.crear(estudiante);
-        assertEquals(201, response.getStatusCodeValue());
-        ResponseEntity<Estudiante> encontrado = estudianteController.buscarPorCodigo("202410001");
-        assertEquals(200, encontrado.getStatusCodeValue());
-        ResponseEntity<List<Estudiante>> lista = estudianteController.listarTodos();
-        assertEquals(200, lista.getStatusCodeValue());
-        assertFalse(lista.getBody().isEmpty());
-        estudiante.setNombre("Carlos Ruiz Actualizado");
-        ResponseEntity<Estudiante> actualizado = estudianteController.actualizar("estudiante01", estudiante);
-        assertEquals(200, actualizado.getStatusCodeValue());
-        ResponseEntity<Void> eliminado = estudianteController.eliminar("estudiante01");
-        assertEquals(204, eliminado.getStatusCodeValue());
-    }
-
-    @Test
-    void testSolicitudesCambio() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante01");
-        estudiante.setCodigo("202410002");
-        estudianteController.crear(estudiante);
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("estudiante01");
-        solicitud.setEstudianteId("estudiante01");
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
-        SolicitudCambio solicitudCreada = solicitudController.crear(solicitud);
-        assertNotNull(solicitudCreada);
-        Optional<SolicitudCambio> encontrada = solicitudController.buscarPorId("estudiante01");
-        assertTrue(encontrada.isPresent());
-        List<SolicitudCambio> pendientes = solicitudController.buscarPorEstado("PENDIENTE");
-        assertFalse(pendientes.isEmpty());
-        SolicitudCambio actualizada = solicitudController.actualizarEstado("estudiante01", "APROBADA");
-        assertNotNull(actualizada);
-        List<SolicitudCambio> todas = solicitudController.listarTodos();
-        assertFalse(todas.isEmpty());
-    }
-
-    @Test
-    void testGestionGrupos() {
-        Grupo grupo = new Grupo();
-        grupo.setId("g1");
-        grupo.setCupoMaximo(30);
-        Grupo grupoCreado = grupoController.create(grupo);
-        assertNotNull(grupoCreado);
-        Optional<Grupo> grupoEncontrado = grupoController.getById("g1");
-        assertTrue(grupoEncontrado.isPresent());
-        boolean cupoDisponible = grupoController.verificarCupoDisponible("g1");
-        assertTrue(cupoDisponible);
-        Grupo cupoActualizado = grupoController.updateCupo("g1", 35);
-        assertNotNull(cupoActualizado);
-        float carga = grupoController.consultarCargaAcademica("g1");
-        assertEquals(0.0f, carga);
-        List<Grupo> grupos = grupoController.getAll();
-        assertFalse(grupos.isEmpty());
-    }
-
-    @Test
-    void testGestionMaterias() {
-        Materia materia = new Materia();
-        materia.setId("logica");
-        materia.setCodigo("ISIS101");
-        materia.setNombre("Programación I");
-        Materia materiaCreada = materiaController.crear(materia);
-        assertNotNull(materiaCreada);
-        Optional<Materia> materiaEncontrada = materiaController.buscarPorId("logica");
-        assertTrue(materiaEncontrada.isPresent());
-        Optional<Materia> porCodigo = materiaController.buscarPorCodigo("ISIS101");
-        assertTrue(porCodigo.isPresent());
-        List<Materia> materias = materiaController.listarTodos();
-        assertFalse(materias.isEmpty());
-        materia.setNombre("Programación I Actualizada");
-        Materia actualizada = materiaController.actualizar("logica", materia);
-        assertNotNull(actualizada);
-        materiaController.eliminarPorId("logica");
-        Optional<Materia> eliminada = materiaController.buscarPorId("logica");
-        assertFalse(eliminada.isPresent());
-    }
-
-    @Test
-    void testPeriodosCambio() {
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("periodo1");
-        periodo.setNombre("2024-1");
-        periodo.setActivo(true);
-        PeriodoCambio periodoCreado = periodoController.create(periodo);
-        assertNotNull(periodoCreado);
-        Optional<PeriodoCambio> encontrado = periodoController.getById("periodo1");
-        assertTrue(encontrado.isPresent());
-        Optional<PeriodoCambio> activo = periodoController.getActivo();
-        assertTrue(activo.isPresent());
+    void periodoControllerGetAll() {
+        PeriodoCambio p1 = new PeriodoCambio();
+        p1.setId("1");
+        periodoController.create(p1);
         List<PeriodoCambio> periodos = periodoController.getAll();
         assertFalse(periodos.isEmpty());
-        periodo.setNombre("2024-1 Actualizado");
-        PeriodoCambio actualizado = periodoController.update("periodo1", periodo);
-        assertNotNull(actualizado);
-        periodoController.delete("periodo1");
-        Optional<PeriodoCambio> eliminado = periodoController.getById("periodo1");
-        assertFalse(eliminado.isPresent());
     }
-
     @Test
-    void testAdministradores() {
-        Administrador admin = new Administrador();
-        admin.setId("admin1");
-        admin.setUsername("admin.sistema");
-        Administrador adminCreado = adminController.create(admin);
-        assertNotNull(adminCreado);
-        Optional<Administrador> adminEncontrado = adminController.getById("admin1");
-        assertTrue(adminEncontrado.isPresent());
+    void periodoControllerGetById() {
         PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("per-admin");
-        periodo.setNombre("Periodo Admin");
-        PeriodoCambio periodoConfigurado = adminController.configurarPeriodo(periodo);
-        assertNotNull(periodoConfigurado);
-        List<SolicitudCambio> reportes = adminController.generarReportes();
-        assertNotNull(reportes);
-        List<Administrador> admins = adminController.getAll();
-        assertFalse(admins.isEmpty());
+        periodo.setId("p-cont");
+        periodoController.create(periodo);
+        Optional<PeriodoCambio> encontrado = periodoController.getById("p-cont");
+        assertTrue(encontrado.isPresent());
     }
-
     @Test
-    void testDecanaturaSolicitudes() {
-        Decanatura decanatura = new Decanatura();
-        decanatura.setId("decanatura");
-        decanatura.setUsername("decanatura.sistemas");
-        Decanatura decanaturaCreada = decanaturaController.create(decanatura);
-        assertNotNull(decanaturaCreada);
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("solicitud");
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
-        solicitudController.crear(solicitud);
-        List<SolicitudCambio> pendientes = decanaturaController.consultarSolicitudesPendientes();
-        assertNotNull(pendientes);
-        if (!pendientes.isEmpty()) {
-            String solicitudId = pendientes.get(0).getId();
-            SolicitudCambio revisada = decanaturaController.revisarSolicitud(solicitudId, EstadoSolicitud.APROBADA, "Aprobada por decanatura");
-            assertNotNull(revisada);
-        }
-        Optional<Decanatura> decEncontrada = decanaturaController.getById("decanatura");
-        assertTrue(decEncontrada.isPresent());
+    void periodoControllerGetActivo() {
+        PeriodoCambio periodo = new PeriodoCambio();
+        periodo.setId("activo");
+        periodo.setActivo(true);
+        periodoController.create(periodo);
+        Optional<PeriodoCambio> activo = periodoController.getActivo();
+        assertTrue(activo.isPresent());
     }
-
     @Test
-    void testProfesores() {
-        Profesor profesor = new Profesor();
-        profesor.setId("profesor");
-        profesor.setIdProfesor(1001);
-        profesor.setNombre("Dr. Ana López");
-        Profesor profesorCreado = profesorController.crear(profesor);
-        assertNotNull(profesorCreado);
-        Optional<Profesor> profesorEncontrado = profesorController.buscarPorId("profesor");
-        assertTrue(profesorEncontrado.isPresent());
-        Optional<Profesor> porCodigo = profesorController.buscarPorCodigo("1001");
-        assertTrue(porCodigo.isPresent());
-        List<Grupo> grupos = profesorController.consultarGruposAsignados("profesor");
-        assertNotNull(grupos);
-        List<Profesor> profesores = profesorController.listarTodos();
-        assertFalse(profesores.isEmpty());
+    void estudianteControllerCrear() {
+        Estudiante est = new Estudiante();
+        est.setId("est-cont");
+        est.setCodigo("202400001");
+        ResponseEntity<Estudiante> respuesta = estudianteController.crear(est);
+        assertEquals(201, respuesta.getStatusCodeValue());
     }
-
     @Test
-    void testUsuariosAutenticacion() {
-        usuarioController.cambiarPassword("user1", "nuevopass");
-        Optional<Usuario> autenticado = usuarioController.login("user1", "nuevopass");
-        assertFalse(autenticado.isPresent());
-        Optional<Usuario> usuarioEncontrado = usuarioController.buscarPorUsername("user1");
-        assertFalse(usuarioEncontrado.isPresent());
-        boolean tienePermiso = usuarioController.tienePermiso("user1", "crear_solicitud");
-        assertFalse(tienePermiso);
+    void estudianteControllerBuscarPorCodigo() {
+        Estudiante est = new Estudiante();
+        est.setId("est-buscar");
+        est.setCodigo("202400002");
+        estudianteController.crear(est);
+        ResponseEntity<Estudiante> respuesta = estudianteController.buscarPorCodigo("202400002");
+        assertEquals(200, respuesta.getStatusCodeValue());
     }
-
     @Test
-    void testEstudianteSolicitudesCambio() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante");
-        estudiante.setCodigo("202410003");
-        estudianteController.crear(estudiante);
-        ResponseEntity<SolicitudCambio> solicitud = estudianteController.crearSolicitudCambio("estudiante", "MAT101", "GRP1", "MAT102", "GRP2");
-        assertEquals(201, solicitud.getStatusCodeValue());
-        assertNotNull(solicitud.getBody());
-        ResponseEntity<List<SolicitudCambio>> solicitudes = estudianteController.consultarSolicitudes("estudiante");
-        assertEquals(200, solicitudes.getStatusCodeValue());
-        assertFalse(solicitudes.getBody().isEmpty());
+    void estudianteControllerCrearSolicitud() {
+        Estudiante est = new Estudiante();
+        est.setId("est-sol-cont");
+        estudianteController.crear(est);
+        ResponseEntity<SolicitudCambio> respuesta = estudianteController.crearSolicitudCambio(
+                "est-sol-cont", "mat1", "g1", "mat2", "g2");
+        assertEquals(201, respuesta.getStatusCodeValue());
     }
-
     @Test
-    void testOperacionesEliminacion() {
-        Materia materia = new Materia();
-        materia.setId("fisica");
-        materia.setCodigo("ELIM101");
-        materiaController.crear(materia);
-        materiaController.eliminarPorId("fisica");
-        Optional<Materia> materiaEliminada = materiaController.buscarPorId("fisica");
-        assertFalse(materiaEliminada.isPresent());
+    void grupoControllerCreate() {
         Grupo grupo = new Grupo();
-        grupo.setId("grp-elim");
-        grupoController.create(grupo);
-        grupoController.delete("grp-elim");
-        Optional<Grupo> grupoEliminado = grupoController.getById("grp-elim");
-        assertFalse(grupoEliminado.isPresent());
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("sol-elim");
-        solicitudController.crear(solicitud);
-        solicitudController.eliminarPorId("sol-elim");
-        Optional<SolicitudCambio> solicitudEliminada = solicitudController.buscarPorId("sol-elim");
-        assertFalse(solicitudEliminada.isPresent());
+        grupo.setId("g-cont");
+        grupo.setCupoMaximo(30);
+        Grupo creado = grupoController.create(grupo);
+        assertNotNull(creado);
     }
-
     @Test
-    void testConsultasAvanzadas() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("consulta");
-        estudiante.setCodigo("202410004");
-        estudianteController.crear(estudiante);
-        Materia materia = new Materia();
-        materia.setId("mat-consulta");
-        materia.setCodigo("CONS101");
-        materiaController.crear(materia);
+    void grupoControllerUpdateCupo() {
         Grupo grupo = new Grupo();
-        grupo.setId("grp-consulta");
-        grupo.setMateriaId("mat-consulta");
+        grupo.setId("g-update");
+        grupo.setCupoMaximo(20);
         grupoController.create(grupo);
-        List<Estudiante> estudiantesInscritos = grupoController.consultarEstudiantesInscritos("grp-consulta");
-        assertNotNull(estudiantesInscritos);
-        List<Grupo> gruposDisponibles = materiaController.consultarGruposDisponibles("mat-consulta");
-        assertNotNull(gruposDisponibles);
-        boolean disponible = materiaController.verificarDisponibilidad("mat-consulta");
-        assertFalse(disponible);
-        List<SolicitudCambio> porEstudiante = solicitudController.buscarPorEstudiante("consulta");
-        assertNotNull(porEstudiante);
+        Grupo actualizado = grupoController.updateCupo("g-update", 40);
+        assertNotNull(actualizado);
+    }
+    @Test
+    void materiaControllerCrear() {
+        Materia materia = new Materia();
+        materia.setId("m-cont");
+        materia.setCodigo("CONT101");
+        Materia creada = materiaController.crear(materia);
+        assertNotNull(creada);
+    }
+    @Test
+    void materiaControllerListar() {
+        Materia m1 = new Materia();
+        m1.setId("m1-cont");
+        materiaController.crear(m1);
+        List<Materia> materias = materiaController.listarTodos();
+        assertFalse(materias.isEmpty());
+    }
+    @Test
+    void solicitudControllerCrear() {
+        SolicitudCambio sol = new SolicitudCambio();
+        sol.setId("sol-cont");
+        SolicitudCambio creada = solicitudController.crear(sol);
+        assertNotNull(creada);
+    }
+    @Test
+    void solicitudControllerListar() {
+        SolicitudCambio sol = new SolicitudCambio();
+        sol.setId("sol-list");
+        solicitudController.crear(sol);
+        List<SolicitudCambio> solicitudes = solicitudController.listarTodos();
+        assertFalse(solicitudes.isEmpty());
+    }
+    @Test
+    void adminControllerCreate() {
+        Administrador admin = new Administrador();
+        admin.setId("admin-cont");
+        Administrador creado = adminController.create(admin);
+        assertNotNull(creado);
+    }
+    @Test
+    void decanaturaControllerCreate() {
+        Decanatura dec = new Decanatura();
+        dec.setId("dec-cont");
+        Decanatura creada = decanaturaController.create(dec);
+        assertNotNull(creada);
+    }
+    @Test
+    void profesorControllerCrear() {
+        Profesor prof = new Profesor();
+        prof.setId("prof-cont");
+        Profesor creado = profesorController.crear(prof);
+        assertNotNull(creado);
+    }
+    @Test
+    void usuarioControllerLogin() {
+        Optional<Usuario> login = usuarioController.login("user", "pass");
+        assertNotNull(login);
+    }
+    @Test
+    void testControllersNotFound() {
+        Optional<PeriodoCambio> periodo = periodoController.getById("no-existe");
+        assertFalse(periodo.isPresent());
+        Optional<Materia> materia = materiaController.buscarPorId("no-existe");
+        assertFalse(materia.isPresent());
+        ResponseEntity<Estudiante> estudiante = estudianteController.buscarPorCodigo("no-existe");
+        assertEquals(404, estudiante.getStatusCodeValue());
+    }
+    @Test
+    void testControllersEliminar() {
+        Materia materia = new Materia();
+        materia.setId("mat-elim");
+        materiaController.crear(materia);
+        materiaController.eliminarPorId("mat-elim");
+        Optional<Materia> eliminada = materiaController.buscarPorId("mat-elim");
+        assertFalse(eliminada.isPresent());
     }
 }

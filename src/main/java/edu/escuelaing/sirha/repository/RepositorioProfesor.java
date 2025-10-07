@@ -36,4 +36,8 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     @Query(value = "{ $expr: { $gt: [{ $size: '$gruposAsignadosIds' }, 0] } }", count = true)
     long countProfesoresConGrupos();
+
+    List<Profesor> findByActivoTrue();
+
+    List<Profesor> findByFacultad(String ingenieria);
 }
