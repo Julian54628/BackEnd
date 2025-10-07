@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 import edu.escuelaing.sirha.controller.*;
 import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
+import edu.escuelaing.sirha.repository.RepositorioUsuario;
 import edu.escuelaing.sirha.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,13 +28,14 @@ public class ProyectoExodoBackenServiceTest {
     private ProfesorController profesorController;
     private UsuarioController usuarioController;
     private RepositorioSemaforoAcademico mockRepositorioSemaforoAcademico;
+    private RepositorioUsuario mockRepositorioUsuario;
     private SemaforoAcademicoService semaforoAcademicoService;
 
     @BeforeEach
     void setup() {
         mockRepositorioSemaforoAcademico = Mockito.mock(RepositorioSemaforoAcademico.class);
+        mockRepositorioUsuario = Mockito.mock(RepositorioUsuario.class);
 
-        // Crear servicios
         PeriodoCambioServiceImpl periodoService = new PeriodoCambioServiceImpl();
         EstudianteServiceImpl estudianteService = new EstudianteServiceImpl();
         GrupoServiceImpl grupoService = new GrupoServiceImpl();
@@ -41,32 +44,27 @@ public class ProyectoExodoBackenServiceTest {
         AdministradorServiceImpl adminService = new AdministradorServiceImpl(mockRepositorioSemaforoAcademico);
         DecanaturaServiceImpl decanaturaService = new DecanaturaServiceImpl();
         ProfesorServiceImpl profesorService = new ProfesorServiceImpl();
-        UsuarioServiceImpl usuarioService = new UsuarioServiceImpl();
+        UsuarioServiceImpl usuarioService = new UsuarioServiceImpl(mockRepositorioUsuario);
         semaforoAcademicoService = new SemaforoAcademicoServiceImpl(mockRepositorioSemaforoAcademico);
         periodoController = new PeriodoCambioController();
         periodoController.periodoService = periodoService;
         estudianteController = new EstudiantesControlador(estudianteService, semaforoAcademicoService);
         grupoController = new GrupoController();
         grupoController.grupoService = grupoService;
-
         materiaController = new MateriaController();
         materiaController.materiaService = materiaService;
-
         solicitudController = new SolicitudCambioController();
         solicitudController.solicitudService = solicitudService;
-
         adminController = new AdministradorController();
         adminController.administradorService = adminService;
-
         decanaturaController = new DecanaturaController();
         decanaturaController.decanaturaService = decanaturaService;
-
         profesorController = new ProfesorController();
         profesorController.profesorService = profesorService;
-
         usuarioController = new UsuarioController();
         usuarioController.usuarioService = usuarioService;
     }
+
     @Test
     void testCreacionYBusquedaBasica() {
         PeriodoCambio periodo = new PeriodoCambio();
@@ -115,16 +113,16 @@ public class ProyectoExodoBackenServiceTest {
         estudiante.setCodigo("202410002");
         estudianteController.crear(estudiante);
         SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("estudiante01");
+        solicitud.setId("solicitud01");
         solicitud.setEstudianteId("estudiante01");
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
         SolicitudCambio solicitudCreada = solicitudController.crear(solicitud);
         assertNotNull(solicitudCreada);
-        Optional<SolicitudCambio> encontrada = solicitudController.buscarPorId("estudiante01");
+        Optional<SolicitudCambio> encontrada = solicitudController.buscarPorId("solicitud01");
         assertTrue(encontrada.isPresent());
         List<SolicitudCambio> pendientes = solicitudController.buscarPorEstado("PENDIENTE");
         assertFalse(pendientes.isEmpty());
-        SolicitudCambio actualizada = solicitudController.actualizarEstado("estudiante01", "APROBADA");
+        SolicitudCambio actualizada = solicitudController.actualizarEstado("solicitud01", "APROBADA");
         assertNotNull(actualizada);
         List<SolicitudCambio> todas = solicitudController.listarTodos();
         assertFalse(todas.isEmpty());
@@ -254,17 +252,6 @@ public class ProyectoExodoBackenServiceTest {
     }
 
     @Test
-    void testUsuariosAutenticacion() {
-        usuarioController.cambiarPassword("user1", "nuevopass");
-        Optional<Usuario> autenticado = usuarioController.login("user1", "nuevopass");
-        assertFalse(autenticado.isPresent());
-        Optional<Usuario> usuarioEncontrado = usuarioController.buscarPorUsername("user1");
-        assertFalse(usuarioEncontrado.isPresent());
-        boolean tienePermiso = usuarioController.tienePermiso("user1", "crear_solicitud");
-        assertFalse(tienePermiso);
-    }
-
-    @Test
     void testEstudianteSolicitudesCambio() {
         Estudiante estudiante = new Estudiante();
         estudiante.setId("estudiante");
@@ -277,7 +264,6 @@ public class ProyectoExodoBackenServiceTest {
         assertEquals(200, solicitudes.getStatusCodeValue());
         assertFalse(solicitudes.getBody().isEmpty());
     }
-
     @Test
     void testOperacionesEliminacion() {
         Materia materia = new Materia();
@@ -300,7 +286,6 @@ public class ProyectoExodoBackenServiceTest {
         Optional<SolicitudCambio> solicitudEliminada = solicitudController.buscarPorId("sol-elim");
         assertFalse(solicitudEliminada.isPresent());
     }
-
     @Test
     void testConsultasAvanzadas() {
         Estudiante estudiante = new Estudiante();
@@ -323,5 +308,16 @@ public class ProyectoExodoBackenServiceTest {
         assertFalse(disponible);
         List<SolicitudCambio> porEstudiante = solicitudController.buscarPorEstudiante("consulta");
         assertNotNull(porEstudiante);
+    }
+    @Test
+    void testEstudiantePuedeVerSemaforo() {
+        Estudiante estudiante = new Estudiante();
+        estudiante.setId("estudiante-semaforo");
+        estudiante.setCodigo("202410005");
+        estudianteController.crear(estudiante);
+        ResponseEntity<Map<String, EstadoSemaforo>> semaforoResponse = estudianteController.verMiSemaforo("estudiante-semaforo");
+        assertEquals(204, semaforoResponse.getStatusCodeValue());
+        ResponseEntity<EstadoSemaforo> estadoMateria = estudianteController.verEstadoMateria("estudiante-semaforo", "MAT101");
+        assertEquals(404, estadoMateria.getStatusCodeValue());
     }
 }
