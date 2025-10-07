@@ -59,4 +59,22 @@ public class DecanaturaServiceImpl implements DecanaturaService {
             }
         }
     }
+
+    @Override
+    public Decanatura otorgarPermisosAdministrador(String decanaturaId) {
+        Decanatura decanatura = decanaturas.get(decanaturaId);
+        if (decanatura != null) {
+            decanatura.setEsAdministrador(true);
+        }
+        return decanatura;
+    }
+
+    @Override
+    public Decanatura revocarPermisosAdministrador(String decanaturaId) {
+        Decanatura decanatura = decanaturas.get(decanaturaId);
+        if (decanatura != null) {
+            decanatura.setEsAdministrador(false);
+        }
+        return decanatura;
+    }
 }
