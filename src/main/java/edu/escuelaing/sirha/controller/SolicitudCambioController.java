@@ -21,7 +21,7 @@ public class SolicitudCambioController {
         return solicitudService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Busca una solicitud de cambio específica{id}")
     public Optional<SolicitudCambio> buscarPorId(@PathVariable String id) {
         return solicitudService.buscarPorId(id);
     }
@@ -31,22 +31,22 @@ public class SolicitudCambioController {
         return solicitudService.crear(solicitud);
     }
 
-    @PutMapping("/{id}/estado")
+    @PutMapping("/Actualiza el estado de una solicitud{id}/estado")
     public SolicitudCambio actualizarEstado(@PathVariable String id, @RequestParam String estado) {
         return solicitudService.actualizarEstado(id, EstadoSolicitud.valueOf(estado));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina una solicitud de cambio del sistema{id}")
     public void eliminarPorId(@PathVariable String id) {
         solicitudService.eliminarPorId(id);
     }
 
-    @GetMapping("/estado/{estado}")
+    @GetMapping("/Busca solicitudes de cambio por estado/{estado}")
     public List<SolicitudCambio> buscarPorEstado(@PathVariable String estado) {
         return solicitudService.buscarPorEstado(EstadoSolicitud.valueOf(estado));
     }
 
-    @GetMapping("/estudiante/{estudianteId}")
+    @GetMapping("/Busca todas las solicitudes de cambio asociadas a un estudiante/{estudianteId}")
     public List<SolicitudCambio> buscarPorEstudiante(@PathVariable String estudianteId) {
         return solicitudService.buscarPorEstudiante(estudianteId);
     }

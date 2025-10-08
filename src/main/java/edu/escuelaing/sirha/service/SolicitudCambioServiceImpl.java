@@ -2,64 +2,57 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.EstadoSolicitud;
 import edu.escuelaing.sirha.model.SolicitudCambio;
+import edu.escuelaing.sirha.repository.RepositorioSolicitudCambio;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
-    private final Map<String, SolicitudCambio> solicitudes = new HashMap<>();
+    @Autowired
+    private RepositorioSolicitudCambio repositorioSolicitudCambio;
 
     @Override
     public SolicitudCambio crear(SolicitudCambio solicitud) {
-        solicitudes.put(solicitud.getId(), solicitud);
-        return solicitud;
+        return repositorioSolicitudCambio.save(solicitud);
     }
 
     @Override
     public Optional<SolicitudCambio> buscarPorId(String id) {
-        return Optional.ofNullable(solicitudes.get(id));
+        return repositorioSolicitudCambio.findById(id);
     }
 
     @Override
     public List<SolicitudCambio> listarTodos() {
-        return new ArrayList<>(solicitudes.values());
+        return repositorioSolicitudCambio.findAll();
     }
 
     @Override
     public List<SolicitudCambio> buscarPorEstado(EstadoSolicitud estado) {
-        List<SolicitudCambio> resultado = new ArrayList<>();
-        for (SolicitudCambio s : solicitudes.values()) {
-            if (estado.equals(s.getEstado())) {
-                resultado.add(s);
-            }
-        }
-        return resultado;
+        return repositorioSolicitudCambio.findByEstado(estado);
     }
 
     @Override
     public List<SolicitudCambio> buscarPorEstudiante(String estudianteId) {
-        List<SolicitudCambio> resultado = new ArrayList<>();
-        for (SolicitudCambio s : solicitudes.values()) {
-            if (estudianteId.equals(s.getEstudianteId())) {
-                resultado.add(s);
-            }
-        }
-        return resultado;
+        return repositorioSolicitudCambio.findByEstudianteId(estudianteId);
     }
 
     @Override
     public SolicitudCambio actualizarEstado(String solicitudId, EstadoSolicitud estado) {
-        SolicitudCambio solicitud = solicitudes.get(solicitudId);
-        if (solicitud != null) {
+        Optional<SolicitudCambio> solicitudOpt = repositorioSolicitudCambio.findById(solicitudId);
+        if (solicitudOpt.isPresent()) {
+            SolicitudCambio solicitud = solicitudOpt.get();
             solicitud.setEstado(estado);
+            return repositorioSolicitudCambio.save(solicitud);
         }
-        return solicitud;
+        return null;
     }
 
     @Override
     public void eliminarPorId(String id) {
-        solicitudes.remove(id);
+        repositorioSolicitudCambio.deleteById(id);
     }
 }

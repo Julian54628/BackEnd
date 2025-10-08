@@ -21,7 +21,7 @@ public class GrupoController {
         return grupoService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Obtiene un grupo específico por su identificador{id}")
     public Optional<Grupo> getById(@PathVariable String id) {
         return grupoService.buscarPorId(id);
     }
@@ -31,27 +31,27 @@ public class GrupoController {
         return grupoService.crear(grupo);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina un grupo del sistema por su identificador{id}")
     public void delete(@PathVariable String id) {
         grupoService.eliminarPorId(id);
     }
 
-    @PutMapping("/{id}/cupo")
+    @PutMapping("/Actualiza el cupo disponible de un grupo{id}/cupo")
     public Grupo updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
         return grupoService.actualizarCupo(id, nuevoCupo);
     }
 
-    @GetMapping("/{id}/cupo-disponible")
+    @GetMapping("/Verifica si un grupo tiene cupos disponibles{id}/cupo-disponible")
     public boolean verificarCupoDisponible(@PathVariable String id) {
         return grupoService.verificarCupoDisponible(id);
     }
 
-    @GetMapping("/{id}/carga-academica")
+    @GetMapping("/Consulta la carga académica de un grupo{id}/carga-academica")
     public float consultarCargaAcademica(@PathVariable String id) {
         return grupoService.consultarCargaAcademica(id);
     }
 
-    @GetMapping("/{id}/estudiantes")
+    @GetMapping("/Consulta la lista de estudiantes inscritos en un grupo{id}/estudiantes")
     public List<Estudiante> consultarEstudiantesInscritos(@PathVariable String id) {
         return grupoService.consultarEstudiantesInscritos(id);
     }

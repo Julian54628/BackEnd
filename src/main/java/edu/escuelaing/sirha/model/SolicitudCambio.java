@@ -21,6 +21,7 @@ public class SolicitudCambio {
     private String grupoOrigenId;
     private String materiaDestinoId;
     private String grupoDestinoId;
+    private String decanaturaId;
 
     public SolicitudCambio() {
         this.fechaCreacion = new Date();
@@ -70,4 +71,6 @@ public class SolicitudCambio {
     public void setMateriaDestinoId(String materiaDestinoId) { this.materiaDestinoId = materiaDestinoId; }
     public String getGrupoDestinoId() { return grupoDestinoId; }
     public void setGrupoDestinoId(String grupoDestinoId) { this.grupoDestinoId = grupoDestinoId; }
+    public String getDecanaturaId() { return decanaturaId; }
+    public void setDecanaturaId(String decanaturaId) { this.decanaturaId = decanaturaId; }
 }

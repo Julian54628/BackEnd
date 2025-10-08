@@ -14,5 +14,8 @@ public interface MateriaService {
     Materia actualizar(String id, Materia materia);
     List<Grupo> consultarGruposDisponibles(String materiaId);
     boolean verificarDisponibilidad(String materiaId);
+    void modificarCuposMateria(String materiaId, int nuevoCupo);
+    Materia registrarMateriaConGrupos(Materia materia, List<Grupo> grupos);
+    int consultarTotalInscritosPorMateria(String materiaId);
 }
 

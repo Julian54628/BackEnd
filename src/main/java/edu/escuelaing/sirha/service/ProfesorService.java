@@ -13,5 +13,7 @@ public interface ProfesorService {
     Profesor actualizar(String id, Profesor profesor);
     void eliminarPorId(String id);
     List<Grupo> consultarGruposAsignados(String profesorId);
+    Grupo asignarProfesorAGrupo(String profesorId, String grupoId);
+    Grupo retirarProfesorDeGrupo(String grupoId);
 }
 
