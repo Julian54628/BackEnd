@@ -4,12 +4,14 @@ import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.EstadoMateria;
 import edu.escuelaing.sirha.model.SemaforoAcademico;
 import edu.escuelaing.sirha.model.Estudiante;
+import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import edu.escuelaing.sirha.repository.RepositorioEstudiante;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Service
 public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
@@ -23,18 +25,30 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         this.repositorioEstudiante = repositorioEstudiante;
     }
 
+    // Constructor sin argumentos para pruebas unitarias que instancian manualmente el servicio
+    public SemaforoAcademicoServiceImpl() {
+        this.repositorioSemaforoAcademico = null;
+        this.repositorioEstudiante = null;
+    }
+
     @Override
     public Map<String, EstadoSemaforo> visualizarSemaforoEstudiante(String estudianteId) {
+        if (repositorioSemaforoAcademico == null) {
+            return Collections.emptyMap();
+        }
         Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
         if (!optSemaforo.isPresent()) {
             return Collections.emptyMap();
         }
         Map<String, EstadoMateria> historial = optSemaforo.get().getHistorialMaterias();
-        return historial.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,entry -> mapearEstado(entry.getValue())));
+        return historial.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> mapearEstado(entry.getValue())));
     }
 
     @Override
     public Optional<EstadoSemaforo> consultarSemaforoMateria(String estudianteId, String materiaId) {
+        if (repositorioSemaforoAcademico == null) {
+            return Optional.empty();
+        }
         Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
         if (optSemaforo.isPresent()) {
             EstadoMateria estadoMateria = optSemaforo.get().getHistorialMaterias().get(materiaId);
@@ -63,6 +77,9 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
     @Override
     public int getSemestreActual(String estudianteId) {
         try {
+            if (repositorioEstudiante == null) {
+                return 0;
+            }
             Optional<Estudiante> estudiante = repositorioEstudiante.findById(estudianteId);
             if (estudiante.isPresent()) {
                 return estudiante.get().getSemestre();
@@ -86,7 +103,10 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         }
         resultado.put("semestresAnteriores", semestresAnteriores);
 
-        Optional<SemaforoAcademico> semaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+        Optional<SemaforoAcademico> semaforo = Optional.empty();
+        if (repositorioSemaforoAcademico != null) {
+            semaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+        }
         if (semaforo.isPresent()) {
             SemaforoAcademico sem = semaforo.get();
 
@@ -125,5 +145,99 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         }
 
         return resultado;
+    }
+
+    @Override
+    public SemaforoVisualizacion obtenerSemaforoCompleto(String estudianteId) {
+        Map<String, EstadoSemaforo> estados = visualizarSemaforoEstudiante(estudianteId);
+        Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
+
+        SemaforoVisualizacion vis = new SemaforoVisualizacion();
+        vis.setEstudianteId(estudianteId);
+
+        Object semestreActual = foraneo.get("semestreActual");
+        if (semestreActual instanceof Number) {
+            vis.setSemestreActual(((Number) semestreActual).intValue());
+        }
+
+        Object creditosAprobados = foraneo.get("creditosAprobados");
+        if (creditosAprobados instanceof Number) {
+            vis.setCreditosCompletados(((Number) creditosAprobados).intValue());
+        }
+
+        Object promedio = foraneo.get("promedio");
+        if (promedio instanceof Number) {
+            vis.setPromedioAcumulado(((Number) promedio).floatValue());
+        }
+
+        Object materiasAprobadas = foraneo.get("materiasAprobadas");
+        if (materiasAprobadas instanceof Number) {
+            vis.setMateriasAprobadas(((Number) materiasAprobadas).intValue());
+        }
+
+        Object materiasReprobadas = foraneo.get("materiasReprobadas");
+        if (materiasReprobadas instanceof Number) {
+            vis.setMateriasReprobadas(((Number) materiasReprobadas).intValue());
+        }
+
+        Object materiasInscritas = foraneo.get("materiasInscritas");
+        if (materiasInscritas instanceof Number) {
+            vis.setMateriasCursando(((Number) materiasInscritas).intValue());
+        }
+
+        Object totalMaterias = foraneo.get("totalMaterias");
+        if (totalMaterias instanceof Number) {
+            vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
+        }
+
+
+        return vis;
+    }
+
+
+    @Override
+    public SemaforoVisualizacion obtenerSemaforoDetallado(String estudianteId) {
+        Map<String, EstadoSemaforo> estados = visualizarSemaforoEstudiante(estudianteId);
+        Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
+
+        SemaforoVisualizacion vis = new SemaforoVisualizacion();
+        vis.setEstudianteId(estudianteId);
+
+        Object semestreActual = foraneo.get("semestreActual");
+        if (semestreActual instanceof Number) {
+            vis.setSemestreActual(((Number) semestreActual).intValue());
+        }
+
+        Object creditosAprobados = foraneo.get("creditosAprobados");
+        if (creditosAprobados instanceof Number) {
+            vis.setCreditosCompletados(((Number) creditosAprobados).intValue());
+        }
+
+        Object promedio = foraneo.get("promedio");
+        if (promedio instanceof Number) {
+            vis.setPromedioAcumulado(((Number) promedio).floatValue());
+        }
+
+        Object materiasAprobadas = foraneo.get("materiasAprobadas");
+        if (materiasAprobadas instanceof Number) {
+            vis.setMateriasAprobadas(((Number) materiasAprobadas).intValue());
+        }
+
+        Object materiasReprobadas = foraneo.get("materiasReprobadas");
+        if (materiasReprobadas instanceof Number) {
+            vis.setMateriasReprobadas(((Number) materiasReprobadas).intValue());
+        }
+
+        Object materiasInscritas = foraneo.get("materiasInscritas");
+        if (materiasInscritas instanceof Number) {
+            vis.setMateriasCursando(((Number) materiasInscritas).intValue());
+        }
+
+        Object totalMaterias = foraneo.get("totalMaterias");
+        if (totalMaterias instanceof Number) {
+            vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
+        }
+
+        return vis;
     }
 }

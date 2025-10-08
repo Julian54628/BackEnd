@@ -34,19 +34,37 @@ public class AdministradorServiceImpl implements AdministradorService {
         this.repositorioAdministrador = repositorioAdministrador;
         this.repositorioDecanatura = repositorioDecanatura;
     }
+
+    // Constructor sin argumentos para permitir uso en pruebas unitarias sin inyectar repositorios
+    public AdministradorServiceImpl() {
+        this.repositorioSemaforoAcademico = null;
+        this.repositorioAdministrador = null;
+        this.repositorioDecanatura = null;
+    }
     @Override
     public Administrador crear(Administrador administrador) {
-        Administrador saved = repositorioAdministrador.save(administrador);
-        administradores.put(saved.getId(), saved);
-        return saved;
+        if (repositorioAdministrador != null) {
+            Administrador saved = repositorioAdministrador.save(administrador);
+            administradores.put(saved.getId(), saved);
+            return saved;
+        }
+        // Fallback en memoria
+        administradores.put(administrador.getId(), administrador);
+        return administrador;
     }
     @Override
     public Optional<Administrador> buscarPorId(String id) {
-        return repositorioAdministrador.findById(id);
+        if (repositorioAdministrador != null) {
+            return repositorioAdministrador.findById(id);
+        }
+        return Optional.ofNullable(administradores.get(id));
     }
     @Override
     public List<Administrador> listarTodos() {
-        return repositorioAdministrador.findAll();
+        if (repositorioAdministrador != null) {
+            return repositorioAdministrador.findAll();
+        }
+        return new ArrayList<>(administradores.values());
     }
     @Override
     public Grupo modificarCupoGrupo(String grupoId, int nuevoCupo) {
@@ -68,6 +86,9 @@ public class AdministradorServiceImpl implements AdministradorService {
     }
     @Override
     public Optional<SemaforoAcademico> modificarEstadoMateriaSemaforo(String estudianteId, String materiaId, EstadoMateria nuevoEstado) {
+        if (repositorioSemaforoAcademico == null) {
+            return Optional.empty();
+        }
         Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
         if (optSemaforo.isPresent()) {
             SemaforoAcademico semaforo = optSemaforo.get();
@@ -80,6 +101,9 @@ public class AdministradorServiceImpl implements AdministradorService {
 
     @Override
     public Administrador crearDesdeDecanatura(String decanaturaId) {
+        if (repositorioDecanatura == null || repositorioAdministrador == null) {
+            return null;
+        }
         Optional<Decanatura> decOpt = repositorioDecanatura.findById(decanaturaId);
         if (decOpt.isEmpty()) {
             return null;
