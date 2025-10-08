@@ -33,6 +33,12 @@ public class ProfesorServiceImpl implements ProfesorService {
     }
 
     @Override
+    public Profesor actualizar(String id, Profesor profesor) {
+        profesores.put(id, profesor);
+        return profesor;
+    }
+
+    @Override
     public void eliminarPorId(String id) {
         profesores.remove(id);
     }

@@ -36,6 +36,11 @@ public class ProfesorController {
         return profesorService.crear(profesor);
     }
 
+    @PutMapping("/{id}")
+    public Profesor actualizar(@PathVariable String id, @RequestBody Profesor profesor) {
+        return profesorService.actualizar(id, profesor);
+    }
+
     @DeleteMapping("/{id}")
     public void eliminarPorId(@PathVariable String id) {
         profesorService.eliminarPorId(id);

@@ -10,6 +10,7 @@ public interface ProfesorService {
     Optional<Profesor> buscarPorId(String id);
     Optional<Profesor> buscarPorCodigo(String codigo);
     List<Profesor> listarTodos();
+    Profesor actualizar(String id, Profesor profesor);
     void eliminarPorId(String id);
     List<Grupo> consultarGruposAsignados(String profesorId);
 }
