@@ -2,6 +2,8 @@ package edu.escuelaing.sirha.repository;
 
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
+import edu.escuelaing.sirha.model.TipoSolicitud;
+import edu.escuelaing.sirha.model.TipoPrioridad;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -35,4 +37,15 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
 
     @Query("{ 'fechaCreacion': { $gte: ?0 } }")
     List<SolicitudCambio> findSolicitudesRecientes(Date fechaLimite);
+
+    // Nuevos métodos para las funcionalidades extendidas
+    List<SolicitudCambio> findByDecanaturaId(String decanaturaId);
+    List<SolicitudCambio> findByTipoSolicitud(TipoSolicitud tipoSolicitud);
+    List<SolicitudCambio> findByTipoPrioridad(TipoPrioridad tipoPrioridad);
+    List<SolicitudCambio> findByDecanaturaIdAndEstado(String decanaturaId, EstadoSolicitud estado);
+    List<SolicitudCambio> findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(String estudianteId, String materiaDestinoId, List<EstadoSolicitud> estados);
+    List<SolicitudCambio> findByAdministradorId(String administradorId);
+    List<SolicitudCambio> findByFechaCreacionBetween(Date fechaInicio, Date fechaFin);
+    List<SolicitudCambio> findByTipoSolicitudAndEstado(TipoSolicitud tipoSolicitud, EstadoSolicitud estado);
+    List<SolicitudCambio> findByTipoPrioridadAndEstado(TipoPrioridad tipoPrioridad, EstadoSolicitud estado);
 }

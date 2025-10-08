@@ -1,10 +1,9 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.SolicitudCambio;
+import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.service.EstudianteService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
+import edu.escuelaing.sirha.service.SolicitudCambioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +18,12 @@ public class EstudiantesControlador {
 
     private final EstudianteService estudianteService;
     private final SemaforoAcademicoService semaforoAcademicoService;
+    private final SolicitudCambioService solicitudCambioService;
 
-    public EstudiantesControlador(EstudianteService estudianteService, SemaforoAcademicoService semaforoAcademicoService) {
+    public EstudiantesControlador(EstudianteService estudianteService, SemaforoAcademicoService semaforoAcademicoService, SolicitudCambioService solicitudCambioService) {
         this.estudianteService = estudianteService;
         this.semaforoAcademicoService = semaforoAcademicoService;
+        this.solicitudCambioService = solicitudCambioService;
     }
     @PostMapping
     public ResponseEntity<Estudiante> crear(@RequestBody Estudiante estudiante) {
@@ -57,9 +58,47 @@ public class EstudiantesControlador {
         SolicitudCambio solicitud = estudianteService.crearSolicitudCambio(id, materiaOrigenId, grupoOrigenId, materiaDestinoId, grupoDestinoId);
         return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + solicitud.getId())).body(solicitud);
     }
+
+    /**
+     * Crear solicitud de cambio de grupo
+     */
+    @PostMapping("/{id}/solicitudes/cambio-grupo")
+    public ResponseEntity<SolicitudCambio> crearSolicitudCambioGrupo(
+            @PathVariable String id,
+            @RequestBody SolicitudCambio solicitud) {
+        solicitud.setEstudianteId(id);
+        solicitud.setTipoSolicitud(TipoSolicitud.CAMBIO_GRUPO);
+        SolicitudCambio creada = solicitudCambioService.crearSolicitud(solicitud);
+        return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + creada.getId())).body(creada);
+    }
+
+    /**
+     * Crear solicitud de cambio de materia
+     */
+    @PostMapping("/{id}/solicitudes/cambio-materia")
+    public ResponseEntity<SolicitudCambio> crearSolicitudCambioMateria(
+            @PathVariable String id,
+            @RequestBody SolicitudCambio solicitud) {
+        solicitud.setEstudianteId(id);
+        solicitud.setTipoSolicitud(TipoSolicitud.CAMBIO_MATERIA);
+        SolicitudCambio creada = solicitudCambioService.crearSolicitud(solicitud);
+        return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + creada.getId())).body(creada);
+    }
     @GetMapping("/{id}/solicitudes")
     public ResponseEntity<List<SolicitudCambio>> consultarSolicitudes(@PathVariable String id) {
-        return ResponseEntity.ok(estudianteService.consultarSolicitudes(id));
+        List<SolicitudCambio> solicitudes = solicitudCambioService.obtenerSolicitudesPorEstudiante(id);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+    /**
+     * Obtener historial de solicitudes del estudiante
+     */
+    @GetMapping("/{id}/solicitudes/historial")
+    public ResponseEntity<List<SolicitudCambio>> obtenerHistorialSolicitudes(@PathVariable String id) {
+        List<SolicitudCambio> historial = solicitudCambioService.obtenerSolicitudesPorEstudiante(id).stream()
+                .sorted((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()))
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(historial);
     }
     @GetMapping("/{id}/semaforo")
     public ResponseEntity<Map<String, EstadoSemaforo>> verMiSemaforo(@PathVariable String id) {
@@ -73,5 +112,29 @@ public class EstudiantesControlador {
     public ResponseEntity<EstadoSemaforo> verEstadoMateria(@PathVariable String id, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(id, materiaId);
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Visualización completa del semáforo académico del estudiante
+     */
+    @GetMapping("/{id}/semaforo-completo")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String id) {
+        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoCompleto(id);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
+    }
+
+    /**
+     * Visualización detallada del semáforo académico del estudiante
+     */
+    @GetMapping("/{id}/semaforo-detallado")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String id) {
+        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoDetallado(id);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
     }
 }

@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.controller;
 import edu.escuelaing.sirha.model.Decanatura;
 import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
+import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
@@ -81,6 +82,30 @@ public class DecanaturaController {
         Optional<EstadoSemaforo> estado = semaforoService.consultarSemaforoMateria(estudianteId, materiaId);
         return estado.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Visualización completa del semáforo académico de un estudiante
+     */
+    @GetMapping("/semaforo/estudiante/{estudianteId}/completo")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String estudianteId) {
+        SemaforoVisualizacion semaforo = semaforoService.obtenerSemaforoCompleto(estudianteId);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
+    }
+
+    /**
+     * Visualización detallada del semáforo académico de un estudiante
+     */
+    @GetMapping("/semaforo/estudiante/{estudianteId}/detallado")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String estudianteId) {
+        SemaforoVisualizacion semaforo = semaforoService.obtenerSemaforoDetallado(estudianteId);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
     }
 
     @PutMapping("/{id}/otorgar-admin")
