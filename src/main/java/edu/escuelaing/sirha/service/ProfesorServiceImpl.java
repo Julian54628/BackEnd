@@ -35,7 +35,6 @@ public class ProfesorServiceImpl implements ProfesorService {
                 .filter(p -> String.valueOf(p.getIdProfesor()).equals(codigo))
                 .findFirst();
     }
-
     @Override
     public List<Profesor> listarTodos() {
         return repositorioProfesor.findAll();
@@ -43,15 +42,27 @@ public class ProfesorServiceImpl implements ProfesorService {
 
     @Override
     public Profesor actualizar(String id, Profesor profesor) {
-        profesores.put(id, profesor);
-        return profesor;
+        Optional<Profesor> existenteOpt = repositorioProfesor.findById(id);
+        if (existenteOpt.isPresent()) {
+            Profesor existente = existenteOpt.get();
+            existente.setNombre(profesor.getNombre());
+            existente.setCorreoInstitucional(profesor.getCorreoInstitucional());
+            existente.setIdProfesor(profesor.getIdProfesor());
+            existente.setMateriasAsignadasIds(profesor.getMateriasAsignadasIds());
+            existente.setGruposAsignadosIds(profesor.getGruposAsignadosIds());
+            existente.setUsername(profesor.getUsername());
+            existente.setPasswordHash(profesor.getPasswordHash());
+            existente.setActivo(profesor.isActivo());
+            return repositorioProfesor.save(existente);
+        } else {
+            profesor.setId(id);
+            return repositorioProfesor.save(profesor);
+        }
     }
-
     @Override
     public void eliminarPorId(String id) {
         repositorioProfesor.deleteById(id);
     }
-
     @Override
     public List<Grupo> consultarGruposAsignados(String profesorId) {
         return repositorioGrupo.findByProfesorId(profesorId);

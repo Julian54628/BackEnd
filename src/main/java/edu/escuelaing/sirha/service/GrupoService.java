@@ -14,5 +14,6 @@ public interface GrupoService {
     boolean verificarCupoDisponible(String grupoId);
     float consultarCargaAcademica(String grupoId);
     List<Estudiante> consultarEstudiantesInscritos(String grupoId);
+    List<Grupo> obtenerGruposConAlertaCapacidad(double porcentajeAlerta);
 }
 

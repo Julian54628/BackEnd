@@ -39,18 +39,14 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
             throw new IllegalArgumentException("La solicitud no es válida");
         }
         
-        // Asignar decanatura basada en la facultad de la materia
         asignarDecanatura(solicitud);
         
-        // Generar ID único si no existe
         if (solicitud.getId() == null || solicitud.getId().isEmpty()) {
             solicitud.setId(UUID.randomUUID().toString());
         }
         
-        // Establecer fecha de creación
         solicitud.setFechaCreacion(new Date());
         
-        // Establecer estado inicial
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
         
         return repositorioSolicitudCambio.save(solicitud);
@@ -189,12 +185,10 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         estadisticas.put("solicitudesRechazadas", todasLasSolicitudes.stream()
                 .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count());
         
-        // Estadísticas por tipo
         Map<TipoSolicitud, Long> porTipo = todasLasSolicitudes.stream()
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoSolicitud, Collectors.counting()));
         estadisticas.put("porTipo", porTipo);
         
-        // Estadísticas por prioridad
         Map<TipoPrioridad, Long> porPrioridad = todasLasSolicitudes.stream()
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoPrioridad, Collectors.counting()));
         estadisticas.put("porPrioridad", porPrioridad);
@@ -206,15 +200,12 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
     public boolean validarSolicitud(SolicitudCambio solicitud) {
         if (solicitud == null) return false;
         
-        // Validar campos obligatorios
         if (solicitud.getEstudianteId() == null || solicitud.getEstudianteId().trim().isEmpty()) return false;
         if (solicitud.getDescripcion() == null || solicitud.getDescripcion().trim().isEmpty()) return false;
         if (solicitud.getTipoSolicitud() == null) return false;
         
-        // Validar que el estudiante existe
         if (!repositorioEstudiante.existsById(solicitud.getEstudianteId())) return false;
         
-        // Validar materias y grupos según el tipo de solicitud
         if (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_GRUPO) {
             if (solicitud.getMateriaOrigenId() == null || solicitud.getGrupoOrigenId() == null ||
                 solicitud.getGrupoDestinoId() == null) return false;
@@ -227,7 +218,6 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
     @Override
     public boolean puedeCrearSolicitud(String estudianteId, String materiaId) {
-        // Verificar que no existe una solicitud activa para la misma materia
         List<SolicitudCambio> solicitudesActivas = repositorioSolicitudCambio.findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(
                 estudianteId, materiaId, Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION));
         
@@ -235,14 +225,12 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
     }
 
     private void asignarDecanatura(SolicitudCambio solicitud) {
-        // Obtener la facultad de la materia destino
         String materiaId = solicitud.getMateriaDestinoId();
         if (materiaId != null) {
             Optional<Materia> materiaOpt = repositorioMateria.findById(materiaId);
             if (materiaOpt.isPresent()) {
                 String facultad = materiaOpt.get().getFacultad();
                 
-                // Buscar decanatura por facultad
                 List<Decanatura> decanaturas = repositorioDecanatura.findByFacultad(facultad);
                 if (!decanaturas.isEmpty()) {
                     solicitud.setDecanaturaId(decanaturas.get(0).getId());

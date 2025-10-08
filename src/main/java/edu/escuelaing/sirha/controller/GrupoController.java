@@ -55,4 +55,6 @@ public class GrupoController {
     public List<Estudiante> consultarEstudiantesInscritos(@PathVariable String id) {
         return grupoService.consultarEstudiantesInscritos(id);
     }
+
+
 }

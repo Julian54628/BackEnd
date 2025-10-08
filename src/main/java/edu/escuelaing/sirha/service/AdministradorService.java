@@ -1,9 +1,13 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.*;
+import edu.escuelaing.sirha.model.Administrador;
+import edu.escuelaing.sirha.model.EstadoMateria;
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.model.PeriodoCambio;
+import edu.escuelaing.sirha.model.SemaforoAcademico;
+import edu.escuelaing.sirha.model.SolicitudCambio;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface AdministradorService {
@@ -15,11 +19,4 @@ public interface AdministradorService {
     PeriodoCambio configurarPeriodo(PeriodoCambio periodo);
     List<SolicitudCambio> generarReportes();
     Administrador crearDesdeDecanatura(String decanaturaId);
-    Optional<PeriodoCambio> getSemestreActual();
-    Optional<PeriodoCambio> getSemestreAnterior();
-    List<Grupo> obtenerGruposConAlertaCarga();
-    List<SolicitudCambio> consultarSolicitudesGlobalesPorPrioridad();
-    Map<String, Object> generarReporteGruposMasSolicitados();
-    Map<String, Object> generarReporteEstadisticasReasignacion();
 }
-

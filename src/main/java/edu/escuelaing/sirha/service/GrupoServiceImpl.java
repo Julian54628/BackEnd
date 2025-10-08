@@ -70,4 +70,21 @@ public class GrupoServiceImpl implements GrupoService {
     public List<Estudiante> consultarEstudiantesInscritos(String grupoId) {
         return new ArrayList<>(estudiantesPorGrupo.getOrDefault(grupoId, new ArrayList<>()));
     }
+
+    @Override
+    public List<Grupo> obtenerGruposConAlertaCapacidad(double porcentajeAlerta) {
+        List<Grupo> todosLosGrupos = listarTodos();
+        List<Grupo> gruposEnAlerta = new ArrayList<>();
+        
+        for (Grupo grupo : todosLosGrupos) {
+            if (grupo.getCupoMaximo() > 0) {
+                double porcentajeOcupacion = ((double) grupo.getEstudiantesInscritosIds().size() / grupo.getCupoMaximo()) * 100;
+                if (porcentajeOcupacion >= porcentajeAlerta) {
+                    gruposEnAlerta.add(grupo);
+                }
+            }
+        }
+        
+        return gruposEnAlerta;
+    }
 }

@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.controller;
 import edu.escuelaing.sirha.model.Decanatura;
 import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
+import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
@@ -66,23 +67,7 @@ public class DecanaturaController {
     public void aprobarSolicitudEspecial(@PathVariable String solicitudId) {
         decanaturaService.aprobarSolicitudEspecial(solicitudId);
     }
-    @GetMapping("/semaforo/estudiante/{estudianteId}")
-    public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(
-            @PathVariable String estudianteId) {
-        Map<String, EstadoSemaforo> semaforo = semaforoService.visualizarSemaforoEstudiante(estudianteId);
-        return ResponseEntity.ok(semaforo);
-    }
-
-    @GetMapping("/semaforo/estudiante/{estudianteId}/materia/{materiaId}")
-    public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(
-            @PathVariable String estudianteId,
-            @PathVariable String materiaId) {
-
-        Optional<EstadoSemaforo> estado = semaforoService.consultarSemaforoMateria(estudianteId, materiaId);
-        return estado.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
+    
     @PutMapping("/{id}/otorgar-admin")
     public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.otorgarPermisosAdministrador(id);
