@@ -11,6 +11,8 @@ public interface DecanaturaService {
     Decanatura crear(Decanatura decanatura);
     Optional<Decanatura> buscarPorId(String id);
     List<Decanatura> listarTodos();
+    Decanatura actualizar(String id, Decanatura decanatura);
+    void eliminarPorId(String id);
     List<SolicitudCambio> consultarSolicitudesPendientes();
     SolicitudCambio revisarSolicitud(String solicitudId, EstadoSolicitud estado, String respuesta);
     void aprobarSolicitudEspecial(String solicitudId);

@@ -35,6 +35,17 @@ public class DecanaturaServiceImpl implements DecanaturaService {
     }
 
     @Override
+    public Decanatura actualizar(String id, Decanatura decanatura) {
+        decanaturas.put(id, decanatura);
+        return decanatura;
+    }
+
+    @Override
+    public void eliminarPorId(String id) {
+        decanaturas.remove(id);
+    }
+
+    @Override
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return repositorioSolicitudCambio.findByEstado(EstadoSolicitud.PENDIENTE);
     }

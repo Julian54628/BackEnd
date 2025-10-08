@@ -22,6 +22,11 @@ public class SolicitudCambio {
     private String materiaDestinoId;
     private String grupoDestinoId;
     private String decanaturaId;
+    private TipoSolicitud tipoSolicitud;
+    private TipoPrioridad tipoPrioridad;
+    private String descripcion;
+    private String justificacion;
+    private String administradorId;
 
     public SolicitudCambio() {
         this.fechaCreacion = new Date();
@@ -36,6 +41,21 @@ public class SolicitudCambio {
         this.grupoOrigenId = grupoOrigenId;
         this.materiaDestinoId = materiaDestinoId;
         this.grupoDestinoId = grupoDestinoId;
+        this.tipoPrioridad = TipoPrioridad.NORMAL;
+    }
+
+    public SolicitudCambio(String estudianteId, String materiaOrigenId, String grupoOrigenId,
+                           String materiaDestinoId, String grupoDestinoId, TipoSolicitud tipoSolicitud,
+                           String descripcion, TipoPrioridad tipoPrioridad) {
+        this();
+        this.estudianteId = estudianteId;
+        this.materiaOrigenId = materiaOrigenId;
+        this.grupoOrigenId = grupoOrigenId;
+        this.materiaDestinoId = materiaDestinoId;
+        this.grupoDestinoId = grupoDestinoId;
+        this.tipoSolicitud = tipoSolicitud;
+        this.descripcion = descripcion;
+        this.tipoPrioridad = tipoPrioridad;
     }
 
     public boolean esValida() {
@@ -73,4 +93,14 @@ public class SolicitudCambio {
     public void setGrupoDestinoId(String grupoDestinoId) { this.grupoDestinoId = grupoDestinoId; }
     public String getDecanaturaId() { return decanaturaId; }
     public void setDecanaturaId(String decanaturaId) { this.decanaturaId = decanaturaId; }
+    public TipoSolicitud getTipoSolicitud() { return tipoSolicitud; }
+    public void setTipoSolicitud(TipoSolicitud tipoSolicitud) { this.tipoSolicitud = tipoSolicitud; }
+    public TipoPrioridad getTipoPrioridad() { return tipoPrioridad; }
+    public void setTipoPrioridad(TipoPrioridad tipoPrioridad) { this.tipoPrioridad = tipoPrioridad; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getJustificacion() { return justificacion; }
+    public void setJustificacion(String justificacion) { this.justificacion = justificacion; }
+    public String getAdministradorId() { return administradorId; }
+    public void setAdministradorId(String administradorId) { this.administradorId = administradorId; }
 }

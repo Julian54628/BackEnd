@@ -1,12 +1,9 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Materia;
-import edu.escuelaing.sirha.model.SolicitudCambio;
+import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.service.EstudianteService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
+import edu.escuelaing.sirha.service.SolicitudCambioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,17 +18,19 @@ public class EstudiantesControlador {
 
     private final EstudianteService estudianteService;
     private final SemaforoAcademicoService semaforoAcademicoService;
+    private final SolicitudCambioService solicitudCambioService;
 
-    public EstudiantesControlador(EstudianteService estudianteService, SemaforoAcademicoService semaforoAcademicoService) {
+    public EstudiantesControlador(EstudianteService estudianteService, SemaforoAcademicoService semaforoAcademicoService, SolicitudCambioService solicitudCambioService) {
         this.estudianteService = estudianteService;
         this.semaforoAcademicoService = semaforoAcademicoService;
+        this.solicitudCambioService = solicitudCambioService;
     }
     @PostMapping
     public ResponseEntity<Estudiante> crear(@RequestBody Estudiante estudiante) {
         Estudiante creado = estudianteService.crear(estudiante);
         return ResponseEntity.created(URI.create("/api/estudiantes/" + creado.getId())).body(creado);
     }
-    @GetMapping("/Busca un estudiante por su código{codigo}")
+    @GetMapping("/{codigo}")
     public ResponseEntity<Estudiante> buscarPorCodigo(@PathVariable String codigo) {
         return estudianteService.buscarPorCodigo(codigo).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
@@ -39,17 +38,17 @@ public class EstudiantesControlador {
     public ResponseEntity<List<Estudiante>> listarTodos() {
         return ResponseEntity.ok(estudianteService.listarTodos());
     }
-    @DeleteMapping("/Elimina un estudiante del sistema por su codigo{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable String id) {
         estudianteService.eliminarPorId(id);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/Actualiza la información de un estudiante{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Estudiante> actualizar(@PathVariable String id, @RequestBody Estudiante estudiante) {
         Estudiante actualizado = estudianteService.actualizar(id, estudiante);
         return ResponseEntity.ok(actualizado);
     }
-    @PostMapping("Crea una nueva solicitud de cambio de materia/{id}/solicitudes")
+    @PostMapping("/{id}/solicitudes")
     public ResponseEntity<SolicitudCambio> crearSolicitudCambio(
             @PathVariable String id,
             @RequestParam String materiaOrigenId,
@@ -59,11 +58,49 @@ public class EstudiantesControlador {
         SolicitudCambio solicitud = estudianteService.crearSolicitudCambio(id, materiaOrigenId, grupoOrigenId, materiaDestinoId, grupoDestinoId);
         return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + solicitud.getId())).body(solicitud);
     }
-    @GetMapping("/Consulta todas las solicitudes de cambio{id}/solicitudes")
-    public ResponseEntity<List<SolicitudCambio>> consultarSolicitudes(@PathVariable String id) {
-        return ResponseEntity.ok(estudianteService.consultarSolicitudes(id));
+
+    /**
+     * Crear solicitud de cambio de grupo
+     */
+    @PostMapping("/{id}/solicitudes/cambio-grupo")
+    public ResponseEntity<SolicitudCambio> crearSolicitudCambioGrupo(
+            @PathVariable String id,
+            @RequestBody SolicitudCambio solicitud) {
+        solicitud.setEstudianteId(id);
+        solicitud.setTipoSolicitud(TipoSolicitud.CAMBIO_GRUPO);
+        SolicitudCambio creada = solicitudCambioService.crearSolicitud(solicitud);
+        return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + creada.getId())).body(creada);
     }
-    @GetMapping("/Visualiza el semáforo académico completo{id}/semaforo")
+
+    /**
+     * Crear solicitud de cambio de materia
+     */
+    @PostMapping("/{id}/solicitudes/cambio-materia")
+    public ResponseEntity<SolicitudCambio> crearSolicitudCambioMateria(
+            @PathVariable String id,
+            @RequestBody SolicitudCambio solicitud) {
+        solicitud.setEstudianteId(id);
+        solicitud.setTipoSolicitud(TipoSolicitud.CAMBIO_MATERIA);
+        SolicitudCambio creada = solicitudCambioService.crearSolicitud(solicitud);
+        return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + creada.getId())).body(creada);
+    }
+    @GetMapping("/{id}/solicitudes")
+    public ResponseEntity<List<SolicitudCambio>> consultarSolicitudes(@PathVariable String id) {
+        List<SolicitudCambio> solicitudes = solicitudCambioService.obtenerSolicitudesPorEstudiante(id);
+        return ResponseEntity.ok(solicitudes);
+    }
+
+    /**
+     * Obtener historial de solicitudes del estudiante
+     */
+    @GetMapping("/{id}/solicitudes/historial")
+    public ResponseEntity<List<SolicitudCambio>> obtenerHistorialSolicitudes(@PathVariable String id) {
+        List<SolicitudCambio> historial = solicitudCambioService.obtenerSolicitudesPorEstudiante(id).stream()
+                .sorted((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()))
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(historial);
+    }
+    @GetMapping("/{id}/semaforo")
     public ResponseEntity<Map<String, EstadoSemaforo>> verMiSemaforo(@PathVariable String id) {
         Map<String, EstadoSemaforo> semaforo = semaforoAcademicoService.visualizarSemaforoEstudiante(id);
         if (semaforo.isEmpty()) {
@@ -71,73 +108,33 @@ public class EstudiantesControlador {
         }
         return ResponseEntity.ok(semaforo);
     }
-    @GetMapping("/Consulta estado del semáforo para una materia específica{id}/semaforo/materia/{materiaId}")
+    @GetMapping("/{id}/semaforo/materia/{materiaId}")
     public ResponseEntity<EstadoSemaforo> verEstadoMateria(@PathVariable String id, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(id, materiaId);
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
+
     /**
-     * 37. Consultar avance del plan de estudios
+     * Visualización completa del semáforo académico del estudiante
      */
-    @GetMapping("/{estudianteId}/avance-plan-estudios")
-    public ResponseEntity<Map<String, Object>> consultarAvancePlanEstudios(@PathVariable String estudianteId) {
-        Map<String, Object> avance = estudianteService.consultarAvancePlanEstudios(estudianteId);
-        return ResponseEntity.ok(avance);
-    }
-    /**
-     * 39. Asignar grupo a estudiante
-     */
-    @PutMapping("/{estudianteId}/asignar-grupo/{grupoId}")
-    public ResponseEntity<Void> asignarGrupoAEstudiante(@PathVariable String estudianteId, @PathVariable String grupoId) {
-        estudianteService.asignarGrupoAEstudiante(estudianteId, grupoId);
-        return ResponseEntity.ok().build();
+    @GetMapping("/{id}/semaforo-completo")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String id) {
+        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoCompleto(id);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
     }
 
     /**
-     * Consultar horario del semestre actual del estudiante
+     * Visualización detallada del semáforo académico del estudiante
      */
-    @GetMapping("/{estudianteId}/horario-semestre-actual")
-    public ResponseEntity<List<Grupo>> consultarHorarioSemestreActual(@PathVariable String estudianteId) {
-        List<Grupo> horario = estudianteService.consultarHorarioSemestreActual(estudianteId);
-        if (horario.isEmpty()) {
-            return ResponseEntity.noContent().build();
+    @GetMapping("/{id}/semaforo-detallado")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String id) {
+        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoDetallado(id);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(horario);
-    }
-
-    /**
-     * Consultar materias de semestres anteriores del estudiante
-     */
-    @GetMapping("/{estudianteId}/materias-semestres-anteriores")
-    public ResponseEntity<List<Materia>> consultarMateriasSemestresAnteriores(@PathVariable String estudianteId) {
-        List<Materia> materias = estudianteService.consultarMateriasSemestresAnteriores(estudianteId);
-        if (materias.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(materias);
-    }
-
-    /**
-     * Consultar horario detallado del semestre actual del estudiante
-     */
-    @GetMapping("/{estudianteId}/horario-detallado-semestre-actual")
-    public ResponseEntity<Map<String, Object>> consultarHorarioDetalladoSemestreActual(@PathVariable String estudianteId) {
-        Map<String, Object> horarioDetallado = estudianteService.consultarHorarioDetalladoSemestreActual(estudianteId);
-        if (horarioDetallado.containsKey("error")) {
-            return ResponseEntity.badRequest().body(horarioDetallado);
-        }
-        return ResponseEntity.ok(horarioDetallado);
-    }
-
-    /**
-     * Consultar resumen académico completo del estudiante
-     */
-    @GetMapping("/{estudianteId}/resumen-academico-completo")
-    public ResponseEntity<Map<String, Object>> consultarResumenAcademicoCompleto(@PathVariable String estudianteId) {
-        Map<String, Object> resumen = estudianteService.consultarResumenAcademicoCompleto(estudianteId);
-        if (resumen.containsKey("error")) {
-            return ResponseEntity.badRequest().body(resumen);
-        }
-        return ResponseEntity.ok(resumen);
+        return ResponseEntity.ok(semaforo);
     }
 }

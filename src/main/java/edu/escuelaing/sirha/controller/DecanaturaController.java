@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.controller;
 import edu.escuelaing.sirha.model.Decanatura;
 import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
+import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
@@ -29,65 +30,91 @@ public class DecanaturaController {
         return decanaturaService.listarTodos();
     }
 
-    @GetMapping("/Obtiene una decanatura por su identificador{id}")
+    @GetMapping("/{id}")
     public Optional<Decanatura> getById(@PathVariable String id) {
         return decanaturaService.buscarPorId(id);
     }
+
     @PostMapping
     public Decanatura create(@RequestBody Decanatura decanatura) {
         return decanaturaService.crear(decanatura);
     }
-    @GetMapping("Consulta todas las solicitudes de cambio/solicitudes/pendientes")
+
+    @PutMapping("/{id}")
+    public Decanatura actualizar(@PathVariable String id, @RequestBody Decanatura decanatura) {
+        return decanaturaService.actualizar(id, decanatura);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable String id) {
+        decanaturaService.eliminarPorId(id);
+    }
+
+    @GetMapping("/solicitudes/pendientes")
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return decanaturaService.consultarSolicitudesPendientes();
     }
-    @PutMapping("Revisa y actualiza el estado de una solicitud de cambio/solicitudes/{solicitudId}/revisar")
-    public SolicitudCambio revisarSolicitud(@PathVariable String solicitudId, @RequestParam EstadoSolicitud estado,
+
+    @PutMapping("/solicitudes/{solicitudId}/revisar")
+    public SolicitudCambio revisarSolicitud(
+            @PathVariable String solicitudId,
+            @RequestParam EstadoSolicitud estado,
             @RequestParam String respuesta) {
         return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta);
     }
-    @PutMapping("Aprueba una solicitud de cambio especial/solicitudes/{solicitudId}/aprobar-especial")
+
+    @PutMapping("/solicitudes/{solicitudId}/aprobar-especial")
     public void aprobarSolicitudEspecial(@PathVariable String solicitudId) {
         decanaturaService.aprobarSolicitudEspecial(solicitudId);
     }
-    @GetMapping("Visualiza el semáforo académico de un estudiante./semaforo/estudiante/{estudianteId}")
+    @GetMapping("/semaforo/estudiante/{estudianteId}")
     public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(
             @PathVariable String estudianteId) {
         Map<String, EstadoSemaforo> semaforo = semaforoService.visualizarSemaforoEstudiante(estudianteId);
         return ResponseEntity.ok(semaforo);
     }
-    @GetMapping("Consulta el semáforo para una materia específica de un estudiante./semaforo/estudiante/{estudianteId}/materia/{materiaId}")
-    public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
+
+    @GetMapping("/semaforo/estudiante/{estudianteId}/materia/{materiaId}")
+    public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(
+            @PathVariable String estudianteId,
+            @PathVariable String materiaId) {
+
         Optional<EstadoSemaforo> estado = semaforoService.consultarSemaforoMateria(estudianteId, materiaId);
-        return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return estado.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    @PutMapping("/Otorga permisos de administrador a una decanatura{id}/otorgar-admin")
+
+    /**
+     * Visualización completa del semáforo académico de un estudiante
+     */
+    @GetMapping("/semaforo/estudiante/{estudianteId}/completo")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String estudianteId) {
+        SemaforoVisualizacion semaforo = semaforoService.obtenerSemaforoCompleto(estudianteId);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
+    }
+
+    /**
+     * Visualización detallada del semáforo académico de un estudiante
+     */
+    @GetMapping("/semaforo/estudiante/{estudianteId}/detallado")
+    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String estudianteId) {
+        SemaforoVisualizacion semaforo = semaforoService.obtenerSemaforoDetallado(estudianteId);
+        if (semaforo.getEstudianteId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(semaforo);
+    }
+
+    @PutMapping("/{id}/otorgar-admin")
     public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.otorgarPermisosAdministrador(id);
     }
-    @PutMapping("/Revoca los permisos de administrador de una decanatura {id}/revocar-admin")
+
+    @PutMapping("/{id}/revocar-admin")
     public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.revocarPermisosAdministrador(id);
-    }
-    /**
-     * 27. Consultar solicitudes de una decanatura por prioridad
-     */
-    @GetMapping("/{decanaturaId}/solicitudes/prioridad")
-    public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYPrioridad(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarSolicitudesPorDecanaturaYPrioridad(decanaturaId);
-    }
-    /**
-     * 29. Consultar solicitudes de una decanatura por orden de llegada
-     */
-    @GetMapping("/{decanaturaId}/solicitudes/orden-llegada")
-    public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYFechaLlegada(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarSolicitudesPorDecanaturaYFechaLlegada(decanaturaId);
-    }
-    /**
-     * 36. Consultar la tasa aprobación vs rechazo por decanatura
-     */
-    @GetMapping("/{decanaturaId}/estadisticas/tasa-aprobacion-rechazo")
-    public Map<String, Object> consultarTasaAprobacionRechazo(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarTasaAprobacionRechazo(decanaturaId);
     }
 }
