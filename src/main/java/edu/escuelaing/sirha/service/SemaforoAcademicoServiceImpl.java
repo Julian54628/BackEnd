@@ -63,7 +63,6 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
     @Override
     public int getSemestreActual(String estudianteId) {
         try {
-            // Buscar el estudiante
             Optional<Estudiante> estudiante = repositorioEstudiante.findById(estudianteId);
             if (estudiante.isPresent()) {
                 return estudiante.get().getSemestre();
