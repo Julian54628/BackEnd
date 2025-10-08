@@ -2,6 +2,8 @@ package edu.escuelaing.sirha.controller;
 
 import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.Estudiante;
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.model.Materia;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.EstudianteService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
@@ -89,5 +91,53 @@ public class EstudiantesControlador {
     public ResponseEntity<Void> asignarGrupoAEstudiante(@PathVariable String estudianteId, @PathVariable String grupoId) {
         estudianteService.asignarGrupoAEstudiante(estudianteId, grupoId);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Consultar horario del semestre actual del estudiante
+     */
+    @GetMapping("/{estudianteId}/horario-semestre-actual")
+    public ResponseEntity<List<Grupo>> consultarHorarioSemestreActual(@PathVariable String estudianteId) {
+        List<Grupo> horario = estudianteService.consultarHorarioSemestreActual(estudianteId);
+        if (horario.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(horario);
+    }
+
+    /**
+     * Consultar materias de semestres anteriores del estudiante
+     */
+    @GetMapping("/{estudianteId}/materias-semestres-anteriores")
+    public ResponseEntity<List<Materia>> consultarMateriasSemestresAnteriores(@PathVariable String estudianteId) {
+        List<Materia> materias = estudianteService.consultarMateriasSemestresAnteriores(estudianteId);
+        if (materias.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(materias);
+    }
+
+    /**
+     * Consultar horario detallado del semestre actual del estudiante
+     */
+    @GetMapping("/{estudianteId}/horario-detallado-semestre-actual")
+    public ResponseEntity<Map<String, Object>> consultarHorarioDetalladoSemestreActual(@PathVariable String estudianteId) {
+        Map<String, Object> horarioDetallado = estudianteService.consultarHorarioDetalladoSemestreActual(estudianteId);
+        if (horarioDetallado.containsKey("error")) {
+            return ResponseEntity.badRequest().body(horarioDetallado);
+        }
+        return ResponseEntity.ok(horarioDetallado);
+    }
+
+    /**
+     * Consultar resumen académico completo del estudiante
+     */
+    @GetMapping("/{estudianteId}/resumen-academico-completo")
+    public ResponseEntity<Map<String, Object>> consultarResumenAcademicoCompleto(@PathVariable String estudianteId) {
+        Map<String, Object> resumen = estudianteService.consultarResumenAcademicoCompleto(estudianteId);
+        if (resumen.containsKey("error")) {
+            return ResponseEntity.badRequest().body(resumen);
+        }
+        return ResponseEntity.ok(resumen);
     }
 }

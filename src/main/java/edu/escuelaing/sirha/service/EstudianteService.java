@@ -18,7 +18,9 @@ public interface EstudianteService {
     SolicitudCambio crearSolicitudCambio(String estudianteId, String materiaOrigenId, String grupoOrigenId, String materiaDestinoId, String grupoDestinoId);
     List<SolicitudCambio> consultarSolicitudes(String estudianteId);
     List<Grupo> consultarHorarioSemestreActual(String estudianteId);
-    List<Materia> consultarMateriasSemestreAnterior(String estudianteId);
+    List<Materia> consultarMateriasSemestresAnteriores(String estudianteId);
+    Map<String, Object> consultarHorarioDetalladoSemestreActual(String estudianteId);
+    Map<String, Object> consultarResumenAcademicoCompleto(String estudianteId);
     Map<String, Object> consultarAvancePlanEstudios(String estudianteId);
     void asignarGrupoAEstudiante(String estudianteId, String grupoId);
 }

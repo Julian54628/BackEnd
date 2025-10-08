@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EstudianteServiceImpl implements EstudianteService {
@@ -27,6 +28,9 @@ public class EstudianteServiceImpl implements EstudianteService {
 
     @Autowired
     private RepositorioSemaforoAcademico repositorioSemaforoAcademico;
+
+    @Autowired
+    private RepositorioHorario repositorioHorario;
 
     @Override
     public Estudiante crear(Estudiante estudiante) {
@@ -82,22 +86,180 @@ public class EstudianteServiceImpl implements EstudianteService {
 
     @Override
     public List<Grupo> consultarHorarioSemestreActual(String estudianteId) {
+        // 1. Buscar el estudiante
         Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
         if (estudianteOpt.isEmpty()) {
             return List.of();
         }
+        
+        // 2. Obtener los grupos del semestre actual
         Estudiante estudiante = estudianteOpt.get();
         List<Grupo> horarioActual = new ArrayList<>();
+        
+        // 3. Buscar cada grupo en MongoDB
         for (String grupoId : estudiante.getHorariosIds()) {
             Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
-            grupoOpt.ifPresent(horarioActual::add);
+            if (grupoOpt.isPresent()) {
+                horarioActual.add(grupoOpt.get());
+            }
         }
+        
         return horarioActual;
     }
 
     @Override
-    public List<Materia> consultarMateriasSemestreAnterior(String estudianteId) {
-        return repositorioMateria.findAll();
+    public List<Materia> consultarMateriasSemestresAnteriores(String estudianteId) {
+        // 1. Buscar el estudiante
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
+        if (estudianteOpt.isEmpty()) {
+            return List.of();
+        }
+        
+        // 2. Buscar su semáforo académico
+        Optional<SemaforoAcademico> semaforoOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+        if (semaforoOpt.isEmpty()) {
+            return List.of();
+        }
+        
+        // 3. Obtener materias del historial que estén aprobadas o reprobadas
+        SemaforoAcademico semaforo = semaforoOpt.get();
+        List<String> materiasIds = semaforo.getHistorialMaterias().entrySet().stream()
+            .filter(entry -> entry.getValue() == EstadoMateria.APROBADA || 
+                            entry.getValue() == EstadoMateria.REPROBADA)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+        
+        // 4. Buscar las materias en MongoDB
+        if (materiasIds.isEmpty()) {
+            return List.of();
+        }
+        
+        return repositorioMateria.findAllById(materiasIds);
+    }
+
+    @Override
+    public Map<String, Object> consultarHorarioDetalladoSemestreActual(String estudianteId) {
+        Map<String, Object> horarioDetallado = new HashMap<>();
+        
+        // 1. Buscar el estudiante
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
+        if (estudianteOpt.isEmpty()) {
+            horarioDetallado.put("error", "Estudiante no encontrado");
+            return horarioDetallado;
+        }
+        
+        Estudiante estudiante = estudianteOpt.get();
+        horarioDetallado.put("estudianteId", estudianteId);
+        horarioDetallado.put("nombre", estudiante.getNombre());
+        horarioDetallado.put("codigo", estudiante.getCodigo());
+        horarioDetallado.put("semestre", estudiante.getSemestre());
+        horarioDetallado.put("carrera", estudiante.getCarrera());
+        
+        // 2. Obtener grupos del semestre actual
+        List<Map<String, Object>> gruposDetallados = new ArrayList<>();
+        for (String grupoId : estudiante.getHorariosIds()) {
+            Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
+            if (grupoOpt.isPresent()) {
+                Grupo grupo = grupoOpt.get();
+                Map<String, Object> grupoDetallado = new HashMap<>();
+                grupoDetallado.put("grupoId", grupo.getId());
+                grupoDetallado.put("idGrupo", grupo.getIdGrupo());
+                grupoDetallado.put("cupoMaximo", grupo.getCupoMaximo());
+                grupoDetallado.put("estudiantesInscritos", grupo.getCantidadInscritos());
+                
+                // 3. Obtener información de la materia
+                if (grupo.getMateriaId() != null) {
+                    Optional<Materia> materiaOpt = repositorioMateria.findById(grupo.getMateriaId());
+                    if (materiaOpt.isPresent()) {
+                        Materia materia = materiaOpt.get();
+                        Map<String, Object> materiaInfo = new HashMap<>();
+                        materiaInfo.put("materiaId", materia.getId());
+                        materiaInfo.put("nombre", materia.getNombre());
+                        materiaInfo.put("codigo", materia.getCodigo());
+                        materiaInfo.put("creditos", materia.getCreditos());
+                        materiaInfo.put("facultad", materia.getFacultad());
+                        materiaInfo.put("esObligatoria", materia.isEsObligatoria());
+                        grupoDetallado.put("materia", materiaInfo);
+                    }
+                }
+                
+                // 4. Obtener horarios específicos
+                List<Map<String, Object>> horariosDetallados = new ArrayList<>();
+                for (String horarioId : grupo.getHorarioIds()) {
+                    Optional<Horario> horarioOpt = repositorioHorario.findById(horarioId);
+                    if (horarioOpt.isPresent()) {
+                        Horario horario = horarioOpt.get();
+                        Map<String, Object> horarioInfo = new HashMap<>();
+                        horarioInfo.put("horarioId", horario.getId());
+                        horarioInfo.put("diaSemana", horario.getDiaSemana());
+                        horarioInfo.put("horaInicio", horario.getHoraInicio());
+                        horarioInfo.put("horaFin", horario.getHoraFin());
+                        horarioInfo.put("salon", horario.getSalon());
+                        horariosDetallados.add(horarioInfo);
+                    }
+                }
+                grupoDetallado.put("horarios", horariosDetallados);
+                gruposDetallados.add(grupoDetallado);
+            }
+        }
+        
+        horarioDetallado.put("grupos", gruposDetallados);
+        horarioDetallado.put("totalGrupos", gruposDetallados.size());
+        
+        return horarioDetallado;
+    }
+
+    @Override
+    public Map<String, Object> consultarResumenAcademicoCompleto(String estudianteId) {
+        Map<String, Object> resumenCompleto = new HashMap<>();
+        
+        // 1. Información básica del estudiante
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
+        if (estudianteOpt.isEmpty()) {
+            resumenCompleto.put("error", "Estudiante no encontrado");
+            return resumenCompleto;
+        }
+        
+        Estudiante estudiante = estudianteOpt.get();
+        resumenCompleto.put("estudiante", Map.of(
+            "id", estudiante.getId(),
+            "nombre", estudiante.getNombre(),
+            "codigo", estudiante.getCodigo(),
+            "carrera", estudiante.getCarrera(),
+            "semestre", estudiante.getSemestre(),
+            "correoInstitucional", estudiante.getCorreoInstitucional()
+        ));
+        
+        // 2. Horario del semestre actual
+        List<Grupo> horarioActual = consultarHorarioSemestreActual(estudianteId);
+        resumenCompleto.put("horarioSemestreActual", horarioActual);
+        
+        // 3. Materias de semestres anteriores
+        List<Materia> materiasAnteriores = consultarMateriasSemestresAnteriores(estudianteId);
+        resumenCompleto.put("materiasSemestresAnteriores", materiasAnteriores);
+        
+        // 4. Información del semáforo académico
+        Optional<SemaforoAcademico> semaforoOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+        if (semaforoOpt.isPresent()) {
+            SemaforoAcademico semaforo = semaforoOpt.get();
+            resumenCompleto.put("semaforoAcademico", Map.of(
+                "creditosAprobados", semaforo.getCreditosAprobados(),
+                "totalCreditosPlan", semaforo.getTotalCreditosPlan(),
+                "materiasVistas", semaforo.getMateriasVistas(),
+                "promedioAcumulado", semaforo.getPromedioAcumulado(),
+                "grado", semaforo.getGrado()
+            ));
+        }
+        
+        // 5. Solicitudes de cambio
+        List<SolicitudCambio> solicitudes = consultarSolicitudes(estudianteId);
+        resumenCompleto.put("solicitudesCambio", solicitudes);
+        
+        // 6. Avance del plan de estudios
+        Map<String, Object> avance = consultarAvancePlanEstudios(estudianteId);
+        resumenCompleto.put("avancePlanEstudios", avance);
+        
+        return resumenCompleto;
     }
 
     @Override

@@ -35,4 +35,6 @@ public interface RepositorioMateria extends MongoRepository<Materia, String> {
     boolean existsByCodigo(String codigo);
 
     long countByFacultad(String facultad);
+
+    List<Materia> findAllById(List<String> ids);
 }
