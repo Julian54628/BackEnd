@@ -50,4 +50,14 @@ public class ProfesorController {
     public List<Grupo> consultarGruposAsignados(@PathVariable String id) {
         return profesorService.consultarGruposAsignados(id);
     }
+
+    @PostMapping("/{profesorId}/grupos/{grupoId}")
+    public Grupo asignarProfesorAGrupo(@PathVariable String profesorId, @PathVariable String grupoId) {
+        return profesorService.asignarProfesorAGrupo(profesorId, grupoId);
+    }
+
+    @DeleteMapping("/grupos/{grupoId}/profesor")
+    public Grupo retirarProfesorDeGrupo(@PathVariable String grupoId) {
+        return profesorService.retirarProfesorDeGrupo(grupoId);
+    }
 }

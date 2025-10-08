@@ -2,8 +2,8 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Map;
 
 public interface SolicitudCambioService {
     SolicitudCambio crear(SolicitudCambio solicitud);
@@ -15,7 +15,6 @@ public interface SolicitudCambioService {
     SolicitudCambio actualizar(SolicitudCambio solicitud);
     void eliminarPorId(String id);
     void eliminarSolicitud(String id);
-    
     List<SolicitudCambio> buscarPorEstado(EstadoSolicitud estado);
     List<SolicitudCambio> obtenerSolicitudesPorEstado(EstadoSolicitud estado);
     List<SolicitudCambio> buscarPorEstudiante(String estudianteId);
@@ -24,15 +23,13 @@ public interface SolicitudCambioService {
     List<SolicitudCambio> obtenerSolicitudesPorTipo(TipoSolicitud tipo);
     List<SolicitudCambio> obtenerSolicitudesPorPrioridad(TipoPrioridad prioridad);
     List<SolicitudCambio> obtenerSolicitudesPendientesPorDecanatura(String decanaturaId);
-    
     SolicitudCambio actualizarEstado(String solicitudId, EstadoSolicitud estado);
     SolicitudCambio actualizarEstadoSolicitud(String id, EstadoSolicitud estado, String respuesta, String justificacion);
     SolicitudCambio aprobarSolicitud(String id, String justificacion);
     SolicitudCambio rechazarSolicitud(String id, String justificacion);
-    
     List<SolicitudCambio> obtenerHistorialSolicitudes();
     Map<String, Object> obtenerEstadisticasSolicitudes();
-    
     boolean validarSolicitud(SolicitudCambio solicitud);
     boolean puedeCrearSolicitud(String estudianteId, String materiaId);
+    List<String> obtenerHistorialPorSolicitud(String id);
 }

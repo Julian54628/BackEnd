@@ -8,7 +8,7 @@ import edu.escuelaing.sirha.model.Decanatura;
 import edu.escuelaing.sirha.model.PeriodoCambio;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
-import org.springframework.beans.factory.annotation.Autowired; // NECESARIO
+import org.springframework.beans.factory.annotation.Autowired;
 import edu.escuelaing.sirha.repository.RepositorioAdministrador;
 import edu.escuelaing.sirha.repository.RepositorioDecanatura;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,6 @@ public class AdministradorServiceImpl implements AdministradorService {
         this.repositorioDecanatura = repositorioDecanatura;
     }
 
-    // Constructor sin argumentos para permitir uso en pruebas unitarias sin inyectar repositorios
     public AdministradorServiceImpl() {
         this.repositorioSemaforoAcademico = null;
         this.repositorioAdministrador = null;
@@ -48,7 +47,6 @@ public class AdministradorServiceImpl implements AdministradorService {
             administradores.put(saved.getId(), saved);
             return saved;
         }
-        // Fallback en memoria
         administradores.put(administrador.getId(), administrador);
         return administrador;
     }

@@ -10,10 +10,10 @@ public class PlanAcademico {
     private String id;
     private int idPlan;
     private String nombre;
-    private String grado; // PREGRADO, MAESTRIA
+    private String grado;
     private int creditosTotales;
-    private List<String> materiasObligatoriasIds = new ArrayList<>(); // Solo IDs
-    private List<String> materiasElectivasIds = new ArrayList<>(); // Solo IDs
+    private List<String> materiasObligatoriasIds = new ArrayList<>();
+    private List<String> materiasElectivasIds = new ArrayList<>();
 
     public PlanAcademico() {}
 

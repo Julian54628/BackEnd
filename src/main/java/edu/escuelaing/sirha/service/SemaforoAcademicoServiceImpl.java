@@ -25,7 +25,6 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         this.repositorioEstudiante = repositorioEstudiante;
     }
 
-    // Constructor sin argumentos para pruebas unitarias que instancian manualmente el servicio
     public SemaforoAcademicoServiceImpl() {
         this.repositorioSemaforoAcademico = null;
         this.repositorioEstudiante = null;
@@ -110,15 +109,11 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         if (semaforo.isPresent()) {
             SemaforoAcademico sem = semaforo.get();
 
-            resultado.put("materiasVistas", sem.getMateriasVistas());
-            resultado.put("creditosAprobados", sem.getCreditosAprobados());
-            resultado.put("promedio", sem.getPromedioAcumulado());
-
-            Map<String, EstadoMateria> materias = sem.getHistorialMaterias();
             int aprobadas = 0;
             int reprobadas = 0;
             int inscritas = 0;
 
+            Map<String, EstadoMateria> materias = sem.getHistorialMaterias();
             for (EstadoMateria estado : materias.values()) {
                 if (estado == EstadoMateria.APROBADA) {
                     aprobadas++;
@@ -133,15 +128,6 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
             resultado.put("materiasReprobadas", reprobadas);
             resultado.put("materiasInscritas", inscritas);
             resultado.put("totalMaterias", materias.size());
-
-        } else {
-            resultado.put("materiasVistas", 0);
-            resultado.put("creditosAprobados", 0);
-            resultado.put("promedio", 0.0);
-            resultado.put("materiasAprobadas", 0);
-            resultado.put("materiasReprobadas", 0);
-            resultado.put("materiasInscritas", 0);
-            resultado.put("totalMaterias", 0);
         }
 
         return resultado;
@@ -190,10 +176,22 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
             vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
         }
 
+        if (repositorioSemaforoAcademico != null) {
+            Optional<SemaforoAcademico> semOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+            if (semOpt.isPresent()) {
+                SemaforoAcademico sem = semOpt.get();
+                int totalCreditosPlan = sem.getTotalCreditosPlan();
+                vis.setTotalCreditosPlan(totalCreditosPlan);
+                int creditosCompletados = vis.getCreditosCompletados();
+                int faltantes = totalCreditosPlan > 0 ? Math.max(0, totalCreditosPlan - creditosCompletados) : 0;
+                vis.setCreditosFaltantes(faltantes);
+                float progreso = totalCreditosPlan > 0 ? (creditosCompletados * 100.0f) / totalCreditosPlan : 0f;
+                vis.setPorcentajeProgreso(progreso);
+            }
+        }
 
         return vis;
     }
-
 
     @Override
     public SemaforoVisualizacion obtenerSemaforoDetallado(String estudianteId) {
@@ -236,6 +234,20 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         Object totalMaterias = foraneo.get("totalMaterias");
         if (totalMaterias instanceof Number) {
             vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
+        }
+
+        if (repositorioSemaforoAcademico != null) {
+            Optional<SemaforoAcademico> semOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+            if (semOpt.isPresent()) {
+                SemaforoAcademico sem = semOpt.get();
+                int totalCreditosPlan = sem.getTotalCreditosPlan();
+                vis.setTotalCreditosPlan(totalCreditosPlan);
+                int creditosCompletados = vis.getCreditosCompletados();
+                int faltantes = totalCreditosPlan > 0 ? Math.max(0, totalCreditosPlan - creditosCompletados) : 0;
+                vis.setCreditosFaltantes(faltantes);
+                float progreso = totalCreditosPlan > 0 ? (creditosCompletados * 100.0f) / totalCreditosPlan : 0f;
+                vis.setPorcentajeProgreso(progreso);
+            }
         }
 
         return vis;

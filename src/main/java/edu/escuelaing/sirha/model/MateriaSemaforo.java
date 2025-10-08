@@ -8,10 +8,10 @@ public class MateriaSemaforo {
     private String facultad;
     private boolean esObligatoria;
     private EstadoMateria estado;
-    private String color; // "AZUL", "VERDE", "ROJO", "BLANCO"
-    private String semestre; // Semestre en el que se cursó o se debe cursar
-    private float nota; // Nota obtenida (si aplica)
-    private String observaciones; // Observaciones adicionales
+    private String color;
+    private String semestre;
+    private float nota;
+    private String observaciones;
     
     public MateriaSemaforo() {}
     
@@ -42,7 +42,6 @@ public class MateriaSemaforo {
         }
     }
     
-    // Getters y Setters
     public String getMateriaId() { return materiaId; }
     public void setMateriaId(String materiaId) { this.materiaId = materiaId; }
     

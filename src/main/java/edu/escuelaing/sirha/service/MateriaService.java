@@ -17,5 +17,9 @@ public interface MateriaService {
     void modificarCuposMateria(String materiaId, int nuevoCupo);
     Materia registrarMateriaConGrupos(Materia materia, List<Grupo> grupos);
     int consultarTotalInscritosPorMateria(String materiaId);
+    Grupo inscribirEstudianteEnGrupo(String grupoId, String estudianteId);
+    Grupo retirarEstudianteDeGrupo(String grupoId, String estudianteId);
+    boolean asignarMateriaAEstudiante(String materiaId, String estudianteId);
+    boolean retirarMateriaDeEstudiante(String materiaId, String estudianteId);
 }
 

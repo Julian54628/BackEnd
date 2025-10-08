@@ -1,6 +1,8 @@
 package edu.escuelaing.sirha.model;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -27,6 +29,7 @@ public class SolicitudCambio {
     private String descripcion;
     private String justificacion;
     private String administradorId;
+    private List<String> historialEstados = new ArrayList<>();
 
     public SolicitudCambio() {
         this.fechaCreacion = new Date();
@@ -97,10 +100,14 @@ public class SolicitudCambio {
     public void setTipoSolicitud(TipoSolicitud tipoSolicitud) { this.tipoSolicitud = tipoSolicitud; }
     public TipoPrioridad getTipoPrioridad() { return tipoPrioridad; }
     public void setTipoPrioridad(TipoPrioridad tipoPrioridad) { this.tipoPrioridad = tipoPrioridad; }
-    public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public String getJustificacion() { return justificacion; }
     public void setJustificacion(String justificacion) { this.justificacion = justificacion; }
     public String getAdministradorId() { return administradorId; }
     public void setAdministradorId(String administradorId) { this.administradorId = administradorId; }
+    public List<String> getHistorialEstados() { return historialEstados; }
+    public void setHistorialEstados(List<String> historialEstados) { this.historialEstados = historialEstados; }
+    public void addHistorialEstado(String historialEstado) {
+        this.historialEstados.add(historialEstado);
+    }
 }

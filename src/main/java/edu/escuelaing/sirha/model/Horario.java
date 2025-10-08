@@ -14,8 +14,8 @@ public class Horario {
     private Time horaInicio;
     private Time horaFin;
     private String salon;
-    private String materiaId; // Solo referencia
-    private String grupoId;   // Solo referencia
+    private String materiaId;
+    private String grupoId;
 
     public Horario() {}
 

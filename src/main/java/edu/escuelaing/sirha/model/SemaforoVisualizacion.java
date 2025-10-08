@@ -10,38 +10,32 @@ public class SemaforoVisualizacion {
     private int semestreActual;
     private String grado;
     
-    // Estadísticas de créditos
-    private int creditosActuales; // Créditos del semestre actual
-    private int creditosCompletados; // Créditos de materias aprobadas
-    private int creditosFaltantes; // Créditos restantes del plan
-    private int creditosMaximosSemestre; // Máximo de créditos por semestre (18)
-    private int totalCreditosPlan; // Total de créditos del plan académico
+    private int creditosActuales;
+    private int creditosCompletados;
+    private int creditosFaltantes;
+    private int creditosMaximosSemestre;
+    private int totalCreditosPlan;
     
-    // Estadísticas de materias
     private int materiasAprobadas;
     private int materiasReprobadas;
     private int materiasCursando;
     private int materiasPendientes;
     private int totalMateriasPlan;
     
-    // Promedio y progreso
     private float promedioAcumulado;
-    private float porcentajeProgreso; // Porcentaje de avance en el plan
+    private float porcentajeProgreso;
     
-    // Materias por color
-    private List<MateriaSemaforo> materiasAzules; // Cursando actualmente
-    private List<MateriaSemaforo> materiasVerdes; // Aprobadas
-    private List<MateriaSemaforo> materiasRojas; // Reprobadas
-    private List<MateriaSemaforo> materiasBlancas; // No vistas
+    private List<MateriaSemaforo> materiasAzules;
+    private List<MateriaSemaforo> materiasVerdes;
+    private List<MateriaSemaforo> materiasRojas;
+    private List<MateriaSemaforo> materiasBlancas;
     
-    // Información adicional
-    private String estadoAcademico; // "EN_RIESGO", "REGULAR", "EXCELENTE"
+    private String estadoAcademico;
     private int semestresRestantes;
     private boolean puedeGraduarse;
     
     public SemaforoVisualizacion() {}
 
-    // Getters y Setters
     public String getEstudianteId() { return estudianteId; }
     public void setEstudianteId(String estudianteId) { this.estudianteId = estudianteId; }
     

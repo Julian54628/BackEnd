@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.text.SimpleDateFormat;
 
 @Service
 public class SolicitudCambioServiceImpl implements SolicitudCambioService {
@@ -48,6 +49,7 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         solicitud.setFechaCreacion(new Date());
         
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.addHistorialEstado(formatearHistorial(new Date(), EstadoSolicitud.PENDIENTE, null, null, "CREACION"));
         
         return repositorioSolicitudCambio.save(solicitud);
     }
@@ -150,6 +152,7 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         if (justificacion != null) {
             solicitud.setJustificacion(justificacion);
         }
+        solicitud.addHistorialEstado(formatearHistorial(new Date(), estado, respuesta, justificacion, "ACTUALIZACION"));
         
         return repositorioSolicitudCambio.save(solicitud);
     }
@@ -192,28 +195,14 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         Map<TipoPrioridad, Long> porPrioridad = todasLasSolicitudes.stream()
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoPrioridad, Collectors.counting()));
         estadisticas.put("porPrioridad", porPrioridad);
-        
         return estadisticas;
     }
 
     @Override
-    public boolean validarSolicitud(SolicitudCambio solicitud) {
-        if (solicitud == null) return false;
-        
-        if (solicitud.getEstudianteId() == null || solicitud.getEstudianteId().trim().isEmpty()) return false;
-        if (solicitud.getDescripcion() == null || solicitud.getDescripcion().trim().isEmpty()) return false;
-        if (solicitud.getTipoSolicitud() == null) return false;
-        
-        if (!repositorioEstudiante.existsById(solicitud.getEstudianteId())) return false;
-        
-        if (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_GRUPO) {
-            if (solicitud.getMateriaOrigenId() == null || solicitud.getGrupoOrigenId() == null ||
-                solicitud.getGrupoDestinoId() == null) return false;
-        } else if (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_MATERIA) {
-            if (solicitud.getMateriaOrigenId() == null || solicitud.getMateriaDestinoId() == null) return false;
-        }
-        
-        return true;
+    public List<String> obtenerHistorialPorSolicitud(String id) {
+        return repositorioSolicitudCambio.findById(id)
+                .map(SolicitudCambio::getHistorialEstados)
+                .orElseGet(ArrayList::new);
     }
 
     @Override
@@ -237,5 +226,23 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean validarSolicitud(SolicitudCambio solicitud) {
+        if (solicitud == null) {
+            return false;
+        }
+        return solicitud.esValida();
+    }
+
+    private String formatearHistorial(Date fecha, EstadoSolicitud estado, String respuesta, String justificacion, String actor) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String f = (fecha != null) ? sdf.format(fecha) : "";
+        String est = (estado != null) ? estado.name() : "";
+        String resp = (respuesta != null) ? respuesta : "";
+        String just = (justificacion != null) ? justificacion : "";
+        String act = (actor != null) ? actor : "";
+        return String.join("|", Arrays.asList(f, est, resp, just, act));
     }
 }

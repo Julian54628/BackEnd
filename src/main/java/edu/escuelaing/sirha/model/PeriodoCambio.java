@@ -13,7 +13,7 @@ public class PeriodoCambio {
     private Date fechaInicio;
     private Date fechaFin;
     private boolean activo;
-    private String tipo; // "ORDINARIO", "EXTRAORDINARIO"
+    private String tipo;
     private String descripcion;
 
     public PeriodoCambio() {

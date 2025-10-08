@@ -14,8 +14,8 @@ public class Materia {
     private int creditos;
     private String facultad;
     private boolean esObligatoria;
-    private List<String> prerrequisitosIds = new ArrayList<>(); // Solo IDs
-    private List<String> gruposIds = new ArrayList<>(); // Solo IDs
+    private List<String> prerrequisitosIds = new ArrayList<>();
+    private List<String> gruposIds = new ArrayList<>();
 
     public Materia() {}
 

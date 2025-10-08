@@ -2,8 +2,10 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Grupo;
 import edu.escuelaing.sirha.model.Materia;
+import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import edu.escuelaing.sirha.repository.RepositorioMateria;
+import edu.escuelaing.sirha.repository.RepositorioEstudiante;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,9 @@ public class MateriaServiceImpl implements MateriaService {
 
     @Autowired
     private RepositorioGrupo repositorioGrupo;
+
+    @Autowired
+    private RepositorioEstudiante repositorioEstudiante;
 
     @Override
     public Materia crear(Materia materia) {
@@ -92,5 +97,50 @@ public class MateriaServiceImpl implements MateriaService {
     public int consultarTotalInscritosPorMateria(String materiaId) {
         List<Grupo> grupos = repositorioGrupo.findByMateriaId(materiaId);
         return grupos.stream().mapToInt(grupo -> grupo.getEstudiantesInscritosIds().size()).sum();
+    }
+
+    @Override
+    public Grupo inscribirEstudianteEnGrupo(String grupoId, String estudianteId) {
+        Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
+        Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
+        if (grupoOpt.isPresent() && estOpt.isPresent()) {
+            Grupo g = grupoOpt.get();
+            if (!g.getEstudiantesInscritosIds().contains(estudianteId)
+                    && g.getEstudiantesInscritosIds().size() < g.getCupoMaximo()) {
+                g.getEstudiantesInscritosIds().add(estudianteId);
+                return repositorioGrupo.save(g);
+            }
+            return g;
+        }
+        return null;
+    }
+
+    @Override
+    public Grupo retirarEstudianteDeGrupo(String grupoId, String estudianteId) {
+        Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
+        if (grupoOpt.isPresent()) {
+            Grupo g = grupoOpt.get();
+            g.getEstudiantesInscritosIds().remove(estudianteId);
+            return repositorioGrupo.save(g);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean asignarMateriaAEstudiante(String materiaId, String estudianteId) {
+        Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
+        if (estOpt.isPresent()) {
+            return repositorioMateria.findById(materiaId).isPresent();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean retirarMateriaDeEstudiante(String materiaId, String estudianteId) {
+        Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
+        if (estOpt.isPresent()) {
+            return repositorioMateria.findById(materiaId).isPresent();
+        }
+        return false;
     }
 }

@@ -8,7 +8,7 @@ public class Decanatura extends Usuario {
     private int idDecanatura;
     private String nombre;
     private String facultad;
-    private boolean esAdministrador; // ✅ NUEVO CAMPO
+    private boolean esAdministrador;
 
     public Decanatura() {
         super();
@@ -20,10 +20,9 @@ public class Decanatura extends Usuario {
         this.idDecanatura = idDecanatura;
         this.nombre = nombre;
         this.facultad = facultad;
-        this.esAdministrador = false; // ✅ Por defecto no es administrador
+        this.esAdministrador = false;
     }
 
-    // ✅ NUEVO CONSTRUCTOR con parámetro esAdministrador
     public Decanatura(int idUsuario, String username, String passwordHash, String correo,
                       int idDecanatura, String nombre, String facultad, boolean esAdministrador) {
         super(idUsuario, username, passwordHash, correo, Rol.DECANATURA);
