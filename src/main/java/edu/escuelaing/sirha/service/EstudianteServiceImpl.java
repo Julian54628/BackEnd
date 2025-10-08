@@ -49,7 +49,7 @@ public class EstudianteServiceImpl implements EstudianteService {
 
     @Override
     public SolicitudCambio crearSolicitudCambio(String estudianteId, String materiaOrigenId,
-                                                String grupoOrigenId, String materiaDestinoId, String grupoDestinoId) {
+    String grupoOrigenId, String materiaDestinoId, String grupoDestinoId) {
         SolicitudCambio solicitud = new SolicitudCambio();
         solicitud.setId(UUID.randomUUID().toString());
         solicitud.setEstudianteId(estudianteId);
@@ -70,31 +70,5 @@ public class EstudianteServiceImpl implements EstudianteService {
             }
         }
         return resultado;
-    }
-
-    @Override
-    public List<Grupo> consultarHorarioSemestreActual(String estudianteId) {
-        Optional<Estudiante> estudianteOpt = buscarPorId(estudianteId);
-        if (estudianteOpt.isEmpty()) {
-            return List.of();
-        }
-        Estudiante estudiante = estudianteOpt.get();
-        List<Grupo> horarioActual = new ArrayList<>();
-        for (String grupoId : estudiante.getHorariosIds()) {
-            Grupo grupo = grupos.get(grupoId);
-            if (grupo != null) {
-                horarioActual.add(grupo);
-            }
-        }
-        return horarioActual;
-    }
-
-    @Override
-    public List<Materia> consultarMateriasSemestreAnterior(String estudianteId) {
-        Optional<Estudiante> estudianteOpt = buscarPorId(estudianteId);
-        if (estudianteOpt.isEmpty()) {
-            return List.of();
-        }
-        return new ArrayList<>(materias.values());
     }
 }

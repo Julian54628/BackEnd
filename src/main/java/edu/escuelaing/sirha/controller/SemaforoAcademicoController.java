@@ -20,6 +20,7 @@ public class SemaforoAcademicoController {
     public SemaforoAcademicoController(SemaforoAcademicoService semaforoAcademicoService) {
         this.semaforoAcademicoService = semaforoAcademicoService;
     }
+
     @GetMapping("/estudiante/{estudianteId}")
     public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(@PathVariable String estudianteId) {
         Map<String, EstadoSemaforo> resultado = semaforoAcademicoService.visualizarSemaforoEstudiante(estudianteId);
@@ -28,6 +29,7 @@ public class SemaforoAcademicoController {
         }
         return ResponseEntity.ok(resultado);
     }
+
     @GetMapping("/estudiante/{estudianteId}/materia/{materiaId}")
     public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(estudianteId, materiaId);
@@ -35,6 +37,19 @@ public class SemaforoAcademicoController {
             return ResponseEntity.ok(estado.get());
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping("/estudiante/{estudianteId}/foraneo")
+    public ResponseEntity<Map<String, Object>> consultarForaneoEstudiante(@PathVariable String estudianteId) {
+        try {
+            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(estudianteId);
+            if (foraneo.get("semestreActual").equals(0)) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(foraneo);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
         }
     }
 }
