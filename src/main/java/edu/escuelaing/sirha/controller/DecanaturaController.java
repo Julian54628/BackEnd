@@ -39,6 +39,16 @@ public class DecanaturaController {
         return decanaturaService.crear(decanatura);
     }
 
+    @PutMapping("/{id}")
+    public Decanatura actualizar(@PathVariable String id, @RequestBody Decanatura decanatura) {
+        return decanaturaService.actualizar(id, decanatura);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable String id) {
+        decanaturaService.eliminarPorId(id);
+    }
+
     @GetMapping("/solicitudes/pendientes")
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return decanaturaService.consultarSolicitudesPendientes();
