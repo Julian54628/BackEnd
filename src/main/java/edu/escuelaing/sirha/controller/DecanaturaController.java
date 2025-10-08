@@ -29,7 +29,7 @@ public class DecanaturaController {
         return decanaturaService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Obtiene una decanatura por su identificador{id}")
     public Optional<Decanatura> getById(@PathVariable String id) {
         return decanaturaService.buscarPorId(id);
     }
@@ -39,12 +39,12 @@ public class DecanaturaController {
         return decanaturaService.crear(decanatura);
     }
 
-    @GetMapping("/solicitudes/pendientes")
+    @GetMapping("Consulta todas las solicitudes de cambio/solicitudes/pendientes")
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return decanaturaService.consultarSolicitudesPendientes();
     }
 
-    @PutMapping("/solicitudes/{solicitudId}/revisar")
+    @PutMapping("Revisa y actualiza el estado de una solicitud de cambio/solicitudes/{solicitudId}/revisar")
     public SolicitudCambio revisarSolicitud(
             @PathVariable String solicitudId,
             @RequestParam EstadoSolicitud estado,
@@ -52,33 +52,29 @@ public class DecanaturaController {
         return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta);
     }
 
-    @PutMapping("/solicitudes/{solicitudId}/aprobar-especial")
+    @PutMapping("Aprueba una solicitud de cambio especial/solicitudes/{solicitudId}/aprobar-especial")
     public void aprobarSolicitudEspecial(@PathVariable String solicitudId) {
         decanaturaService.aprobarSolicitudEspecial(solicitudId);
     }
-    @GetMapping("/semaforo/estudiante/{estudianteId}")
+    @GetMapping("Visualiza el semáforo académico de un estudiante./semaforo/estudiante/{estudianteId}")
     public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(
             @PathVariable String estudianteId) {
         Map<String, EstadoSemaforo> semaforo = semaforoService.visualizarSemaforoEstudiante(estudianteId);
         return ResponseEntity.ok(semaforo);
     }
 
-    @GetMapping("/semaforo/estudiante/{estudianteId}/materia/{materiaId}")
-    public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(
-            @PathVariable String estudianteId,
-            @PathVariable String materiaId) {
-
+    @GetMapping("Consulta el semáforo para una materia específica de un estudiante./semaforo/estudiante/{estudianteId}/materia/{materiaId}")
+    public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoService.consultarSemaforoMateria(estudianteId, materiaId);
-        return estado.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}/otorgar-admin")
+    @PutMapping("/Otorga permisos de administrador a una decanatura{id}/otorgar-admin")
     public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.otorgarPermisosAdministrador(id);
     }
 
-    @PutMapping("/{id}/revocar-admin")
+    @PutMapping("/Revoca los permisos de administrador de una decanatura {id}/revocar-admin")
     public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.revocarPermisosAdministrador(id);
     }

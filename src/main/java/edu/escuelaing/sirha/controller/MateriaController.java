@@ -21,12 +21,12 @@ public class MateriaController {
         return materiaService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Busca una materia específica por su identificador{id}")
     public Optional<Materia> buscarPorId(@PathVariable String id) {
         return materiaService.buscarPorId(id);
     }
 
-    @GetMapping("/codigo/{codigo}")
+    @GetMapping("/Busca una materia por su codigo/{codigo}")
     public Optional<Materia> buscarPorCodigo(@PathVariable String codigo) {
         return materiaService.buscarPorCodigo(codigo);
     }
@@ -36,22 +36,22 @@ public class MateriaController {
         return materiaService.crear(materia);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/Actualiza la información de una materia{id}")
     public Materia actualizar(@PathVariable String id, @RequestBody Materia materia) {
         return materiaService.actualizar(id, materia);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina una materia del sistema por su identificador{id}")
     public void eliminarPorId(@PathVariable String id) {
         materiaService.eliminarPorId(id);
     }
 
-    @GetMapping("/{id}/grupos")
+    @GetMapping("/Consulta los grupos disponibles para una materia{id}/grupos")
     public List<Grupo> consultarGruposDisponibles(@PathVariable String id) {
         return materiaService.consultarGruposDisponibles(id);
     }
 
-    @GetMapping("/{id}/disponibilidad")
+    @GetMapping("/Verifica la disponibilidad de una materia{id}/disponibilidad")
     public boolean verificarDisponibilidad(@PathVariable String id) {
         return materiaService.verificarDisponibilidad(id);
     }

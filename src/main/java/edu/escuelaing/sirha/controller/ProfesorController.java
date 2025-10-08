@@ -21,12 +21,12 @@ public class ProfesorController {
         return profesorService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Busca un profesor específico por su{id}")
     public Optional<Profesor> buscarPorId(@PathVariable String id) {
         return profesorService.buscarPorId(id);
     }
 
-    @GetMapping("/codigo/{codigo}")
+    @GetMapping("/Busca un profesor por su codigo/{codigo}")
     public Optional<Profesor> buscarPorCodigo(@PathVariable String codigo) {
         return profesorService.buscarPorCodigo(codigo);
     }
@@ -36,12 +36,12 @@ public class ProfesorController {
         return profesorService.crear(profesor);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina un profesor del sistema por su{id}")
     public void eliminarPorId(@PathVariable String id) {
         profesorService.eliminarPorId(id);
     }
 
-    @GetMapping("/{id}/grupos")
+    @GetMapping("/Consulta los grupos académicos asignados a un profesor{id}/grupos")
     public List<Grupo> consultarGruposAsignados(@PathVariable String id) {
         return profesorService.consultarGruposAsignados(id);
     }

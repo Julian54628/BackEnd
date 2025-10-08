@@ -20,12 +20,12 @@ public class PeriodoCambioController {
         return periodoService.listarTodos();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/Obtiene un período de cambio específico por{id}")
     public Optional<PeriodoCambio> getById(@PathVariable String id) {
         return periodoService.buscarPorId(id);
     }
 
-    @GetMapping("/activo")
+    @GetMapping("/Obtiene el período de cambio actualmente activo")
     public Optional<PeriodoCambio> getActivo() {
         return periodoService.obtenerPeriodoActivo();
     }
@@ -35,12 +35,12 @@ public class PeriodoCambioController {
         return periodoService.crear(periodo);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/Actualiza la información de un período de cambio{id}")
     public PeriodoCambio update(@PathVariable String id, @RequestBody PeriodoCambio periodo) {
         return periodoService.actualizar(id, periodo);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina un período de cambio del sistema por su{id}")
     public void delete(@PathVariable String id) {
         periodoService.eliminarPorId(id);
     }

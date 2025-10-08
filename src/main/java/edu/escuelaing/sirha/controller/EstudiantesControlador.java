@@ -29,7 +29,7 @@ public class EstudiantesControlador {
         Estudiante creado = estudianteService.crear(estudiante);
         return ResponseEntity.created(URI.create("/api/estudiantes/" + creado.getId())).body(creado);
     }
-    @GetMapping("/{codigo}")
+    @GetMapping("/Busca un estudiante por su código{codigo}")
     public ResponseEntity<Estudiante> buscarPorCodigo(@PathVariable String codigo) {
         return estudianteService.buscarPorCodigo(codigo).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
@@ -37,17 +37,17 @@ public class EstudiantesControlador {
     public ResponseEntity<List<Estudiante>> listarTodos() {
         return ResponseEntity.ok(estudianteService.listarTodos());
     }
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/Elimina un estudiante del sistema por su codigo{id}")
     public ResponseEntity<Void> eliminar(@PathVariable String id) {
         estudianteService.eliminarPorId(id);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/{id}")
+    @PutMapping("/Actualiza la información de un estudiante{id}")
     public ResponseEntity<Estudiante> actualizar(@PathVariable String id, @RequestBody Estudiante estudiante) {
         Estudiante actualizado = estudianteService.actualizar(id, estudiante);
         return ResponseEntity.ok(actualizado);
     }
-    @PostMapping("/{id}/solicitudes")
+    @PostMapping("Crea una nueva solicitud de cambio de materia/{id}/solicitudes")
     public ResponseEntity<SolicitudCambio> crearSolicitudCambio(
             @PathVariable String id,
             @RequestParam String materiaOrigenId,
@@ -57,11 +57,11 @@ public class EstudiantesControlador {
         SolicitudCambio solicitud = estudianteService.crearSolicitudCambio(id, materiaOrigenId, grupoOrigenId, materiaDestinoId, grupoDestinoId);
         return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + solicitud.getId())).body(solicitud);
     }
-    @GetMapping("/{id}/solicitudes")
+    @GetMapping("/Consulta todas las solicitudes de cambio{id}/solicitudes")
     public ResponseEntity<List<SolicitudCambio>> consultarSolicitudes(@PathVariable String id) {
         return ResponseEntity.ok(estudianteService.consultarSolicitudes(id));
     }
-    @GetMapping("/{id}/semaforo")
+    @GetMapping("/Visualiza el semáforo académico completo{id}/semaforo")
     public ResponseEntity<Map<String, EstadoSemaforo>> verMiSemaforo(@PathVariable String id) {
         Map<String, EstadoSemaforo> semaforo = semaforoAcademicoService.visualizarSemaforoEstudiante(id);
         if (semaforo.isEmpty()) {
@@ -69,7 +69,7 @@ public class EstudiantesControlador {
         }
         return ResponseEntity.ok(semaforo);
     }
-    @GetMapping("/{id}/semaforo/materia/{materiaId}")
+    @GetMapping("/Consulta estado del semáforo para una materia específica{id}/semaforo/materia/{materiaId}")
     public ResponseEntity<EstadoSemaforo> verEstadoMateria(@PathVariable String id, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(id, materiaId);
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

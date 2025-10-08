@@ -20,7 +20,7 @@ public class SemaforoAcademicoController {
     public SemaforoAcademicoController(SemaforoAcademicoService semaforoAcademicoService) {
         this.semaforoAcademicoService = semaforoAcademicoService;
     }
-    @GetMapping("/estudiante/{estudianteId}")
+    @GetMapping("/Visualiza el semáforo académico completo de estudiante/{estudianteId}")
     public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(@PathVariable String estudianteId) {
         Map<String, EstadoSemaforo> resultado = semaforoAcademicoService.visualizarSemaforoEstudiante(estudianteId);
         if (resultado.isEmpty()) {
@@ -28,7 +28,7 @@ public class SemaforoAcademicoController {
         }
         return ResponseEntity.ok(resultado);
     }
-    @GetMapping("/estudiante/{estudianteId}/materia/{materiaId}")
+    @GetMapping("/Consulta el estado del semáforo académico de estudiante/{estudianteId}/materia/{materiaId}")
     public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(estudianteId, materiaId);
         if (estado.isPresent()) {
