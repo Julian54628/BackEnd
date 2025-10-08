@@ -74,4 +74,20 @@ public class EstudiantesControlador {
         Optional<EstadoSemaforo> estado = semaforoAcademicoService.consultarSemaforoMateria(id, materiaId);
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
+    /**
+     * 37. Consultar avance del plan de estudios
+     */
+    @GetMapping("/{estudianteId}/avance-plan-estudios")
+    public ResponseEntity<Map<String, Object>> consultarAvancePlanEstudios(@PathVariable String estudianteId) {
+        Map<String, Object> avance = estudianteService.consultarAvancePlanEstudios(estudianteId);
+        return ResponseEntity.ok(avance);
+    }
+    /**
+     * 39. Asignar grupo a estudiante
+     */
+    @PutMapping("/{estudianteId}/asignar-grupo/{grupoId}")
+    public ResponseEntity<Void> asignarGrupoAEstudiante(@PathVariable String estudianteId, @PathVariable String grupoId) {
+        estudianteService.asignarGrupoAEstudiante(estudianteId, grupoId);
+        return ResponseEntity.ok().build();
+    }
 }

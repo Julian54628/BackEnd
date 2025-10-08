@@ -6,16 +6,16 @@ import edu.escuelaing.sirha.model.SemaforoAcademico;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
-    private final RepositorioSemaforoAcademico repositorioSemaforoAcademico;
+
     @Autowired
-    public SemaforoAcademicoServiceImpl(RepositorioSemaforoAcademico repositorioSemaforoAcademico) {
-        this.repositorioSemaforoAcademico = repositorioSemaforoAcademico;
-    }
+    private RepositorioSemaforoAcademico repositorioSemaforoAcademico;
+
     private EstadoSemaforo mapearEstado(EstadoMateria estadoMateria) {
         switch (estadoMateria) {
             case APROBADA:
@@ -30,6 +30,7 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
                 return EstadoSemaforo.AZUL;
         }
     }
+
     @Override
     public Map<String, EstadoSemaforo> visualizarSemaforoEstudiante(String estudianteId) {
         Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
@@ -39,6 +40,7 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         Map<String, EstadoMateria> historial = optSemaforo.get().getHistorialMaterias();
         return historial.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,entry -> mapearEstado(entry.getValue())));
     }
+
     @Override
     public Optional<EstadoSemaforo> consultarSemaforoMateria(String estudianteId, String materiaId) {
         Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
@@ -49,5 +51,21 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
             }
         }
         return Optional.empty();
+    }
+
+    public Optional<SemaforoAcademico> obtenerSemaforoCompleto(String estudianteId) {
+        return repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+    }
+
+    public List<SemaforoAcademico> obtenerSemaforosPorPlan(String planAcademicoId) {
+        return repositorioSemaforoAcademico.findByPlanAcademicoId(planAcademicoId);
+    }
+
+    public List<SemaforoAcademico> obtenerEstudiantesEnRiesgo() {
+        return repositorioSemaforoAcademico.findEstudiantesEnRiesgo(3.0f, 3);
+    }
+
+    public long contarEstudiantesConCambioDePlan() {
+        return repositorioSemaforoAcademico.countByCambioDePlanTrue();
     }
 }

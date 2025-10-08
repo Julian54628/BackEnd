@@ -33,25 +33,19 @@ public class DecanaturaController {
     public Optional<Decanatura> getById(@PathVariable String id) {
         return decanaturaService.buscarPorId(id);
     }
-
     @PostMapping
     public Decanatura create(@RequestBody Decanatura decanatura) {
         return decanaturaService.crear(decanatura);
     }
-
     @GetMapping("Consulta todas las solicitudes de cambio/solicitudes/pendientes")
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return decanaturaService.consultarSolicitudesPendientes();
     }
-
     @PutMapping("Revisa y actualiza el estado de una solicitud de cambio/solicitudes/{solicitudId}/revisar")
-    public SolicitudCambio revisarSolicitud(
-            @PathVariable String solicitudId,
-            @RequestParam EstadoSolicitud estado,
+    public SolicitudCambio revisarSolicitud(@PathVariable String solicitudId, @RequestParam EstadoSolicitud estado,
             @RequestParam String respuesta) {
         return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta);
     }
-
     @PutMapping("Aprueba una solicitud de cambio especial/solicitudes/{solicitudId}/aprobar-especial")
     public void aprobarSolicitudEspecial(@PathVariable String solicitudId) {
         decanaturaService.aprobarSolicitudEspecial(solicitudId);
@@ -62,20 +56,38 @@ public class DecanaturaController {
         Map<String, EstadoSemaforo> semaforo = semaforoService.visualizarSemaforoEstudiante(estudianteId);
         return ResponseEntity.ok(semaforo);
     }
-
     @GetMapping("Consulta el semáforo para una materia específica de un estudiante./semaforo/estudiante/{estudianteId}/materia/{materiaId}")
     public ResponseEntity<EstadoSemaforo> consultarSemaforoMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
         Optional<EstadoSemaforo> estado = semaforoService.consultarSemaforoMateria(estudianteId, materiaId);
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
-
     @PutMapping("/Otorga permisos de administrador a una decanatura{id}/otorgar-admin")
     public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.otorgarPermisosAdministrador(id);
     }
-
     @PutMapping("/Revoca los permisos de administrador de una decanatura {id}/revocar-admin")
     public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.revocarPermisosAdministrador(id);
+    }
+    /**
+     * 27. Consultar solicitudes de una decanatura por prioridad
+     */
+    @GetMapping("/{decanaturaId}/solicitudes/prioridad")
+    public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYPrioridad(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarSolicitudesPorDecanaturaYPrioridad(decanaturaId);
+    }
+    /**
+     * 29. Consultar solicitudes de una decanatura por orden de llegada
+     */
+    @GetMapping("/{decanaturaId}/solicitudes/orden-llegada")
+    public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYFechaLlegada(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarSolicitudesPorDecanaturaYFechaLlegada(decanaturaId);
+    }
+    /**
+     * 36. Consultar la tasa aprobación vs rechazo por decanatura
+     */
+    @GetMapping("/{decanaturaId}/estadisticas/tasa-aprobacion-rechazo")
+    public Map<String, Object> consultarTasaAprobacionRechazo(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarTasaAprobacionRechazo(decanaturaId);
     }
 }

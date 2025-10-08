@@ -16,6 +16,7 @@ public class Grupo {
     private List<String> horarioIds = new ArrayList<>();
     private String materiaId;
     private String periodoId;
+    private int totalSolicitudes;
 
     public Grupo() {}
 
@@ -49,7 +50,8 @@ public class Grupo {
     public void setHorarioIds(List<String> horarioIds) { this.horarioIds = horarioIds; }
     public String getMateriaId() { return materiaId; }
     public void setMateriaId(String materiaId) { this.materiaId = materiaId; }
-    // **CAMBIO REQUERIDO:** Getter y Setter para periodoId
     public String getPeriodoId() { return periodoId; }
     public void setPeriodoId(String periodoId) { this.periodoId = periodoId; }
+    public int getTotalSolicitudes() { return totalSolicitudes; }
+    public void setTotalSolicitudes(int totalSolicitudes) { this.totalSolicitudes = totalSolicitudes; }
 }

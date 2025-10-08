@@ -1,50 +1,62 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Materia;
-import edu.escuelaing.sirha.model.SolicitudCambio;
+import edu.escuelaing.sirha.model.*;
+import edu.escuelaing.sirha.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 
 @Service
 public class EstudianteServiceImpl implements EstudianteService {
 
-    private final Map<String, Estudiante> estudiantes = new HashMap<>();
-    private final Map<String, Materia> materias = new HashMap<>();
-    private final Map<String, Grupo> grupos = new HashMap<>();
-    private final List<SolicitudCambio> solicitudes = new ArrayList<>();
+    @Autowired
+    private RepositorioEstudiante repositorioEstudiante;
+
+    @Autowired
+    private RepositorioSolicitudCambio repositorioSolicitudCambio;
+
+    @Autowired
+    private RepositorioGrupo repositorioGrupo;
+
+    @Autowired
+    private RepositorioMateria repositorioMateria;
+
+    @Autowired
+    private RepositorioPlanAcademico repositorioPlanAcademico;
+
+    @Autowired
+    private RepositorioSemaforoAcademico repositorioSemaforoAcademico;
 
     @Override
     public Estudiante crear(Estudiante estudiante) {
-        estudiantes.put(estudiante.getId(), estudiante);
-        return estudiante;
+        return repositorioEstudiante.save(estudiante);
     }
 
     @Override
     public Optional<Estudiante> buscarPorCodigo(String codigo) {
-        return estudiantes.values().stream().filter(e -> codigo.equals(e.getCodigo())).findFirst();
+        return repositorioEstudiante.findByCodigo(codigo);
     }
 
     @Override
     public Optional<Estudiante> buscarPorId(String id) {
-        return Optional.ofNullable(estudiantes.get(id));
+        return repositorioEstudiante.findById(id);
     }
 
     @Override
     public List<Estudiante> listarTodos() {
-        return new ArrayList<>(estudiantes.values());
+        return repositorioEstudiante.findAll();
     }
 
     @Override
     public void eliminarPorId(String id) {
-        estudiantes.remove(id);
+        repositorioEstudiante.deleteById(id);
     }
 
     @Override
     public Estudiante actualizar(String id, Estudiante estudiante) {
-        estudiantes.put(id, estudiante);
-        return estudiante;
+        estudiante.setId(id);
+        return repositorioEstudiante.save(estudiante);
     }
 
     @Override
@@ -57,44 +69,96 @@ public class EstudianteServiceImpl implements EstudianteService {
         solicitud.setGrupoOrigenId(grupoOrigenId);
         solicitud.setMateriaDestinoId(materiaDestinoId);
         solicitud.setGrupoDestinoId(grupoDestinoId);
-        solicitudes.add(solicitud);
-        return solicitud;
+        solicitud.setFechaCreacion(new Date());
+        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+
+        return repositorioSolicitudCambio.save(solicitud);
     }
 
     @Override
     public List<SolicitudCambio> consultarSolicitudes(String estudianteId) {
-        List<SolicitudCambio> resultado = new ArrayList<>();
-        for (SolicitudCambio s : solicitudes) {
-            if (estudianteId.equals(s.getEstudianteId())) {
-                resultado.add(s);
-            }
-        }
-        return resultado;
+        return repositorioSolicitudCambio.findByEstudianteId(estudianteId);
     }
 
     @Override
     public List<Grupo> consultarHorarioSemestreActual(String estudianteId) {
-        Optional<Estudiante> estudianteOpt = buscarPorId(estudianteId);
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
         if (estudianteOpt.isEmpty()) {
             return List.of();
         }
         Estudiante estudiante = estudianteOpt.get();
         List<Grupo> horarioActual = new ArrayList<>();
         for (String grupoId : estudiante.getHorariosIds()) {
-            Grupo grupo = grupos.get(grupoId);
-            if (grupo != null) {
-                horarioActual.add(grupo);
-            }
+            Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
+            grupoOpt.ifPresent(horarioActual::add);
         }
         return horarioActual;
     }
 
     @Override
     public List<Materia> consultarMateriasSemestreAnterior(String estudianteId) {
-        Optional<Estudiante> estudianteOpt = buscarPorId(estudianteId);
-        if (estudianteOpt.isEmpty()) {
-            return List.of();
+        return repositorioMateria.findAll();
+    }
+
+    @Override
+    public Map<String, Object> consultarAvancePlanEstudios(String estudianteId) {
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
+        Map<String, Object> avance = new HashMap<>();
+        if (estudianteOpt.isPresent()) {
+            Estudiante estudiante = estudianteOpt.get();
+            if (estudiante.getPlanAcademicoId() != null) {
+                Optional<PlanAcademico> planOpt = repositorioPlanAcademico.findById(estudiante.getPlanAcademicoId());
+                if (planOpt.isPresent()) {
+                    PlanAcademico plan = planOpt.get();
+                    Optional<SemaforoAcademico> semaforoOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+                    int materiasAprobadas = 0;
+                    if (semaforoOpt.isPresent()) {
+                        SemaforoAcademico semaforo = semaforoOpt.get();
+                        materiasAprobadas = (int) semaforo.getHistorialMaterias().values().stream()
+                                .filter(estado -> estado == EstadoMateria.APROBADA).count();
+                    }
+                    int totalMateriasPlan = plan.getMateriasObligatoriasIds().size() + plan.getMateriasElectivasIds().size();
+                    double porcentajeAvance = totalMateriasPlan > 0 ? (double) materiasAprobadas / totalMateriasPlan * 100 : 0;
+                    avance.put("estudianteId", estudianteId);
+                    avance.put("materiasAprobadas", materiasAprobadas);
+                    avance.put("totalMateriasPlan", totalMateriasPlan);
+                    avance.put("porcentajeAvance", porcentajeAvance);
+                    avance.put("semestreActual", estudiante.getSemestre());
+                    avance.put("carrera", estudiante.getCarrera());
+                    avance.put("planAcademico", plan.getNombre());
+                    avance.put("creditosTotalesPlan", plan.getCreditosTotales());
+                }
+            }
         }
-        return new ArrayList<>(materias.values());
+        return avance;
+    }
+
+    @Override
+    public void asignarGrupoAEstudiante(String estudianteId, String grupoId) {
+        Optional<Estudiante> estudianteOpt = repositorioEstudiante.findById(estudianteId);
+        Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
+        if (estudianteOpt.isPresent() && grupoOpt.isPresent()) {
+            Estudiante estudiante = estudianteOpt.get();
+            Grupo grupo = grupoOpt.get();
+            if (grupo.getEstudiantesInscritosIds().size() < grupo.getCupoMaximo()) {
+                if (!grupo.getEstudiantesInscritosIds().contains(estudianteId)) {
+                    grupo.getEstudiantesInscritosIds().add(estudianteId);
+                    repositorioGrupo.save(grupo);
+                }
+                if (!estudiante.getHorariosIds().contains(grupoId)) {
+                    estudiante.getHorariosIds().add(grupoId);
+                    repositorioEstudiante.save(estudiante);
+                }
+            }
+        }
+    }
+    public List<Estudiante> obtenerEstudiantesPorCarrera(String carrera) {
+        return repositorioEstudiante.findByCarrera(carrera);
+    }
+    public List<Estudiante> obtenerEstudiantesPorSemestre(int semestre) {
+        return repositorioEstudiante.findBySemestre(semestre);
+    }
+    public long contarEstudiantesActivos() {
+        return repositorioEstudiante.findByActivoTrue().size();
     }
 }

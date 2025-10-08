@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -50,5 +51,33 @@ public class AdministradorController {
     @PostMapping("/crear-desde-decanatura/{decanaturaId}")
     public Administrador crearDesdeDecanatura(@PathVariable String decanaturaId) {
         return administradorService.crearDesdeDecanatura(decanaturaId);
+    }
+    /**
+     * 26. Monitoreo alerta carga de los grupos = 90%
+     */
+    @GetMapping("/grupos/alerta-carga")
+    public List<Grupo> obtenerGruposConAlertaCarga() {
+        return administradorService.obtenerGruposConAlertaCarga();
+    }
+    /**
+     * 28. Consulta global de solicitudes por prioridad
+     */
+    @GetMapping("/solicitudes/global-prioridad")
+    public List<SolicitudCambio> consultarSolicitudesGlobalesPorPrioridad() {
+        return administradorService.consultarSolicitudesGlobalesPorPrioridad();
+    }
+    /**
+     * 35. Generar reporte de grupos más solicitados
+     */
+    @GetMapping("/reportes/grupos-mas-solicitados")
+    public Map<String, Object> generarReporteGruposMasSolicitados() {
+        return administradorService.generarReporteGruposMasSolicitados();
+    }
+    /**
+     * 38. Generar reporte estadísticas de reasignación global
+     */
+    @GetMapping("/reportes/estadisticas-reasignacion")
+    public Map<String, Object> generarReporteEstadisticasReasignacion() {
+        return administradorService.generarReporteEstadisticasReasignacion();
     }
 }

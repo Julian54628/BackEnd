@@ -1,10 +1,11 @@
 package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.Grupo; // New import required
-import edu.escuelaing.sirha.model.Materia; // New import required
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.model.Materia;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface EstudianteService {
@@ -18,4 +19,6 @@ public interface EstudianteService {
     List<SolicitudCambio> consultarSolicitudes(String estudianteId);
     List<Grupo> consultarHorarioSemestreActual(String estudianteId);
     List<Materia> consultarMateriasSemestreAnterior(String estudianteId);
+    Map<String, Object> consultarAvancePlanEstudios(String estudianteId);
+    void asignarGrupoAEstudiante(String estudianteId, String grupoId);
 }

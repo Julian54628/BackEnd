@@ -1,48 +1,69 @@
 package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.PeriodoCambio;
+import edu.escuelaing.sirha.repository.RepositorioPeriodoCambio;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PeriodoCambioServiceImpl implements PeriodoCambioService {
 
-    private final Map<String, PeriodoCambio> periodos = new HashMap<>();
+    @Autowired
+    private RepositorioPeriodoCambio repositorioPeriodoCambio;
 
     @Override
     public PeriodoCambio crear(PeriodoCambio periodo) {
-        periodos.put(periodo.getId(), periodo);
-        return periodo;
+        return repositorioPeriodoCambio.save(periodo);
     }
 
     @Override
     public Optional<PeriodoCambio> buscarPorId(String id) {
-        return Optional.ofNullable(periodos.get(id));
+        return repositorioPeriodoCambio.findById(id);
     }
 
     @Override
     public List<PeriodoCambio> listarTodos() {
-        return new ArrayList<>(periodos.values());
+        return repositorioPeriodoCambio.findAll();
     }
 
     @Override
     public PeriodoCambio actualizar(String id, PeriodoCambio periodo) {
-        periodos.put(id, periodo);
-        return periodo;
+        periodo.setId(id);
+        return repositorioPeriodoCambio.save(periodo);
     }
 
     @Override
     public void eliminarPorId(String id) {
-        periodos.remove(id);
+        repositorioPeriodoCambio.deleteById(id);
     }
 
     @Override
     public boolean estaPeriodoActivo() {
-        return periodos.values().stream().anyMatch(PeriodoCambio::isActivo);
+        return repositorioPeriodoCambio.existsByActivoTrue();
     }
 
     @Override
     public Optional<PeriodoCambio> obtenerPeriodoActivo() {
-        return periodos.values().stream().filter(PeriodoCambio::isActivo).findFirst();
+        return repositorioPeriodoCambio.findByActivoTrue().stream().findFirst();
+    }
+
+    public List<PeriodoCambio> obtenerPeriodosVigentes() {
+        return repositorioPeriodoCambio.findPeriodosVigentesEnFecha(new Date());
+    }
+
+    public Optional<PeriodoCambio> obtenerPeriodoActivoActual() {
+        return repositorioPeriodoCambio.findPeriodoActivoEnFecha(new Date());
+    }
+
+    public List<PeriodoCambio> obtenerPeriodosFuturos() {
+        return repositorioPeriodoCambio.findPeriodosFuturos(new Date());
+    }
+
+    public List<PeriodoCambio> obtenerPeriodosPorTipo(String tipo) {
+        return repositorioPeriodoCambio.findByTipo(tipo);
     }
 }

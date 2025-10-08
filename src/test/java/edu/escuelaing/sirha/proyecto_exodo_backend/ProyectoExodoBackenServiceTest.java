@@ -45,7 +45,7 @@ public class ProyectoExodoBackenServiceTest {
         DecanaturaServiceImpl decanaturaService = new DecanaturaServiceImpl();
         ProfesorServiceImpl profesorService = new ProfesorServiceImpl();
         UsuarioServiceImpl usuarioService = new UsuarioServiceImpl(mockRepositorioUsuario);
-        semaforoAcademicoService = new SemaforoAcademicoServiceImpl(mockRepositorioSemaforoAcademico);
+        semaforoAcademicoService = new SemaforoAcademicoServiceImpl();
         periodoController = new PeriodoCambioController();
         periodoController.periodoService = periodoService;
         estudianteController = new EstudiantesControlador(estudianteService, semaforoAcademicoService);
