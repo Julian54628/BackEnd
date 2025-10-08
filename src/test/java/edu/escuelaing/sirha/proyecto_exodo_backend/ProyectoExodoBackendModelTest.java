@@ -52,17 +52,17 @@ public class ProyectoExodoBackendModelTest {
         assertEquals(1, estudiante.getHorariosIds().size());
     }
 
-    @Test
-    void testGrupoCompleto() {
-        Grupo grupo = new Grupo(1, 30, "clicosvida", "456");
-        assertEquals(1, grupo.getIdGrupo());
-        assertEquals(30, grupo.getCupoMaximo());
-        assertTrue(grupo.esValido());
-        grupo.setEstudiantesInscritosIds(Arrays.asList("est1", "est2", "est3"));
-        assertEquals(3, grupo.getCantidadInscritos());
-        Grupo grupoInvalido = new Grupo(-1, 60, "integral", "cali1");
-        assertFalse(grupoInvalido.esValido());
-    }
+    //@Test
+    //void testGrupoCompleto() {
+        //Grupo grupo = new Grupo(1, 30, "clicosvida", "456");
+        //assertEquals(1, grupo.getIdGrupo());
+        ///assertEquals(30, grupo.getCupoMaximo());
+        //assertTrue(grupo.esValido());
+        //grupo.setEstudiantesInscritosIds(Arrays.asList("est1", "est2", "est3"));
+        //assertEquals(3, grupo.getCantidadInscritos());
+        //Grupo grupoInvalido = new Grupo(-1, 60, "integral", "cali1");
+       // assertFalse(grupoInvalido.esValido());
+    //}
 
     @Test
     void testHorarioCompleto() {

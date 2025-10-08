@@ -11,32 +11,30 @@ public class Grupo {
     private String id;
     private int idGrupo;
     private int cupoMaximo;
-    private List<String> estudiantesInscritosIds = new ArrayList<>(); // Solo IDs
-    private String profesorId; // Solo ID
-    private List<String> horarioIds = new ArrayList<>(); // Solo IDs
-    private String materiaId; // Solo ID
+    private List<String> estudiantesInscritosIds = new ArrayList<>();
+    private String profesorId;
+    private List<String> horarioIds = new ArrayList<>();
+    private String materiaId;
+    private String periodoId;
 
-    // CONSTRUCTORES
     public Grupo() {}
 
-    public Grupo(int idGrupo, int cupoMaximo, String materiaId, String profesorId) {
+    public Grupo(int idGrupo, int cupoMaximo, String materiaId, String profesorId, String periodoId) {
         this.idGrupo = idGrupo;
         this.cupoMaximo = cupoMaximo;
         this.materiaId = materiaId;
         this.profesorId = profesorId;
+        this.periodoId = periodoId;
     }
 
-    // SOLO VALIDACIONES BÁSICAS
     public boolean esValido() {
         return idGrupo > 0 && cupoMaximo > 0 && cupoMaximo <= 50;
     }
 
-    // MÉTODOS SIMPLES DE DATOS (NO LÓGICA DE NEGOCIO)
     public int getCantidadInscritos() {
         return estudiantesInscritosIds.size();
     }
 
-    // GETTERS Y SETTERS
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public int getIdGrupo() { return idGrupo; }
@@ -51,4 +49,7 @@ public class Grupo {
     public void setHorarioIds(List<String> horarioIds) { this.horarioIds = horarioIds; }
     public String getMateriaId() { return materiaId; }
     public void setMateriaId(String materiaId) { this.materiaId = materiaId; }
+    // **CAMBIO REQUERIDO:** Getter y Setter para periodoId
+    public String getPeriodoId() { return periodoId; }
+    public void setPeriodoId(String periodoId) { this.periodoId = periodoId; }
 }
