@@ -2,7 +2,6 @@ package edu.escuelaing.sirha.repository;
 
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
-import edu.escuelaing.sirha.model.TipoSolicitud;
 import edu.escuelaing.sirha.model.TipoPrioridad;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;

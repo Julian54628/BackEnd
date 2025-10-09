@@ -1,18 +1,14 @@
 package edu.escuelaing.sirha.controller;
 
 import edu.escuelaing.sirha.model.Decanatura;
-import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
-import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController

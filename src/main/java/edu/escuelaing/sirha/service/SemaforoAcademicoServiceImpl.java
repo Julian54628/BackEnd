@@ -135,7 +135,6 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
 
     @Override
     public SemaforoVisualizacion obtenerSemaforoCompleto(String estudianteId) {
-        Map<String, EstadoSemaforo> estados = visualizarSemaforoEstudiante(estudianteId);
         Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
 
         SemaforoVisualizacion vis = new SemaforoVisualizacion();
@@ -195,7 +194,6 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
 
     @Override
     public SemaforoVisualizacion obtenerSemaforoDetallado(String estudianteId) {
-        Map<String, EstadoSemaforo> estados = visualizarSemaforoEstudiante(estudianteId);
         Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
 
         SemaforoVisualizacion vis = new SemaforoVisualizacion();

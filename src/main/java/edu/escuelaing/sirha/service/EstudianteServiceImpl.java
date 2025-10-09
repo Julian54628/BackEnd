@@ -1,8 +1,6 @@
 package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Materia;
 import edu.escuelaing.sirha.model.SolicitudCambio;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -11,8 +9,6 @@ import java.util.*;
 public class EstudianteServiceImpl implements EstudianteService {
 
     private final Map<String, Estudiante> estudiantes = new HashMap<>();
-    private final Map<String, Materia> materias = new HashMap<>();
-    private final Map<String, Grupo> grupos = new HashMap<>();
     private final List<SolicitudCambio> solicitudes = new ArrayList<>();
 
     @Override

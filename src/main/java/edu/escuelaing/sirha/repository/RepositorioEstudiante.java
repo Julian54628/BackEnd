@@ -2,7 +2,6 @@ package edu.escuelaing.sirha.repository;
 
 import edu.escuelaing.sirha.model.Estudiante;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

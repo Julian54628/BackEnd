@@ -24,12 +24,11 @@ public class SolicitudCambio {
     private String materiaDestinoId;
     private String grupoDestinoId;
     private String decanaturaId;
-    private TipoSolicitud tipoSolicitud;
     private TipoPrioridad tipoPrioridad;
-    private String descripcion;
     private String justificacion;
     private String administradorId;
     private List<String> historialEstados = new ArrayList<>();
+    private String descripcion;
 
     public SolicitudCambio() {
         this.fechaCreacion = new Date();
@@ -48,7 +47,7 @@ public class SolicitudCambio {
     }
 
     public SolicitudCambio(String estudianteId, String materiaOrigenId, String grupoOrigenId,
-                           String materiaDestinoId, String grupoDestinoId, TipoSolicitud tipoSolicitud,
+                           String materiaDestinoId, String grupoDestinoId,
                            String descripcion, TipoPrioridad tipoPrioridad) {
         this();
         this.estudianteId = estudianteId;
@@ -56,7 +55,6 @@ public class SolicitudCambio {
         this.grupoOrigenId = grupoOrigenId;
         this.materiaDestinoId = materiaDestinoId;
         this.grupoDestinoId = grupoDestinoId;
-        this.tipoSolicitud = tipoSolicitud;
         this.descripcion = descripcion;
         this.tipoPrioridad = tipoPrioridad;
     }
@@ -91,21 +89,18 @@ public class SolicitudCambio {
     public String getGrupoOrigenId() { return grupoOrigenId; }
     public void setGrupoOrigenId(String grupoOrigenId) { this.grupoOrigenId = grupoOrigenId; }
     public String getMateriaDestinoId() { return materiaDestinoId; }
-    public void setMateriaDestinoId(String materiaDestinoId) { this.materiaDestinoId = materiaDestinoId; }
     public String getGrupoDestinoId() { return grupoDestinoId; }
     public void setGrupoDestinoId(String grupoDestinoId) { this.grupoDestinoId = grupoDestinoId; }
     public String getDecanaturaId() { return decanaturaId; }
     public void setDecanaturaId(String decanaturaId) { this.decanaturaId = decanaturaId; }
-    public TipoSolicitud getTipoSolicitud() { return tipoSolicitud; }
-    public void setTipoSolicitud(TipoSolicitud tipoSolicitud) { this.tipoSolicitud = tipoSolicitud; }
     public TipoPrioridad getTipoPrioridad() { return tipoPrioridad; }
     public void setTipoPrioridad(TipoPrioridad tipoPrioridad) { this.tipoPrioridad = tipoPrioridad; }
+    public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     public String getJustificacion() { return justificacion; }
     public void setJustificacion(String justificacion) { this.justificacion = justificacion; }
     public String getAdministradorId() { return administradorId; }
     public void setAdministradorId(String administradorId) { this.administradorId = administradorId; }
-    public List<String> getHistorialEstados() { return historialEstados; }
     public void setHistorialEstados(List<String> historialEstados) { this.historialEstados = historialEstados; }
     public void addHistorialEstado(String historialEstado) {
         this.historialEstados.add(historialEstado);
