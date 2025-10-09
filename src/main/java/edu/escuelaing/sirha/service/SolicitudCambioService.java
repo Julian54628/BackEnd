@@ -20,7 +20,6 @@ public interface SolicitudCambioService {
     List<SolicitudCambio> buscarPorEstudiante(String estudianteId);
     List<SolicitudCambio> obtenerSolicitudesPorEstudiante(String estudianteId);
     List<SolicitudCambio> obtenerSolicitudesPorDecanatura(String decanaturaId);
-    List<SolicitudCambio> obtenerSolicitudesPorTipo(TipoSolicitud tipo);
     List<SolicitudCambio> obtenerSolicitudesPorPrioridad(TipoPrioridad prioridad);
     List<SolicitudCambio> obtenerSolicitudesPendientesPorDecanatura(String decanaturaId);
     SolicitudCambio actualizarEstado(String solicitudId, EstadoSolicitud estado);

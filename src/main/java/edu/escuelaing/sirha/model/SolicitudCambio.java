@@ -29,7 +29,6 @@ public class SolicitudCambio {
     private String administradorId;
     private List<String> historialEstados = new ArrayList<>();
     private String descripcion;
-    private TipoSolicitud tipoSolicitud;
 
     public SolicitudCambio() {
         this.fechaCreacion = new Date();
@@ -86,71 +85,71 @@ public class SolicitudCambio {
     public Date getFechaCreacion() {
         return fechaCreacion;
     }
-    
+
     public void setFechaCreacion(Date fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
     }
-    
+
     public EstadoSolicitud getEstado() {
         return estado;
     }
-    
+
     public void setEstado(EstadoSolicitud estado) {
         this.estado = estado;
     }
-    
+
     public int getPrioridad() {
         return prioridad;
     }
-    
+
     public void setPrioridad(int prioridad) {
         this.prioridad = prioridad;
     }
-    
+
     public String getRespuesta() {
         return respuesta;
     }
-    
+
     public void setRespuesta(String respuesta) {
         this.respuesta = respuesta;
     }
-    
+
     public String getEstudianteId() {
         return estudianteId;
     }
-    
+
     public void setEstudianteId(String estudianteId) {
         this.estudianteId = estudianteId;
     }
-    
+
     public String getJustificacion() {
         return justificacion;
     }
-    
+
     public void setJustificacion(String justificacion) {
         this.justificacion = justificacion;
     }
-    
+
     public String getAdministradorId() {
         return administradorId;
     }
-    
+
     public void setAdministradorId(String administradorId) {
         this.administradorId = administradorId;
     }
-    
+
     public void setFechaRespuesta(Date fechaRespuesta) {
         this.fechaRespuesta = fechaRespuesta;
     }
-    
+
     public Date getFechaRespuesta() {
         return fechaRespuesta;
     }
-    
+
     public String getObservaciones() {
         return observaciones;
     }
-    
+
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
     }
@@ -214,24 +213,15 @@ public class SolicitudCambio {
     public List<String> getHistorialEstados() {
         return historialEstados;
     }
-    
+
     public void setHistorialEstados(List<String> historialEstados) {
         this.historialEstados = historialEstados;
     }
-    
+
     public void addHistorialEstado(String estado) {
         if (this.historialEstados == null) {
             this.historialEstados = new ArrayList<>();
         }
         this.historialEstados.add(estado);
     }
-    
-    public TipoSolicitud getTipoSolicitud() {
-        return tipoSolicitud;
-    }
-    
-    public void setTipoSolicitud(TipoSolicitud tipoSolicitud) {
-        this.tipoSolicitud = tipoSolicitud;
-    }
-
 }

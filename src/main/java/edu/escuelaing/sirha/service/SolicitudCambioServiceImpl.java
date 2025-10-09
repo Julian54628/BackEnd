@@ -115,11 +115,6 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
     }
 
     @Override
-    public List<SolicitudCambio> obtenerSolicitudesPorTipo(TipoSolicitud tipo) {
-        return repositorioSolicitudCambio.findByTipoSolicitud(tipo);
-    }
-
-    @Override
     public List<SolicitudCambio> obtenerSolicitudesPorPrioridad(TipoPrioridad prioridad) {
         return repositorioSolicitudCambio.findByTipoPrioridad(prioridad);
     }
@@ -187,10 +182,6 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
                 .filter(s -> s.getEstado() == EstadoSolicitud.APROBADA).count());
         estadisticas.put("solicitudesRechazadas", todasLasSolicitudes.stream()
                 .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count());
-        
-        Map<TipoSolicitud, Long> porTipo = todasLasSolicitudes.stream()
-                .collect(Collectors.groupingBy(SolicitudCambio::getTipoSolicitud, Collectors.counting()));
-        estadisticas.put("porTipo", porTipo);
         
         Map<TipoPrioridad, Long> porPrioridad = todasLasSolicitudes.stream()
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoPrioridad, Collectors.counting()));
