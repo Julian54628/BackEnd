@@ -117,4 +117,23 @@ public class EstudiantesControlador {
             return ResponseEntity.status(500).body(new HashMap<>());
         }
     }
+    @GetMapping("/{id}/informacion-academica")
+    public ResponseEntity<Map<String, Object>> getInformacionAcademica(@PathVariable String id) {
+        try {
+            Map<String, Object> informacion = new HashMap<>();
+            Optional<Estudiante> estudianteOpt = estudianteService.buscarPorId(id);
+            if (estudianteOpt.isPresent()) {
+                Estudiante estudiante = estudianteOpt.get();
+                informacion.put("codigo", estudiante.getCodigo());
+                informacion.put("nombre", estudiante.getNombre());
+                informacion.put("semestre", estudiante.getSemestre());
+                informacion.put("programa", estudiante.getCarrera());
+            }
+            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(id);
+            informacion.putAll(foraneo);
+            return ResponseEntity.ok(informacion);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new HashMap<>());
+        }
+    }
 }

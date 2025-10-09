@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -16,23 +17,62 @@ public class SolicitudCambioController {
     @Autowired
     public SolicitudCambioService solicitudService;
 
-    public void setSolicitudService(SolicitudCambioService solicitudService) {
-        this.solicitudService = solicitudService;
+    @PostMapping
+    public ResponseEntity<SolicitudCambio> crear(@RequestBody SolicitudCambio solicitud) {
+        try {
+            SolicitudCambio creada = solicitudService.crearSolicitud(solicitud);
+            return ResponseEntity.ok(creada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-
-    public SolicitudCambio crear(SolicitudCambio solicitud) {
-        return solicitudService.crearSolicitud(solicitud);
+    @GetMapping("/buscar/{id}")
+    public ResponseEntity<SolicitudCambio> buscarPorId(@PathVariable String id) {
+        Optional<SolicitudCambio> solicitud = solicitudService.obtenerSolicitudPorId(id);
+        return solicitud.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    public Optional<SolicitudCambio> buscarPorId(String id) {
-        return solicitudService.obtenerSolicitudPorId(id);
-    }
+    @GetMapping("/listar-todas")
     public List<SolicitudCambio> listarTodos() {
         return solicitudService.obtenerTodasLasSolicitudes();
     }
-    public void eliminarPorId(String id) {
-        solicitudService.eliminarSolicitud(id);
+
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<Void> eliminarPorId(@PathVariable String id) {
+        try {
+            solicitudService.eliminarSolicitud(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/estado/{estado}")
+    public List<SolicitudCambio> buscarPorEstado(@PathVariable String estado) {
+        EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
+        return solicitudService.obtenerSolicitudesPorEstado(est);
+    }
+
+    @PutMapping("/{id}/cambiar-estado")
+    public ResponseEntity<SolicitudCambio> actualizarEstado(@PathVariable String id, @RequestParam String estado) {
+        try {
+            EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
+            SolicitudCambio actualizada = solicitudService.actualizarEstado(id, est);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/estudiante/{estudianteId}")
+    public List<SolicitudCambio> buscarPorEstudiante(@PathVariable String estudianteId) {
+        return solicitudService.obtenerSolicitudesPorEstudiante(estudianteId);
+    }
+
+    @GetMapping("/{id}/historial-completo")
+    public List<String> historial(@PathVariable String id) {
+        return solicitudService.obtenerHistorialPorSolicitud(id);
     }
 
     @GetMapping("/{id}")
@@ -47,21 +87,45 @@ public class SolicitudCambioController {
         return ResponseEntity.ok(historial);
     }
 
-    public List<SolicitudCambio> buscarPorEstado(String estado) {
-        EstadoSolicitud est = EstadoSolicitud.valueOf(estado);
-        return solicitudService.obtenerSolicitudesPorEstado(est);
+    @GetMapping
+    public List<SolicitudCambio> obtenerTodasLasSolicitudes() {
+        return solicitudService.obtenerTodasLasSolicitudes();
     }
 
-    public SolicitudCambio actualizarEstado(String id, String estado) {
-        EstadoSolicitud est = EstadoSolicitud.valueOf(estado);
-        return solicitudService.actualizarEstado(id, est);
+    @PutMapping("/{id}")
+    public ResponseEntity<SolicitudCambio> actualizarSolicitud(@PathVariable String id, @RequestBody SolicitudCambio solicitud) {
+        try {
+            solicitud.setId(id);
+            SolicitudCambio actualizada = solicitudService.actualizar(solicitud);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
-
-    public List<SolicitudCambio> buscarPorEstudiante(String estudianteId) {
-        return solicitudService.obtenerSolicitudesPorEstudiante(estudianteId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarSolicitud(@PathVariable String id) {
+        try {
+            solicitudService.eliminarSolicitud(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-
-    public List<String> historial(String id) {
-        return solicitudService.obtenerHistorialPorSolicitud(id);
+    @PutMapping("/{id}/aprobar-especial")
+    public ResponseEntity<SolicitudCambio> aprobarSolicitudEspecial(@PathVariable String id, @RequestParam String justificacion) {
+        try {
+            SolicitudCambio aprobada = solicitudService.aprobarSolicitud(id, justificacion);
+            return ResponseEntity.ok(aprobada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    @GetMapping("/casos-especiales")
+    public List<SolicitudCambio> consultarCasosEspeciales() {
+        return solicitudService.obtenerSolicitudesPorPrioridad(TipoPrioridad.ESPECIAL);
+    }
+    @GetMapping("/estadisticas")
+    public Map<String, Object> generarEstadisticasReasignacion() {
+        return solicitudService.obtenerEstadisticasSolicitudes();
     }
 }

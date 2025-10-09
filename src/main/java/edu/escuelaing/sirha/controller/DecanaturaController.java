@@ -3,12 +3,15 @@ package edu.escuelaing.sirha.controller;
 import edu.escuelaing.sirha.model.Decanatura;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
 import edu.escuelaing.sirha.model.SolicitudCambio;
+import edu.escuelaing.sirha.model.TipoPrioridad;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -72,5 +75,33 @@ public class DecanaturaController {
     @PutMapping("/{id}/revocar-admin")
     public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
         return decanaturaService.revocarPermisosAdministrador(id);
+    }
+    @PutMapping("/solicitudes/{solicitudId}/responder")
+    public SolicitudCambio responderSolicitud(
+            @PathVariable String solicitudId,
+            @RequestParam EstadoSolicitud estado,
+            @RequestParam(required = false) String respuesta,
+            @RequestParam(required = false) String justificacion) {
+        return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta != null ? respuesta : "");
+    }
+
+    @GetMapping("/{decanaturaId}/solicitudes/prioridad")
+    public List<SolicitudCambio> consultarSolicitudesPorPrioridad(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarSolicitudesPorDecanaturaYPrioridad(decanaturaId);
+    }
+
+    @GetMapping("/{decanaturaId}/solicitudes/fecha")
+    public List<SolicitudCambio> consultarSolicitudesPorFechaLlegada(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarSolicitudesPorDecanaturaYFechaLlegada(decanaturaId);
+    }
+
+    @GetMapping("/{decanaturaId}/tasas-aprobacion")
+    public Map<String, Object> consultarTasasAprobacionRechazo(@PathVariable String decanaturaId) {
+        return decanaturaService.consultarTasaAprobacionRechazo(decanaturaId);
+    }
+
+    @GetMapping("/solicitudes/global-prioridad")
+    public List<SolicitudCambio> consultarSolicitudesGlobalPorPrioridad(@RequestParam TipoPrioridad prioridad) {
+        return new ArrayList<>(); // Implementación requiere inyección de SolicitudCambioService
     }
 }

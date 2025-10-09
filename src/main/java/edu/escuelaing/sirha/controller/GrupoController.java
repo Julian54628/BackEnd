@@ -4,8 +4,10 @@ import edu.escuelaing.sirha.model.Grupo;
 import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.service.GrupoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +23,7 @@ public class GrupoController {
         return grupoService.listarTodos();
     }
 
-    @GetMapping("/Obtiene un grupo específico por su identificador{id}")
+    @GetMapping("/{id}")
     public Optional<Grupo> getById(@PathVariable String id) {
         return grupoService.buscarPorId(id);
     }
@@ -31,30 +33,77 @@ public class GrupoController {
         return grupoService.crear(grupo);
     }
 
-    @DeleteMapping("/Elimina un grupo del sistema por su identificador{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) {
         grupoService.eliminarPorId(id);
     }
 
-    @PutMapping("/Actualiza el cupo disponible de un grupo{id}/cupo")
+    @PutMapping("/{id}/cupo")
     public Grupo updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
         return grupoService.actualizarCupo(id, nuevoCupo);
     }
 
-    @GetMapping("/Verifica si un grupo tiene cupos disponibles{id}/cupo-disponible")
+    @GetMapping("/{id}/cupo-disponible")
     public boolean verificarCupoDisponible(@PathVariable String id) {
         return grupoService.verificarCupoDisponible(id);
     }
 
-    @GetMapping("/Consulta la carga académica de un grupo{id}/carga-academica")
+    @GetMapping("/{id}/carga-academica")
     public float consultarCargaAcademica(@PathVariable String id) {
         return grupoService.consultarCargaAcademica(id);
     }
 
-    @GetMapping("/Consulta la lista de estudiantes inscritos en un grupo{id}/estudiantes")
+    @GetMapping("/{id}/estudiantes")
     public List<Estudiante> consultarEstudiantesInscritos(@PathVariable String id) {
         return grupoService.consultarEstudiantesInscritos(id);
     }
 
+    @GetMapping("/{id}/lista-espera")
+    public List<Estudiante> consultarListaEspera(@PathVariable String id) {
+        Optional<Grupo> grupoOpt = grupoService.buscarPorId(id);
+        if (grupoOpt.isPresent()) {
+            Grupo grupo = grupoOpt.get();
+            List<Estudiante> listaEspera = new ArrayList<>();
+            int cupoMaximo = grupo.getCupoMaximo();
+            int inscritosActuales = grupo.getEstudiantesInscritosIds().size();
+            if (inscritosActuales > cupoMaximo) {
+                for (int i = cupoMaximo; i < inscritosActuales && i < grupo.getEstudiantesInscritosIds().size(); i++) {
+                    Estudiante estudianteEnEspera = new Estudiante();
+                    estudianteEnEspera.setId(grupo.getEstudiantesInscritosIds().get(i));
+                    estudianteEnEspera.setNombre("Estudiante en espera " + (i + 1));
+                    estudianteEnEspera.setCodigo("COD" + (i + 1));
+                    listaEspera.add(estudianteEnEspera);
+                }
+            }
+            return listaEspera;
+        }
+        return new ArrayList<>();
+    }
 
+    @PostMapping("/{id}/lista-espera/agregar/{estudianteId}")
+    public ResponseEntity<String> agregarAListaEspera(@PathVariable String id, @PathVariable String estudianteId) {
+        try {
+            Optional<Grupo> grupoOpt = grupoService.buscarPorId(id);
+            if (grupoOpt.isPresent()) {
+                Grupo grupo = grupoOpt.get();
+                if (grupo.getEstudiantesInscritosIds().size() >= grupo.getCupoMaximo()) {
+                    if (!grupo.getEstudiantesInscritosIds().contains(estudianteId)) {
+                        grupo.getEstudiantesInscritosIds().add(estudianteId);
+                        return ResponseEntity.ok("Estudiante agregado a lista de espera del grupo " + id);
+                    } else {
+                        return ResponseEntity.badRequest().body("El estudiante ya está en el grupo o lista de espera");
+                    }
+                } else {
+                    return ResponseEntity.badRequest().body("El grupo aún tiene cupos disponibles");
+                }
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al agregar a lista de espera: " + e.getMessage());
+        }
+    }
+    @GetMapping("/alertas-capacidad")
+    public List<Grupo> consultarGruposConAlertaCapacidad(@RequestParam(defaultValue = "90") double porcentajeAlerta) {
+        return grupoService.obtenerGruposConAlertaCapacidad(porcentajeAlerta);
+    }
 }
