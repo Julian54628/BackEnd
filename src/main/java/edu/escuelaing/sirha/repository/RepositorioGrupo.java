@@ -24,10 +24,10 @@ public interface RepositorioGrupo extends MongoRepository<Grupo, String> {
     @Query("{ 'estudiantesInscritosIds': { $size: ?0 } }")
     List<Grupo> findByCantidadEstudiantes(int cantidad);
 
-    @Query("{ $expr: { $gt: [{ $size: '$estudiantesInscritosIds' }, ?0] } }")
+    @Query("{ '$where': 'this.estudiantesInscritosIds.length > ?0' }")
     List<Grupo> findByCantidadEstudiantesGreaterThan(int cantidad);
 
-    @Query("{ $expr: { $lt: [{ $size: '$estudiantesInscritosIds' }, ?0] } }")
+    @Query("{ '$where': 'this.estudiantesInscritosIds.length < ?0' }")
     List<Grupo> findByCantidadEstudiantesLessThan(int cantidad);
 
     @Query("{ 'estudiantesInscritosIds': { $size: 0 } }")

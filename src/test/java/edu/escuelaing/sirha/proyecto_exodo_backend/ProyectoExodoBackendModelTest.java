@@ -215,7 +215,7 @@ public class ProyectoExodoBackendModelTest {
         assertEquals(EstadoMateria.APROBADA, EstadoMateria.valueOf("APROBADA"));
         assertEquals(4, EstadoSolicitud.values().length);
         assertEquals(EstadoSolicitud.PENDIENTE, EstadoSolicitud.valueOf("PENDIENTE"));
-        assertEquals(3, Rol.values().length);
+        assertEquals(4, Rol.values().length);
         assertEquals(Rol.ESTUDIANTE, Rol.valueOf("ESTUDIANTE"));
         assertEquals(3, EstadoSemaforo.values().length);
         assertEquals(EstadoSemaforo.VERDE, EstadoSemaforo.valueOf("VERDE"));

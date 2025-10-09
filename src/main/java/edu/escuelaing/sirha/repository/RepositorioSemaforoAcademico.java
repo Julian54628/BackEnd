@@ -19,7 +19,7 @@ public interface RepositorioSemaforoAcademico extends MongoRepository<SemaforoAc
     List<SemaforoAcademico> findByPromedioAcumuladoGreaterThanEqual(float promedioMinimo);
     List<SemaforoAcademico> findByMateriasVistasGreaterThanEqual(int materiasMinimas);
 
-    @Query("{ $expr: { $gte: [{ $multiply: [{ $divide: ['$creditosAprobados', '$totalCreditosPlan'] }, 100] }, ?0] } }")
+    @Query("{ '$where': '((this.creditosAprobados / this.totalCreditosPlan) * 100) >= ?0' }")
     List<SemaforoAcademico> findByProgresoMayorIgual(float porcentajeMinimo);
 
     @Query("{ 'promedioAcumulado': { $lt: ?0 }, 'materiasVistas': { $gte: ?1 } }")

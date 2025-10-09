@@ -23,17 +23,17 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     List<Profesor> findByGruposAsignadosIdsContaining(String grupoId);
 
-    @Query("{ $expr: { $gt: [{ $size: '$gruposAsignadosIds' }, 0] } }")
+    @Query("{ '$where': 'this.gruposAsignadosIds.length > 0' }")
     List<Profesor> findProfesoresConGruposAsignados();
 
-    @Query("{ $or: [ { 'gruposAsignadosIds': { $exists: false } }, { $expr: { $eq: [{ $size: '$gruposAsignadosIds' }, 0] } } ] }")
+    @Query("{ '$where': 'this.gruposAsignadosIds.length == 0' }")
     List<Profesor> findProfesoresSinGruposAsignados();
 
     boolean existsByCorreoInstitucional(String correoInstitucional);
 
-    @Query("{ $expr: { $lt: [ { $add: [{ $size: '$materiasAsignadasIds' }, { $size: '$gruposAsignadosIds' }] }, ?0 ] } }")
+    @Query("{ '$where': '(this.materiasAsignadasIds.length + this.gruposAsignadosIds.length) < ?0' }")
     List<Profesor> findProfesoresDisponibles(int maxCarga);
 
-    @Query(value = "{ $expr: { $gt: [{ $size: '$gruposAsignadosIds' }, 0] } }", count = true)
+    @Query(value = "{ '$where': 'this.gruposAsignadosIds.length > 0' }", count = true)
     long countProfesoresConGrupos();
 }

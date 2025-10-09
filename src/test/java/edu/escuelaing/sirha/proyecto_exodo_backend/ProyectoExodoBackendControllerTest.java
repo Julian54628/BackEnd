@@ -11,9 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -90,9 +88,25 @@ class ProyectoExodoBackendControllerTest {
     private SolicitudCambio crearSolicitud() {
         SolicitudCambio solicitud = new SolicitudCambio();
         solicitud.setId("solicitud1");
-        solicitud.setEstudianteId("estudiante");
+        solicitud.setIdSolicitud(1);
+        solicitud.setEstudianteId("estudiante1");
+        solicitud.setMateriaOrigenId("materia1");
+        solicitud.setGrupoOrigenId("grupo1");
+        solicitud.setMateriaDestinoId("materia2");
+        solicitud.setGrupoDestinoId("grupo2");
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.setTipoPrioridad(TipoPrioridad.NORMAL);
+        solicitud.setDescripcion("Solicitud de cambio de grupo");
         return solicitud;
+    }
+
+    private Map<String, Object> crearEstadisticasMock() {
+        Map<String, Object> estadisticas = new HashMap<>();
+        estadisticas.put("totalSolicitudes", 10);
+        estadisticas.put("solicitudesPendientes", 5);
+        estadisticas.put("solicitudesAprobadas", 3);
+        estadisticas.put("solicitudesRechazadas", 2);
+        return estadisticas;
     }
 
     private Usuario crearUsuario() {
@@ -109,6 +123,8 @@ class ProyectoExodoBackendControllerTest {
         decanatura.setUsername("decanatura.sistemas");
         return decanatura;
     }
+
+
 
     @Test
     void testAdministradorController() {
@@ -271,27 +287,86 @@ class ProyectoExodoBackendControllerTest {
     @Test
     void testSolicitudCambioController() {
         SolicitudCambio solicitud = crearSolicitud();
-        when(solicitudService.listarTodos()).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.buscarPorId("solicitud1")).thenReturn(Optional.of(solicitud));
-        when(solicitudService.crear(any(SolicitudCambio.class))).thenReturn(solicitud);
+
+        // Mock de las respuestas del servicio
+        when(solicitudService.obtenerTodasLasSolicitudes()).thenReturn(Arrays.asList(solicitud));
+        when(solicitudService.obtenerSolicitudPorId("solicitud1")).thenReturn(Optional.of(solicitud));
+        when(solicitudService.crearSolicitud(any(SolicitudCambio.class))).thenReturn(solicitud);
         when(solicitudService.actualizarEstado("solicitud1", EstadoSolicitud.APROBADA)).thenReturn(solicitud);
-        doNothing().when(solicitudService).eliminarPorId("solicitud1");
-        when(solicitudService.buscarPorEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.buscarPorEstudiante("estudiante")).thenReturn(Arrays.asList(solicitud));
-        List<SolicitudCambio> solicitudes = solicitudController.listarTodos();
+        doNothing().when(solicitudService).eliminarSolicitud("solicitud1");
+        when(solicitudService.obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud));
+        when(solicitudService.obtenerSolicitudesPorEstudiante("estudiante1")).thenReturn(Arrays.asList(solicitud));
+        when(solicitudService.obtenerSolicitudesPorDecanatura("decanatura1")).thenReturn(Arrays.asList(solicitud));
+        when(solicitudService.obtenerSolicitudesPorPrioridad(TipoPrioridad.ESPECIAL)).thenReturn(Arrays.asList(solicitud));
+        when(solicitudService.obtenerHistorialPorSolicitud("solicitud1")).thenReturn(Arrays.asList("2024-01-01|PENDIENTE|||CREACION"));
+        when(solicitudService.obtenerEstadisticasSolicitudes()).thenReturn(crearEstadisticasMock());
+
+        // 1. Test listar todas las solicitudes
+        List<SolicitudCambio> solicitudes = solicitudController.obtenerTodasLasSolicitudes();
         assertFalse(solicitudes.isEmpty());
-        Optional<SolicitudCambio> solicitudEncontrada = solicitudController.buscarPorId("solicitud1");
-        assertTrue(solicitudEncontrada.isPresent());
-        SolicitudCambio solicitudCreada = solicitudController.crear(solicitud);
-        assertNotNull(solicitudCreada);
-        SolicitudCambio solicitudActualizada = solicitudController.actualizarEstado("solicitud1", "APROBADA");
-        assertNotNull(solicitudActualizada);
-        solicitudController.eliminarPorId("solicitud1");
+        assertEquals(1, solicitudes.size());
+
+        // 2. Test buscar por ID
+        ResponseEntity<SolicitudCambio> respuestaBuscar = solicitudController.obtenerSolicitudPorId("solicitud1");
+        assertTrue(respuestaBuscar.getStatusCode().is2xxSuccessful());
+        assertNotNull(respuestaBuscar.getBody());
+
+        // 3. Test crear solicitud
+        ResponseEntity<SolicitudCambio> respuestaCrear = solicitudController.crear(solicitud);
+        assertTrue(respuestaCrear.getStatusCode().is2xxSuccessful());
+        assertNotNull(respuestaCrear.getBody());
+
+        // 4. Test actualizar estado
+        ResponseEntity<SolicitudCambio> respuestaActualizar = solicitudController.actualizarEstado("solicitud1", "APROBADA");
+        assertTrue(respuestaActualizar.getStatusCode().is2xxSuccessful());
+        assertNotNull(respuestaActualizar.getBody());
+
+        // 5. Test eliminar solicitud
+        ResponseEntity<Void> respuestaEliminar = solicitudController.eliminarSolicitud("solicitud1");
+        assertTrue(respuestaEliminar.getStatusCode().is2xxSuccessful());
+
+        // 6. Test buscar por estado
         List<SolicitudCambio> solicitudesPorEstado = solicitudController.buscarPorEstado("PENDIENTE");
         assertFalse(solicitudesPorEstado.isEmpty());
-        List<SolicitudCambio> solicitudesPorEstudiante = solicitudController.buscarPorEstudiante("estudiante");
+        assertEquals(1, solicitudesPorEstado.size());
+
+        // 7. Test buscar por estudiante
+        List<SolicitudCambio> solicitudesPorEstudiante = solicitudController.buscarPorEstudiante("estudiante1");
         assertFalse(solicitudesPorEstudiante.isEmpty());
+        assertEquals(1, solicitudesPorEstudiante.size());
+
+        // 8. Test buscar por decanatura
+        List<SolicitudCambio> solicitudesPorDecanatura = solicitudController.obtenerSolicitudesPorDecanatura("decanatura1");
+        assertFalse(solicitudesPorDecanatura.isEmpty());
+
+        // 9. Test buscar por prioridad
+        List<SolicitudCambio> solicitudesPorPrioridad = solicitudController.consultarCasosEspeciales();
+        assertFalse(solicitudesPorPrioridad.isEmpty());
+
+        // 10. Test obtener historial - CORREGIDO
+        ResponseEntity<List<String>> respuestaHistorial = solicitudController.obtenerHistorialPorSolicitud("solicitud1");
+        assertTrue(respuestaHistorial.getStatusCode().is2xxSuccessful());
+        List<String> historial = respuestaHistorial.getBody();
+        assertNotNull(historial);
+        assertFalse(historial.isEmpty());
+
+        // 11. Test obtener estadísticas
+        Map<String, Object> estadisticas = solicitudController.generarEstadisticasReasignacion();
+        assertNotNull(estadisticas);
+        assertTrue(estadisticas.containsKey("totalSolicitudes"));
+
+        // Verificaciones de los mocks
+        verify(solicitudService, times(1)).obtenerTodasLasSolicitudes();
+        verify(solicitudService, times(1)).obtenerSolicitudPorId("solicitud1");
+        verify(solicitudService, times(1)).crearSolicitud(any(SolicitudCambio.class));
+        verify(solicitudService, times(1)).actualizarEstado("solicitud1", EstadoSolicitud.APROBADA);
+        verify(solicitudService, times(1)).eliminarSolicitud("solicitud1");
+        verify(solicitudService, times(1)).obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE);
+        verify(solicitudService, times(1)).obtenerSolicitudesPorEstudiante("estudiante1");
+        verify(solicitudService, times(1)).obtenerHistorialPorSolicitud("solicitud1");
+        verify(solicitudService, times(1)).obtenerEstadisticasSolicitudes();
     }
+
 
 
     @Test
@@ -337,4 +412,6 @@ class ProyectoExodoBackendControllerTest {
         decanaturaController.aprobarSolicitudEspecial("solicitud1");
         verify(decanaturaService, times(1)).aprobarSolicitudEspecial("solicitud1");
     }
+
+    
 }
