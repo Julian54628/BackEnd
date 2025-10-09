@@ -181,6 +181,7 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         
         List<SolicitudCambio> todasLasSolicitudes = repositorioSolicitudCambio.findAll();
         
+        // Estadísticas básicas
         estadisticas.put("totalSolicitudes", todasLasSolicitudes.size());
         estadisticas.put("solicitudesPendientes", todasLasSolicitudes.stream()
                 .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE).count());
@@ -189,15 +190,39 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         estadisticas.put("solicitudesRechazadas", todasLasSolicitudes.stream()
                 .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count());
         
-        // Estadísticas por tipo
+        // Estadísticas por tipo de solicitud
         Map<TipoSolicitud, Long> porTipo = todasLasSolicitudes.stream()
+                .filter(s -> s.getTipoSolicitud() != null)
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoSolicitud, Collectors.counting()));
         estadisticas.put("porTipo", porTipo);
         
         // Estadísticas por prioridad
         Map<TipoPrioridad, Long> porPrioridad = todasLasSolicitudes.stream()
+                .filter(s -> s.getTipoPrioridad() != null)
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoPrioridad, Collectors.counting()));
         estadisticas.put("porPrioridad", porPrioridad);
+        
+        // Tasa de aprobación por decanatura
+        Map<String, Map<String, Long>> aprobacionPorDecanatura = todasLasSolicitudes.stream()
+                .filter(s -> s.getDecanaturaId() != null)
+                .collect(Collectors.groupingBy(
+                    SolicitudCambio::getDecanaturaId,
+                    Collectors.groupingBy(
+                        s -> s.getEstado().toString(),
+                        Collectors.counting()
+                    )
+                ));
+        estadisticas.put("aprobacionPorDecanatura", aprobacionPorDecanatura);
+        
+        // Solicitudes por mes
+        Map<String, Long> solicitudesPorMes = todasLasSolicitudes.stream()
+                .collect(Collectors.groupingBy(
+                    s -> String.format("%d-%02d", 
+                        s.getFechaCreacion().getYear() + 1900,
+                        s.getFechaCreacion().getMonth() + 1),
+                    Collectors.counting()
+                ));
+        estadisticas.put("solicitudesPorMes", solicitudesPorMes);
         
         return estadisticas;
     }
@@ -206,48 +231,93 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
     public boolean validarSolicitud(SolicitudCambio solicitud) {
         if (solicitud == null) return false;
         
-        // Validar campos obligatorios
         if (solicitud.getEstudianteId() == null || solicitud.getEstudianteId().trim().isEmpty()) return false;
-        if (solicitud.getDescripcion() == null || solicitud.getDescripcion().trim().isEmpty()) return false;
         if (solicitud.getTipoSolicitud() == null) return false;
         
-        // Validar que el estudiante existe
         if (!repositorioEstudiante.existsById(solicitud.getEstudianteId())) return false;
         
-        // Validar materias y grupos según el tipo de solicitud
         if (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_GRUPO) {
             if (solicitud.getMateriaOrigenId() == null || solicitud.getGrupoOrigenId() == null ||
-                solicitud.getGrupoDestinoId() == null) return false;
+                solicitud.getGrupoDestinoId() == null) {
+                return false;
+            }
         } else if (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_MATERIA) {
-            if (solicitud.getMateriaOrigenId() == null || solicitud.getMateriaDestinoId() == null) return false;
+            if (solicitud.getMateriaOrigenId() == null || solicitud.getMateriaDestinoId() == null) {
+                return false;
+            }
+        }
+        
+        List<SolicitudCambio> solicitudesSimilares = repositorioSolicitudCambio
+            .findByEstudianteIdAndEstado(solicitud.getEstudianteId(), EstadoSolicitud.PENDIENTE);
+            
+        if (solicitudesSimilares != null && !solicitudesSimilares.isEmpty()) {
+            for (SolicitudCambio s : solicitudesSimilares) {
+                if (s.getTipoSolicitud() == solicitud.getTipoSolicitud() &&
+                    ((solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_GRUPO && 
+                      s.getMateriaOrigenId().equals(solicitud.getMateriaOrigenId()) &&
+                      s.getGrupoOrigenId().equals(solicitud.getGrupoOrigenId()) &&
+                      s.getGrupoDestinoId().equals(solicitud.getGrupoDestinoId())) ||
+                     (solicitud.getTipoSolicitud() == TipoSolicitud.CAMBIO_MATERIA &&
+                      s.getMateriaOrigenId().equals(solicitud.getMateriaOrigenId()) &&
+                      s.getMateriaDestinoId().equals(solicitud.getMateriaDestinoId())))) {
+                    return false;
+                }
+            }
         }
         
         return true;
     }
-
+    
     @Override
     public boolean puedeCrearSolicitud(String estudianteId, String materiaId) {
-        // Verificar que no existe una solicitud activa para la misma materia
-        List<SolicitudCambio> solicitudesActivas = repositorioSolicitudCambio.findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(
-                estudianteId, materiaId, Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION));
+        if (estudianteId == null || estudianteId.trim().isEmpty() || 
+            materiaId == null || materiaId.trim().isEmpty()) {
+            return false;
+        }
         
-        return solicitudesActivas.isEmpty();
-    }
-
-    private void asignarDecanatura(SolicitudCambio solicitud) {
-        // Obtener la facultad de la materia destino
-        String materiaId = solicitud.getMateriaDestinoId();
-        if (materiaId != null) {
-            Optional<Materia> materiaOpt = repositorioMateria.findById(materiaId);
-            if (materiaOpt.isPresent()) {
-                String facultad = materiaOpt.get().getFacultad();
-                
-                // Buscar decanatura por facultad
-                List<Decanatura> decanaturas = repositorioDecanatura.findByFacultad(facultad);
-                if (!decanaturas.isEmpty()) {
-                    solicitud.setDecanaturaId(decanaturas.get(0).getId());
+        if (!repositorioEstudiante.existsById(estudianteId)) {
+            return false;
+        }
+        
+        List<SolicitudCambio> solicitudesPendientes = repositorioSolicitudCambio
+            .findByEstudianteIdAndEstado(estudianteId, EstadoSolicitud.PENDIENTE);
+            
+        if (solicitudesPendientes != null) {
+            for (SolicitudCambio solicitud : solicitudesPendientes) {
+                if ((solicitud.getMateriaOrigenId() != null && solicitud.getMateriaOrigenId().equals(materiaId)) ||
+                    (solicitud.getMateriaDestinoId() != null && solicitud.getMateriaDestinoId().equals(materiaId))) {
+                    return false;
                 }
             }
+        }
+        
+        return true;
+    }
+    
+    private void asignarDecanatura(SolicitudCambio solicitud) {
+        try {
+            String materiaId = (solicitud.getMateriaOrigenId() != null) ?
+                solicitud.getMateriaOrigenId() : solicitud.getMateriaDestinoId();
+                
+            if (materiaId != null) {
+                Optional<Materia> materiaOpt = repositorioMateria.findById(materiaId);
+                if (materiaOpt.isPresent()) {
+                    if (materiaOpt.get().getFacultad() != null) {
+                        solicitud.setDecanaturaId(materiaOpt.get().getFacultad());
+                        return;
+                    }
+                }
+            }
+            
+            List<Decanatura> decanaturas = repositorioDecanatura.findAll();
+            
+            if (decanaturas != null && !decanaturas.isEmpty()) {
+                solicitud.setDecanaturaId(decanaturas.get(0).getId());
+            } else {
+                solicitud.setDecanaturaId("DEFAULT_DECANATURA");
+            }
+        } catch (Exception e) {
+            solicitud.setDecanaturaId("DEFAULT_DECANATURA");
         }
     }
 }
