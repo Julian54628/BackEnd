@@ -32,16 +32,17 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
     @Query("{ 'estudianteId': ?0, 'materiaDestinoId': ?1, 'estado': { $in: ['PENDIENTE', 'EN_REVISION'] } }")
     boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId);
 
-    long countByEstado(EstadoSolicitud estado);
 
     @Query("{ 'fechaCreacion': { $gte: ?0 } }")
     List<SolicitudCambio> findSolicitudesRecientes(Date fechaLimite);
 
     List<SolicitudCambio> findByDecanaturaId(String decanaturaId);
+    
     List<SolicitudCambio> findByTipoPrioridad(TipoPrioridad tipoPrioridad);
+    
+    @Query("{ 'decanaturaId': ?0, 'estado': ?1 }")
     List<SolicitudCambio> findByDecanaturaIdAndEstado(String decanaturaId, EstadoSolicitud estado);
     List<SolicitudCambio> findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(String estudianteId, String materiaDestinoId, List<EstadoSolicitud> estados);
     List<SolicitudCambio> findByAdministradorId(String administradorId);
     List<SolicitudCambio> findByTipoPrioridadAndEstado(TipoPrioridad tipoPrioridad, EstadoSolicitud estado);
-    List<SolicitudCambio> findByTipoSolicitud(String tipoSolicitud);
 }
