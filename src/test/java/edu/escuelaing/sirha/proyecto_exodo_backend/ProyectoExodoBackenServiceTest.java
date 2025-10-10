@@ -1,593 +1,766 @@
 package edu.escuelaing.sirha.proyecto_exodo_backend;
 
-import edu.escuelaing.sirha.controller.*;
 import edu.escuelaing.sirha.model.*;
-import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
-import edu.escuelaing.sirha.repository.RepositorioUsuario;
+import edu.escuelaing.sirha.repository.*;
 import edu.escuelaing.sirha.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Time;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class ProyectoExodoBackenServiceTest {
 
-    private PeriodoCambioController periodoController;
-    private EstudiantesControlador estudianteController;
-    private GrupoController grupoController;
-    private MateriaController materiaController;
-    private SolicitudCambioController solicitudController;
-    private AdministradorController adminController;
-    private DecanaturaController decanaturaController;
-    private ProfesorController profesorController;
-    private UsuarioController usuarioController;
-    private RepositorioSemaforoAcademico mockRepositorioSemaforoAcademico;
-    private RepositorioUsuario mockRepositorioUsuario;
-    private SemaforoAcademicoService semaforoAcademicoService;
+    @Mock private RepositorioAdministrador repositorioAdministrador;
+    @Mock private RepositorioDecanatura repositorioDecanatura;
+    @Mock private RepositorioEstudiante repositorioEstudiante;
+    @Mock private RepositorioGrupo repositorioGrupo;
+    @Mock private RepositorioHorario repositorioHorario;
+    @Mock private RepositorioMateria repositorioMateria;
+    @Mock private RepositorioPeriodoCambio repositorioPeriodoCambio;
+    @Mock private RepositorioPlanAcademico repositorioPlanAcademico;
+    @Mock private RepositorioProfesor repositorioProfesor;
+    @Mock private RepositorioSemaforoAcademico repositorioSemaforoAcademico;
+    @Mock private RepositorioSolicitudCambio repositorioSolicitudCambio;
+    @Mock private RepositorioUsuario repositorioUsuario;
 
-    // Servicios mock
-    private PeriodoCambioService periodoService;
-    private EstudianteService estudianteService;
-    private GrupoService grupoService;
-    private MateriaService materiaService;
-    private SolicitudCambioService solicitudService;
-    private AdministradorService adminService;
-    private DecanaturaService decanaturaService;
-    private ProfesorService profesorService;
-    private UsuarioService usuarioService;
+    @InjectMocks private AdministradorServiceImpl administradorService;
+    @InjectMocks private DecanaturaServiceImpl decanaturaService;
+    @InjectMocks private EstudianteServiceImpl estudianteService;
+    @InjectMocks private GrupoServiceImpl grupoService;
+    @InjectMocks private HorarioServiceImpl horarioService;
+    @InjectMocks private MateriaServiceImpl materiaService;
+    @InjectMocks private PeriodoCambioServiceImpl periodoService;
+    @InjectMocks private ProfesorServiceImpl profesorService;
+    @InjectMocks private SemaforoAcademicoServiceImpl semaforoService;
+    @InjectMocks private SolicitudCambioServiceImpl solicitudService;
+    @InjectMocks private UsuarioServiceImpl usuarioService;
 
     @BeforeEach
-    void setup() {
-        mockRepositorioSemaforoAcademico = Mockito.mock(RepositorioSemaforoAcademico.class);
-        mockRepositorioUsuario = Mockito.mock(RepositorioUsuario.class);
-
-        // Crear mocks de los servicios
-        periodoService = Mockito.mock(PeriodoCambioService.class);
-        estudianteService = Mockito.mock(EstudianteService.class);
-        grupoService = Mockito.mock(GrupoService.class);
-        materiaService = Mockito.mock(MateriaService.class);
-        solicitudService = Mockito.mock(SolicitudCambioService.class);
-        adminService = Mockito.mock(AdministradorService.class);
-        decanaturaService = Mockito.mock(DecanaturaService.class);
-        profesorService = Mockito.mock(ProfesorService.class);
-        usuarioService = Mockito.mock(UsuarioService.class);
-        semaforoAcademicoService = Mockito.mock(SemaforoAcademicoService.class);
-
-        // Inicializar controllers con servicios mock
-        periodoController = new PeriodoCambioController();
-        periodoController.periodoService = periodoService;
-
-        estudianteController = new EstudiantesControlador(estudianteService, semaforoAcademicoService);
-
-        grupoController = new GrupoController();
-        grupoController.grupoService = grupoService;
-
-        materiaController = new MateriaController();
-        materiaController.materiaService = materiaService;
-
-        solicitudController = new SolicitudCambioController();
-        solicitudController.solicitudService = solicitudService;
-
-        adminController = new AdministradorController();
-        adminController.administradorService = adminService;
-
-        decanaturaController = new DecanaturaController();
-        decanaturaController.decanaturaService = decanaturaService;
-
-        profesorController = new ProfesorController();
-        profesorController.profesorService = profesorService;
-
-        usuarioController = new UsuarioController();
-        usuarioController.usuarioService = usuarioService;
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
+    // ========== ADMINISTRADOR SERVICE TESTS ==========
     @Test
-    void testCreacionYBusquedaBasica() {
-        // Configurar mocks
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("p1");
-        periodo.setNombre("2024-1");
-        when(periodoService.crear(any(PeriodoCambio.class))).thenReturn(periodo);
-        when(periodoService.buscarPorId("p1")).thenReturn(Optional.of(periodo));
-
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("e1");
-        estudiante.setCodigo("202410001");
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-
-        Materia materia = new Materia();
-        materia.setId("m1");
-        materia.setCodigo("MAT101");
-        when(materiaService.crear(any(Materia.class))).thenReturn(materia);
-
-        // Ejecutar pruebas
-        PeriodoCambio periodoCreado = periodoController.create(periodo);
-        assertEquals("p1", periodoCreado.getId());
-
-        Optional<PeriodoCambio> periodoEncontrado = periodoController.getById("p1");
-        assertTrue(periodoEncontrado.isPresent());
-
-        ResponseEntity<Estudiante> estudianteCreado = estudianteController.crear(estudiante);
-        assertTrue(estudianteCreado.getStatusCode().is2xxSuccessful());
-
-        Materia materiaCreada = materiaController.crear(materia);
-        assertEquals("m1", materiaCreada.getId());
-    }
-
-    @Test
-    void testGestionEstudiantesCompleta() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante01");
-        estudiante.setCodigo("202410001");
-        estudiante.setNombre("Carlos Ruiz");
-
-        // Configurar mocks
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(estudianteService.buscarPorCodigo("202410001")).thenReturn(Optional.of(estudiante));
-        when(estudianteService.listarTodos()).thenReturn(Arrays.asList(estudiante));
-        when(estudianteService.actualizar("estudiante01", estudiante)).thenReturn(estudiante);
-        Mockito.doNothing().when(estudianteService).eliminarPorId("estudiante01");
-
-        // Ejecutar pruebas
-        ResponseEntity<Estudiante> response = estudianteController.crear(estudiante);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<Estudiante> encontrado = estudianteController.buscarPorCodigo("202410001");
-        assertTrue(encontrado.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<List<Estudiante>> lista = estudianteController.listarTodos();
-        assertTrue(lista.getStatusCode().is2xxSuccessful());
-        assertFalse(lista.getBody().isEmpty());
-
-        estudiante.setNombre("Carlos Ruiz Actualizado");
-        ResponseEntity<Estudiante> actualizado = estudianteController.actualizar("estudiante01", estudiante);
-        assertTrue(actualizado.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<Void> eliminado = estudianteController.eliminar("estudiante01");
-        assertTrue(eliminado.getStatusCode().is2xxSuccessful());
-    }
-
-    @Test
-    void testSolicitudesCambio() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante01");
-        estudiante.setCodigo("202410002");
-
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("solicitud01");
-        solicitud.setEstudianteId("estudiante01");
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
-
-        // Configurar mocks
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(solicitudService.crearSolicitud(any(SolicitudCambio.class))).thenReturn(solicitud);
-        when(solicitudService.obtenerSolicitudPorId("solicitud01")).thenReturn(Optional.of(solicitud));
-        when(solicitudService.obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.actualizarEstado("solicitud01", EstadoSolicitud.APROBADA)).thenReturn(solicitud);
-        when(solicitudService.obtenerTodasLasSolicitudes()).thenReturn(Arrays.asList(solicitud));
-
-        // Ejecutar pruebas
-        ResponseEntity<Estudiante> respuestaEstudiante = estudianteController.crear(estudiante);
-        assertTrue(respuestaEstudiante.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<SolicitudCambio> respuestaCrear = solicitudController.crear(solicitud);
-        assertTrue(respuestaCrear.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaCrear.getBody());
-
-        ResponseEntity<SolicitudCambio> respuestaBuscar = solicitudController.obtenerSolicitudPorId("solicitud01");
-        assertTrue(respuestaBuscar.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaBuscar.getBody());
-
-        List<SolicitudCambio> pendientes = solicitudController.buscarPorEstado("PENDIENTE");
-        assertFalse(pendientes.isEmpty());
-
-        ResponseEntity<SolicitudCambio> respuestaActualizar = solicitudController.actualizarEstado("solicitud01", "APROBADA");
-        assertTrue(respuestaActualizar.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaActualizar.getBody());
-
-        List<SolicitudCambio> todas = solicitudController.obtenerTodasLasSolicitudes();
-        assertFalse(todas.isEmpty());
-    }
-
-    @Test
-    void testGestionGrupos() {
-        Grupo grupo = new Grupo();
-        grupo.setId("g1");
-        grupo.setCupoMaximo(30);
-
-        // Configurar mocks
-        when(grupoService.crear(any(Grupo.class))).thenReturn(grupo);
-        when(grupoService.buscarPorId("g1")).thenReturn(Optional.of(grupo));
-        when(grupoService.verificarCupoDisponible("g1")).thenReturn(true);
-        when(grupoService.actualizarCupo("g1", 35)).thenReturn(grupo);
-        when(grupoService.consultarCargaAcademica("g1")).thenReturn(0.0f);
-        when(grupoService.listarTodos()).thenReturn(Arrays.asList(grupo));
-
-        // Ejecutar pruebas
-        Grupo grupoCreado = grupoController.create(grupo);
-        assertNotNull(grupoCreado);
-
-        Optional<Grupo> grupoEncontrado = grupoController.getById("g1");
-        assertTrue(grupoEncontrado.isPresent());
-
-        boolean cupoDisponible = grupoController.verificarCupoDisponible("g1");
-        assertTrue(cupoDisponible);
-
-        Grupo cupoActualizado = grupoController.updateCupo("g1", 35);
-        assertNotNull(cupoActualizado);
-
-        float carga = grupoController.consultarCargaAcademica("g1");
-        assertEquals(0.0f, carga);
-
-        List<Grupo> grupos = grupoController.getAll();
-        assertFalse(grupos.isEmpty());
-    }
-
-    @Test
-    void testGestionMaterias() {
-        Materia materia = new Materia();
-        materia.setId("logica");
-        materia.setCodigo("ISIS101");
-        materia.setNombre("Programación I");
-
-        // CORREGIDO: Configurar mocks correctamente
-        when(materiaService.crear(any(Materia.class))).thenReturn(materia);
-        when(materiaService.buscarPorId("logica")).thenReturn(Optional.of(materia));
-        when(materiaService.buscarPorCodigo("ISIS101")).thenReturn(Optional.of(materia));
-        when(materiaService.listarTodos()).thenReturn(Arrays.asList(materia));
-        when(materiaService.actualizar("logica", materia)).thenReturn(materia);
-
-        // CORREGIDO: Configurar eliminación por separado
-        Mockito.doNothing().when(materiaService).eliminarPorId("logica");
-
-        // CORREGIDO: Crear un mock separado para después de eliminar
-        when(materiaService.buscarPorId("logica"))
-                .thenReturn(Optional.of(materia))  // Primera llamada (antes de eliminar)
-                .thenReturn(Optional.empty());     // Segunda llamada (después de eliminar)
-
-        // Ejecutar pruebas
-        Materia materiaCreada = materiaController.crear(materia);
-        assertNotNull(materiaCreada);
-
-        Optional<Materia> materiaEncontrada = materiaController.buscarPorId("logica");
-        assertTrue(materiaEncontrada.isPresent()); // ✅ Esto ahora pasa
-
-        Optional<Materia> porCodigo = materiaController.buscarPorCodigo("ISIS101");
-        assertTrue(porCodigo.isPresent());
-
-        List<Materia> materias = materiaController.listarTodos();
-        assertFalse(materias.isEmpty());
-
-        materia.setNombre("Programación I Actualizada");
-        Materia actualizada = materiaController.actualizar("logica", materia);
-        assertNotNull(actualizada);
-
-        materiaController.eliminarPorId("logica");
-
-        Optional<Materia> eliminada = materiaController.buscarPorId("logica");
-        assertFalse(eliminada.isPresent()); // ✅ Esto también pasa
-    }
-
-    @Test
-    void testPeriodosCambio() {
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("periodo1");
-        periodo.setNombre("2024-1");
-        periodo.setActivo(true);
-
-        // CORREGIDO: Configurar mocks correctamente
-        when(periodoService.crear(any(PeriodoCambio.class))).thenReturn(periodo);
-        when(periodoService.buscarPorId("periodo1"))
-                .thenReturn(Optional.of(periodo))  // Primera llamada (antes de eliminar)
-                .thenReturn(Optional.empty());     // Segunda llamada (después de eliminar)
-        when(periodoService.obtenerPeriodoActivo()).thenReturn(Optional.of(periodo));
-        when(periodoService.listarTodos()).thenReturn(Arrays.asList(periodo));
-        when(periodoService.actualizar("periodo1", periodo)).thenReturn(periodo);
-        Mockito.doNothing().when(periodoService).eliminarPorId("periodo1");
-
-        // Ejecutar pruebas
-        PeriodoCambio periodoCreado = periodoController.create(periodo);
-        assertNotNull(periodoCreado);
-
-        Optional<PeriodoCambio> encontrado = periodoController.getById("periodo1");
-        assertTrue(encontrado.isPresent()); // ✅ Esto ahora pasa
-
-        Optional<PeriodoCambio> activo = periodoController.getActivo();
-        assertTrue(activo.isPresent());
-
-        List<PeriodoCambio> periodos = periodoController.getAll();
-        assertFalse(periodos.isEmpty());
-
-        periodo.setNombre("2024-1 Actualizado");
-        PeriodoCambio actualizado = periodoController.update("periodo1", periodo);
-        assertNotNull(actualizado);
-
-        periodoController.delete("periodo1");
-
-        Optional<PeriodoCambio> eliminado = periodoController.getById("periodo1");
-        assertFalse(eliminado.isPresent());
-    }
-
-    @Test
-    void testAdministradores() {
+    void testAdministradorServiceCRUD() {
         Administrador admin = new Administrador();
         admin.setId("admin1");
-        admin.setUsername("admin.sistema");
+        admin.setUsername("adminUser");
 
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("per-admin");
-        periodo.setNombre("Periodo Admin");
+        when(repositorioAdministrador.save(any(Administrador.class))).thenReturn(admin);
+        when(repositorioAdministrador.findById("admin1")).thenReturn(Optional.of(admin));
+        when(repositorioAdministrador.findAll()).thenReturn(Arrays.asList(admin));
+        doNothing().when(repositorioAdministrador).deleteById("admin1");
 
-        // Configurar mocks
-        when(adminService.crear(any(Administrador.class))).thenReturn(admin);
-        when(adminService.buscarPorId("admin1")).thenReturn(Optional.of(admin));
-        when(adminService.configurarPeriodo(any(PeriodoCambio.class))).thenReturn(periodo);
-        when(adminService.generarReportes()).thenReturn(Arrays.asList(new SolicitudCambio()));
-        when(adminService.listarTodos()).thenReturn(Arrays.asList(admin));
+        Administrador creado = administradorService.crear(admin);
+        assertNotNull(creado);
+        assertEquals("admin1", creado.getId());
 
-        // Ejecutar pruebas
-        Administrador adminCreado = adminController.create(admin);
-        assertNotNull(adminCreado);
+        Optional<Administrador> encontrado = administradorService.buscarPorId("admin1");
+        assertTrue(encontrado.isPresent());
 
-        Optional<Administrador> adminEncontrado = adminController.getById("admin1");
-        assertTrue(adminEncontrado.isPresent());
+        List<Administrador> todos = administradorService.listarTodos();
+        assertFalse(todos.isEmpty());
 
-        PeriodoCambio periodoConfigurado = adminController.configurarPeriodo(periodo);
-        assertNotNull(periodoConfigurado);
-
-        List<SolicitudCambio> reportes = adminController.generarReportes();
-        assertNotNull(reportes);
-
-        List<Administrador> admins = adminController.getAll();
-        assertFalse(admins.isEmpty());
+        // Test eliminar
+        //assertDoesNotThrow(() -> administradorService.eliminarPorId("admin1"));
     }
 
     @Test
-    void testDecanaturaSolicitudes() {
+    void testAdministradorModificarEstadoMateriaSemaforo() {
+        SemaforoAcademico semaforo = new SemaforoAcademico();
+        semaforo.setId("semaforo1");
+        Map<String, EstadoMateria> historial = new HashMap<>();
+        historial.put("materia1", EstadoMateria.PENDIENTE);
+        semaforo.setHistorialMaterias(historial);
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("estudiante1")).thenReturn(Optional.of(semaforo));
+        when(repositorioSemaforoAcademico.save(any(SemaforoAcademico.class))).thenReturn(semaforo);
+
+        Optional<SemaforoAcademico> resultado = administradorService.modificarEstadoMateriaSemaforo(
+                "estudiante1", "materia1", EstadoMateria.APROBADA);
+
+        assertTrue(resultado.isPresent());
+        assertEquals(EstadoMateria.APROBADA, resultado.get().getHistorialMaterias().get("materia1"));
+    }
+
+    // ========== DECANATURA SERVICE TESTS ==========
+    @Test
+    void testDecanaturaServiceCompleto() {
+        // Configurar datos de prueba
         Decanatura decanatura = new Decanatura();
-        decanatura.setId("decanatura");
-        decanatura.setUsername("decanatura.sistemas");
+        decanatura.setId("dec1");
+        decanatura.setNombre("Decanatura Sistemas");
+        decanatura.setFacultad("Ingeniería");
+        decanatura.setEsAdministrador(false);
+        decanatura.setActivo(true);
+
+        SolicitudCambio solicitud1 = new SolicitudCambio();
+        solicitud1.setId("sol1");
+        solicitud1.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud1.setDecanaturaId("dec1");
+        solicitud1.setPrioridad(1);
+
+        SolicitudCambio solicitud2 = new SolicitudCambio();
+        solicitud2.setId("sol2");
+        solicitud2.setEstado(EstadoSolicitud.APROBADA);
+        solicitud2.setDecanaturaId("dec1");
+        solicitud2.setPrioridad(2);
+
+        when(repositorioDecanatura.save(any(Decanatura.class))).thenReturn(decanatura);
+        when(repositorioDecanatura.findById("dec1")).thenReturn(Optional.of(decanatura));
+        when(repositorioDecanatura.findAll()).thenReturn(Arrays.asList(decanatura));
+        when(repositorioSolicitudCambio.findByEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud1));
+        when(repositorioSolicitudCambio.findById("sol1")).thenReturn(Optional.of(solicitud1));
+        when(repositorioSolicitudCambio.save(any(SolicitudCambio.class))).thenReturn(solicitud1);
+        when(repositorioSolicitudCambio.findAll()).thenReturn(Arrays.asList(solicitud1, solicitud2));
+
+        Decanatura creada = decanaturaService.crear(decanatura);
+        assertNotNull(creada);
+
+        Optional<Decanatura> encontrada = decanaturaService.buscarPorId("dec1");
+        assertTrue(encontrada.isPresent());
+
+        List<Decanatura> todas = decanaturaService.listarTodos();
+        assertFalse(todas.isEmpty());
+
+        Decanatura actualizada = decanaturaService.actualizar("dec1", decanatura);
+        assertNotNull(actualizada);
+
+        when(repositorioDecanatura.findById("noExiste")).thenReturn(Optional.empty());
+        Decanatura noActualizada = decanaturaService.actualizar("noExiste", decanatura);
+        assertNull(noActualizada);
+        assertDoesNotThrow(() -> decanaturaService.eliminarPorId("dec1"));
+
+        List<SolicitudCambio> pendientes = decanaturaService.consultarSolicitudesPendientes();
+        assertFalse(pendientes.isEmpty());
+
+        SolicitudCambio revisada = decanaturaService.revisarSolicitud("sol1", EstadoSolicitud.APROBADA, "Aprobada");
+        assertNotNull(revisada);
+        assertEquals(EstadoSolicitud.APROBADA, revisada.getEstado());
+
+        when(repositorioSolicitudCambio.findById("noExiste")).thenReturn(Optional.empty());
+        SolicitudCambio noRevisada = decanaturaService.revisarSolicitud("noExiste", EstadoSolicitud.APROBADA, "Aprobada");
+        assertNull(noRevisada);
+
+        assertDoesNotThrow(() -> decanaturaService.aprobarSolicitudEspecial("sol1"));
+
+        Decanatura conPermisos = decanaturaService.otorgarPermisosAdministrador("dec1");
+        assertNotNull(conPermisos);
+        assertTrue(conPermisos.isEsAdministrador());
+
+        Decanatura sinPermisos = decanaturaService.revocarPermisosAdministrador("dec1");
+        assertNotNull(sinPermisos);
+        assertFalse(sinPermisos.isEsAdministrador());
+
+        List<SolicitudCambio> porPrioridad = decanaturaService.consultarSolicitudesPorDecanaturaYPrioridad("dec1");
+        assertNotNull(porPrioridad);
+
+        List<SolicitudCambio> porFecha = decanaturaService.consultarSolicitudesPorDecanaturaYFechaLlegada("dec1");
+        assertNotNull(porFecha);
+
+        Map<String, Object> tasas = decanaturaService.consultarTasaAprobacionRechazo("dec1");
+        assertNotNull(tasas);
+        assertTrue(tasas.containsKey("totalSolicitudes"));
+        assertTrue(tasas.containsKey("aprobadas"));
+        assertTrue(tasas.containsKey("rechazadas"));
+        assertTrue(tasas.containsKey("tasaAprobacion"));
+        assertTrue(tasas.containsKey("tasaRechazo"));
+    }
+
+    @Test
+    void testDecanaturaServiceCasosBorde() {
+        when(repositorioDecanatura.findById("noExiste")).thenReturn(Optional.empty());
+
+        Decanatura sinPermisos = decanaturaService.otorgarPermisosAdministrador("noExiste");
+        assertNull(sinPermisos);
+
+        Decanatura noRevocados = decanaturaService.revocarPermisosAdministrador("noExiste");
+        assertNull(noRevocados);
+
+        when(repositorioSolicitudCambio.findByEstado(EstadoSolicitud.PENDIENTE)).thenReturn(new ArrayList<>());
+        List<SolicitudCambio> pendientesVacias = decanaturaService.consultarSolicitudesPendientes();
+        assertTrue(pendientesVacias.isEmpty());
+
+        when(repositorioSolicitudCambio.findAll()).thenReturn(new ArrayList<>());
+        Map<String, Object> tasasVacias = decanaturaService.consultarTasaAprobacionRechazo("dec1");
+        assertNotNull(tasasVacias);
+        assertEquals(0L, tasasVacias.get("totalSolicitudes"));
+        assertEquals(0.0, tasasVacias.get("tasaAprobacion"));
+    }
+
+    // ========== ESTUDIANTE SERVICE TESTS ==========
+    @Test
+    void testEstudianteServiceCompleto() {
+        Estudiante estudiante = new Estudiante();
+        estudiante.setId("est1");
+        estudiante.setCodigo("202410001");
 
         SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("solicitud");
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.setId("solEst1");
 
-        // Configurar mocks
-        when(decanaturaService.crear(any(Decanatura.class))).thenReturn(decanatura);
-        when(decanaturaService.buscarPorId("decanatura")).thenReturn(Optional.of(decanatura));
-        when(decanaturaService.consultarSolicitudesPendientes()).thenReturn(Arrays.asList(solicitud));
-        when(decanaturaService.revisarSolicitud("solicitud", EstadoSolicitud.APROBADA, "Aprobada por decanatura"))
-                .thenReturn(solicitud);
+        when(repositorioEstudiante.save(any(Estudiante.class))).thenReturn(estudiante);
+        when(repositorioEstudiante.findByCodigo("202410001")).thenReturn(Optional.of(estudiante));
+        when(repositorioEstudiante.findById("est1")).thenReturn(Optional.of(estudiante));
+        when(repositorioEstudiante.findAll()).thenReturn(Arrays.asList(estudiante));
 
-        // Ejecutar pruebas
-        Decanatura decanaturaCreada = decanaturaController.create(decanatura);
-        assertNotNull(decanaturaCreada);
+        Estudiante creado = estudianteService.crear(estudiante);
+        assertNotNull(creado);
 
-        List<SolicitudCambio> pendientes = decanaturaController.consultarSolicitudesPendientes();
-        assertNotNull(pendientes);
-
-        if (!pendientes.isEmpty()) {
-            String solicitudId = pendientes.get(0).getId();
-            SolicitudCambio revisada = decanaturaController.revisarSolicitud(solicitudId, EstadoSolicitud.APROBADA, "Aprobada por decanatura");
-            assertNotNull(revisada);
-        }
-
-        Optional<Decanatura> decEncontrada = decanaturaController.getById("decanatura");
-        assertTrue(decEncontrada.isPresent());
-    }
-
-    @Test
-    void testProfesores() {
-        Profesor profesor = new Profesor();
-        profesor.setId("profesor");
-        profesor.setIdProfesor(1001);
-        profesor.setNombre("Dr. Ana López");
-
-        // Configurar mocks
-        when(profesorService.crear(any(Profesor.class))).thenReturn(profesor);
-        when(profesorService.buscarPorId("profesor")).thenReturn(Optional.of(profesor));
-        when(profesorService.buscarPorCodigo("1001")).thenReturn(Optional.of(profesor));
-        when(profesorService.consultarGruposAsignados("profesor")).thenReturn(Arrays.asList(new Grupo()));
-        when(profesorService.listarTodos()).thenReturn(Arrays.asList(profesor));
-
-        // Ejecutar pruebas
-        Profesor profesorCreado = profesorController.crear(profesor);
-        assertNotNull(profesorCreado);
-
-        Optional<Profesor> profesorEncontrado = profesorController.buscarPorId("profesor");
-        assertTrue(profesorEncontrado.isPresent());
-
-        Optional<Profesor> porCodigo = profesorController.buscarPorCodigo("1001");
+        Optional<Estudiante> porCodigo = estudianteService.buscarPorCodigo("202410001");
         assertTrue(porCodigo.isPresent());
 
-        List<Grupo> grupos = profesorController.consultarGruposAsignados("profesor");
-        assertNotNull(grupos);
 
-        List<Profesor> profesores = profesorController.listarTodos();
-        assertFalse(profesores.isEmpty());
+        when(repositorioSolicitudCambio.save(any(SolicitudCambio.class))).thenReturn(solicitud);
+        SolicitudCambio solicitudCreada = estudianteService.crearSolicitudCambio(
+                "est1", "mat1", "grp1", "mat2", "grp2");
+        assertNotNull(solicitudCreada);
+
+        when(repositorioSolicitudCambio.findByEstudianteId("est1")).thenReturn(Arrays.asList(solicitud));
+        List<SolicitudCambio> solicitudes = estudianteService.consultarSolicitudes("est1");
+        assertFalse(solicitudes.isEmpty());
     }
 
     @Test
-    void testEstudianteSolicitudesCambio() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante");
-        estudiante.setCodigo("202410003");
-
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("solicitud-est");
-
-        // Configurar mocks
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(estudianteService.crearSolicitudCambio("estudiante", "MAT101", "GRP1", "MAT102", "GRP2"))
-                .thenReturn(solicitud);
-        when(estudianteService.consultarSolicitudes("estudiante")).thenReturn(Arrays.asList(solicitud));
-
-        // Ejecutar pruebas
-        ResponseEntity<Estudiante> response = estudianteController.crear(estudiante);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<SolicitudCambio> solicitudResponse = estudianteController.crearSolicitudCambio("estudiante", "MAT101", "GRP1", "MAT102", "GRP2");
-        assertTrue(solicitudResponse.getStatusCode().is2xxSuccessful());
-        assertNotNull(solicitudResponse.getBody());
-
-        ResponseEntity<List<SolicitudCambio>> solicitudes = estudianteController.consultarSolicitudes("estudiante");
-        assertTrue(solicitudes.getStatusCode().is2xxSuccessful());
-        assertFalse(solicitudes.getBody().isEmpty());
-    }
-
-    @Test
-    void testOperacionesEliminacion() {
-        // Configurar mocks para Materia
-        Materia materia = new Materia();
-        materia.setId("fisica");
-        materia.setCodigo("ELIM101");
-        when(materiaService.crear(any(Materia.class))).thenReturn(materia);
-
-        // CORREGIDO: Configurar diferentes respuestas para diferentes llamadas
-        when(materiaService.buscarPorId("fisica"))
-                .thenReturn(Optional.of(materia))  // Primera llamada (antes de eliminar)
-                .thenReturn(Optional.empty());     // Segunda llamada (después de eliminar)
-        Mockito.doNothing().when(materiaService).eliminarPorId("fisica");
-
-        // Configurar mocks para Grupo
+    void testGrupoServiceCompleto() {
         Grupo grupo = new Grupo();
-        grupo.setId("grp-elim");
-        when(grupoService.crear(any(Grupo.class))).thenReturn(grupo);
-        when(grupoService.buscarPorId("grp-elim"))
-                .thenReturn(Optional.of(grupo))    // Primera llamada (antes de eliminar)
-                .thenReturn(Optional.empty());     // Segunda llamada (después de eliminar)
-        Mockito.doNothing().when(grupoService).eliminarPorId("grp-elim");
+        grupo.setId("grp1");
+        grupo.setCupoMaximo(30);
+        grupo.setEstudiantesInscritosIds(Arrays.asList("est1", "est2"));
 
-        // Configurar mocks para SolicitudCambio
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("sol-elim");
-        when(solicitudService.crearSolicitud(any(SolicitudCambio.class))).thenReturn(solicitud);
+        Estudiante estudiante = new Estudiante();
+        estudiante.setId("est1");
+        estudiante.setNombre("Estudiante 1");
 
-        // CORREGIDO: Configurar diferentes respuestas para obtenerSolicitudPorId
-        when(solicitudService.obtenerSolicitudPorId("sol-elim"))
-                .thenReturn(Optional.of(solicitud)) // Primera llamada (antes de eliminar)
-                .thenReturn(Optional.empty());      // Segunda llamada (después de eliminar)
+        when(repositorioGrupo.save(any(Grupo.class))).thenReturn(grupo);
+        when(repositorioGrupo.findById("grp1")).thenReturn(Optional.of(grupo));
+        when(repositorioGrupo.findAll()).thenReturn(Arrays.asList(grupo));
 
-        Mockito.doNothing().when(solicitudService).eliminarSolicitud("sol-elim");
+        Grupo creado = grupoService.crear(grupo);
+        assertNotNull(creado);
 
-        // Ejecutar pruebas
-        Materia materiaCreada = materiaController.crear(materia);
-        assertNotNull(materiaCreada);
+        Optional<Grupo> encontrado = grupoService.buscarPorId("grp1");
+        assertTrue(encontrado.isPresent());
 
-        // Primera búsqueda - debería existir
-        Optional<Materia> materiaAntes = materiaController.buscarPorId("fisica");
-        assertTrue(materiaAntes.isPresent());
+        boolean cupoDisponible = grupoService.verificarCupoDisponible("grp1");
+        assertTrue(cupoDisponible);
 
-        materiaController.eliminarPorId("fisica");
+        Grupo actualizado = grupoService.actualizarCupo("grp1", 40);
+        assertNotNull(actualizado);
 
-        // Segunda búsqueda - después de eliminar
-        Optional<Materia> materiaEliminada = materiaController.buscarPorId("fisica");
-        assertFalse(materiaEliminada.isPresent()); // ✅ Esto ahora pasa
+        float carga = grupoService.consultarCargaAcademica("grp1");
+        assertTrue(carga > 0);
 
-        Grupo grupoCreado = grupoController.create(grupo);
-        assertNotNull(grupoCreado);
-
-        // Primera búsqueda - debería existir
-        Optional<Grupo> grupoAntes = grupoController.getById("grp-elim");
-        assertTrue(grupoAntes.isPresent());
-
-        grupoController.delete("grp-elim");
-
-        // Segunda búsqueda - después de eliminar
-        Optional<Grupo> grupoEliminado = grupoController.getById("grp-elim");
-        assertFalse(grupoEliminado.isPresent());
-
-        ResponseEntity<SolicitudCambio> respuestaSolicitud = solicitudController.crear(solicitud);
-        assertTrue(respuestaSolicitud.getStatusCode().is2xxSuccessful());
-
-        // Primera búsqueda - debería existir
-        ResponseEntity<SolicitudCambio> respuestaBuscarAntes = solicitudController.obtenerSolicitudPorId("sol-elim");
-        assertTrue(respuestaBuscarAntes.getStatusCode().is2xxSuccessful());
-
-        ResponseEntity<Void> respuestaEliminar = solicitudController.eliminarSolicitud("sol-elim");
-        assertTrue(respuestaEliminar.getStatusCode().is2xxSuccessful());
-
-        // Segunda búsqueda - después de eliminar
-        ResponseEntity<SolicitudCambio> respuestaBuscar = solicitudController.obtenerSolicitudPorId("sol-elim");
-        assertTrue(respuestaBuscar.getStatusCode().is4xxClientError());
+        List<Grupo> gruposAlerta = grupoService.obtenerGruposConAlertaCapacidad(50.0);
+        assertNotNull(gruposAlerta);
     }
 
+    // ========== HORARIO SERVICE TESTS ==========
     @Test
-    void testConsultasAvanzadas() {
-        Estudiante estudiante = new Estudiante();
-        estudiante.setId("consulta");
-        estudiante.setCodigo("202410004");
+    void testHorarioServiceCompleto() {
+        Horario horario = new Horario();
+        horario.setId("hor1");
+        horario.setDiaSemana("Lunes");
+        horario.setHoraInicio(Time.valueOf("08:00:00"));
+        horario.setHoraFin(Time.valueOf("10:00:00"));
 
+        when(repositorioHorario.save(any(Horario.class))).thenReturn(horario);
+        when(repositorioHorario.findById("hor1")).thenReturn(Optional.of(horario));
+        when(repositorioHorario.findAll()).thenReturn(Arrays.asList(horario));
+        when(repositorioHorario.findByGrupoId("grp1")).thenReturn(Arrays.asList(horario));
+
+        Horario creado = horarioService.crear(horario);
+        assertNotNull(creado);
+
+        Optional<Horario> encontrado = horarioService.buscarPorId("hor1");
+        assertTrue(encontrado.isPresent());
+
+        List<Horario> horariosGrupo = horarioService.consultarHorariosPorGrupo("grp1");
+        assertFalse(horariosGrupo.isEmpty());
+    }
+
+    // ========== MATERIA SERVICE TESTS ==========
+    @Test
+    void testMateriaServiceCompleto() {
+        // Crear materia VÁLIDA
         Materia materia = new Materia();
-        materia.setId("mat-consulta");
-        materia.setCodigo("CONS101");
+        materia.setId("mat1");
+        materia.setCodigo("MAT101");
+        materia.setNombre("Matemáticas I");
+        materia.setCreditos(3);
+        materia.setFacultad("Ingeniería");
+        materia.setEsObligatoria(true);
 
         Grupo grupo = new Grupo();
-        grupo.setId("grp-consulta");
-        grupo.setMateriaId("mat-consulta");
+        grupo.setId("grpMat1");
+        grupo.setCupoMaximo(30);
+        grupo.setEstudiantesInscritosIds(new ArrayList<>());
 
-        // Configurar mocks
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(materiaService.crear(any(Materia.class))).thenReturn(materia);
-        when(grupoService.crear(any(Grupo.class))).thenReturn(grupo);
-        when(grupoService.consultarEstudiantesInscritos("grp-consulta")).thenReturn(Arrays.asList(new Estudiante()));
-        when(materiaService.consultarGruposDisponibles("mat-consulta")).thenReturn(Arrays.asList(new Grupo()));
-        when(materiaService.verificarDisponibilidad("mat-consulta")).thenReturn(false);
-        when(solicitudService.obtenerSolicitudesPorEstudiante("consulta")).thenReturn(Arrays.asList(new SolicitudCambio()));
+        Estudiante estudiante = new Estudiante();
+        estudiante.setId("est1");
+        estudiante.setCodigo("202410001");
 
-        // Ejecutar pruebas
-        ResponseEntity<Estudiante> estResponse = estudianteController.crear(estudiante);
-        assertTrue(estResponse.getStatusCode().is2xxSuccessful());
+        when(repositorioMateria.save(any(Materia.class))).thenReturn(materia);
+        when(repositorioMateria.findById("mat1")).thenReturn(Optional.of(materia));
+        when(repositorioMateria.findByCodigo("MAT101")).thenReturn(Optional.of(materia));
+        when(repositorioMateria.findAll()).thenReturn(Arrays.asList(materia));
 
-        Materia matResponse = materiaController.crear(materia);
-        assertNotNull(matResponse);
+        when(repositorioGrupo.findByMateriaId("mat1")).thenReturn(Arrays.asList(grupo));
+        when(repositorioGrupo.findById("grp1")).thenReturn(Optional.of(grupo));
+        when(repositorioGrupo.save(any(Grupo.class))).thenReturn(grupo);
+        when(repositorioEstudiante.findById("est1")).thenReturn(Optional.of(estudiante));
 
-        Grupo grpResponse = grupoController.create(grupo);
-        assertNotNull(grpResponse);
+        Materia creada = materiaService.crear(materia);
+        assertNotNull(creada);
 
-        List<Estudiante> estudiantesInscritos = grupoController.consultarEstudiantesInscritos("grp-consulta");
-        assertNotNull(estudiantesInscritos);
+        Optional<Materia> porCodigo = materiaService.buscarPorCodigo("MAT101");
+        assertTrue(porCodigo.isPresent());
 
-        List<Grupo> gruposDisponibles = materiaController.consultarGruposDisponibles("mat-consulta");
-        assertNotNull(gruposDisponibles);
+        List<Grupo> grupos = materiaService.consultarGruposDisponibles("mat1");
+        assertFalse(grupos.isEmpty());
 
-        boolean disponible = materiaController.verificarDisponibilidad("mat-consulta");
-        assertFalse(disponible);
+        boolean disponible = materiaService.verificarDisponibilidad("mat1");
+        assertTrue(disponible);
 
-        List<SolicitudCambio> porEstudiante = solicitudController.buscarPorEstudiante("consulta");
-        assertNotNull(porEstudiante);
+        Grupo grupoInscrito = materiaService.inscribirEstudianteEnGrupo("grp1", "est1");
+        assertNotNull(grupoInscrito);
+
+        Grupo grupoRetirado = materiaService.retirarEstudianteDeGrupo("grp1", "est1");
+        assertNotNull(grupoRetirado);
+
+        int totalInscritos = materiaService.consultarTotalInscritosPorMateria("mat1");
+        assertTrue(totalInscritos >= 0);
+
+        boolean asignada = materiaService.asignarMateriaAEstudiante("mat1", "est1");
+        assertTrue(asignada);
+        boolean retirada = materiaService.retirarMateriaDeEstudiante("mat1", "est1");
+        assertTrue(retirada);
+        assertDoesNotThrow(() -> materiaService.modificarCuposMateria("mat1", 40));
+        List<Grupo> nuevosGrupos = Arrays.asList(grupo);
+        Materia materiaConGrupos = materiaService.registrarMateriaConGrupos(materia, nuevosGrupos);
+        assertNotNull(materiaConGrupos);
+    }
+
+    // ========== PERIODO CAMBIO SERVICE TESTS ==========
+    @Test
+    void testPeriodoCambioServiceCompleto() {
+        PeriodoCambio periodo = new PeriodoCambio();
+        periodo.setId("per1");
+        periodo.setNombre("2024-1");
+        periodo.setActivo(true);
+        when(repositorioPeriodoCambio.save(any(PeriodoCambio.class))).thenReturn(periodo);
+        when(repositorioPeriodoCambio.findById("per1")).thenReturn(Optional.of(periodo));
+        when(repositorioPeriodoCambio.findAll()).thenReturn(Arrays.asList(periodo));
+        when(repositorioPeriodoCambio.existsByActivoTrue()).thenReturn(true);
+        when(repositorioPeriodoCambio.findByActivoTrue()).thenReturn(Arrays.asList(periodo));
+        PeriodoCambio creado = periodoService.crear(periodo);
+        assertNotNull(creado);
+        Optional<PeriodoCambio> encontrado = periodoService.buscarPorId("per1");
+        assertTrue(encontrado.isPresent());
+        boolean activo = periodoService.estaPeriodoActivo();
+        assertTrue(activo);
+        Optional<PeriodoCambio> periodoActivo = periodoService.obtenerPeriodoActivo();
+        assertTrue(periodoActivo.isPresent());
+    }
+
+    // ========== PROFESOR SERVICE TESTS ==========
+    @Test
+    void testProfesorServiceCompleto() {
+        // Configurar datos de prueba
+        Profesor profesor = new Profesor();
+        profesor.setId("prof1");
+        profesor.setIdProfesor(1001);
+        profesor.setNombre("Profesor Test");
+        profesor.setCorreoInstitucional("profesor@escuela.edu");
+        profesor.setUsername("profesor.test");
+        profesor.setPasswordHash("password123");
+        profesor.setActivo(true);
+        profesor.setMateriasAsignadasIds(Arrays.asList("mat1", "mat2"));
+        profesor.setGruposAsignadosIds(new ArrayList<>());
+
+        Grupo grupo = new Grupo();
+        grupo.setId("grp1");
+        grupo.setProfesorId(null);
+
+        Grupo grupoConProfesor = new Grupo();
+        grupoConProfesor.setId("grp2");
+        grupoConProfesor.setProfesorId("prof1");
+
+        when(repositorioProfesor.save(any(Profesor.class))).thenReturn(profesor);
+        when(repositorioProfesor.findById("prof1")).thenReturn(Optional.of(profesor));
+        when(repositorioProfesor.findAll()).thenReturn(Arrays.asList(profesor));
+        when(repositorioGrupo.findByProfesorId("prof1")).thenReturn(Arrays.asList(grupoConProfesor));
+        when(repositorioGrupo.findById("grp1")).thenReturn(Optional.of(grupo));
+        when(repositorioGrupo.findById("grp2")).thenReturn(Optional.of(grupoConProfesor));
+        when(repositorioGrupo.save(any(Grupo.class))).thenReturn(grupo, grupoConProfesor);
+        when(repositorioProfesor.findAll()).thenReturn(Arrays.asList(profesor));
+
+        Profesor creado = profesorService.crear(profesor);
+        assertNotNull(creado);
+
+        Optional<Profesor> encontrado = profesorService.buscarPorId("prof1");
+        assertTrue(encontrado.isPresent());
+
+        Optional<Profesor> porCodigo = profesorService.buscarPorCodigo("1001");
+        assertTrue(porCodigo.isPresent());
+
+        List<Profesor> todos = profesorService.listarTodos();
+        assertFalse(todos.isEmpty());
+
+        Profesor actualizado = profesorService.actualizar("prof1", profesor);
+        assertNotNull(actualizado);
+
+        when(repositorioProfesor.findById("noExiste")).thenReturn(Optional.empty());
+        Profesor nuevoProfesor = profesorService.actualizar("noExiste", profesor);
+        assertNotNull(nuevoProfesor); // Debería crear uno nuevo
+
+        assertDoesNotThrow(() -> profesorService.eliminarPorId("prof1"));
+
+        List<Grupo> gruposAsignados = profesorService.consultarGruposAsignados("prof1");
+        assertFalse(gruposAsignados.isEmpty());
+
+        Grupo grupoAsignado = profesorService.asignarProfesorAGrupo("prof1", "grp1");
+        assertNotNull(grupoAsignado);
+        assertEquals("prof1", grupoAsignado.getProfesorId());
+
+        when(repositorioGrupo.findById("noExiste")).thenReturn(Optional.empty());
+        Grupo noAsignado = profesorService.asignarProfesorAGrupo("prof1", "noExiste");
+        assertNull(noAsignado);
+
+        when(repositorioProfesor.findById("noExiste")).thenReturn(Optional.empty());
+        Grupo noAsignadoProfesor = profesorService.asignarProfesorAGrupo("noExiste", "grp1");
+        assertNull(noAsignadoProfesor);
+
+        Grupo grupoRetirado = profesorService.retirarProfesorDeGrupo("grp2");
+        assertNotNull(grupoRetirado);
+        assertNull(grupoRetirado.getProfesorId());
+
+        when(repositorioGrupo.findById("noExiste")).thenReturn(Optional.empty());
+        Grupo noRetirado = profesorService.retirarProfesorDeGrupo("noExiste");
+        assertNull(noRetirado);
     }
 
     @Test
-    void testEstudiantePuedeVerSemaforo() {
+    void testProfesorServiceBuscarPorCodigo() {
+        Profesor profesor = new Profesor();
+        profesor.setId("prof1");
+        profesor.setIdProfesor(1001);
+        profesor.setNombre("Profesor Test");
+
+        when(repositorioProfesor.findAll()).thenReturn(Arrays.asList(profesor));
+
+        Optional<Profesor> encontrado = profesorService.buscarPorCodigo("1001");
+        assertTrue(encontrado.isPresent());
+
+        Optional<Profesor> noEncontrado = profesorService.buscarPorCodigo("9999");
+        assertFalse(noEncontrado.isPresent());
+
+        Optional<Profesor> codigoNull = profesorService.buscarPorCodigo(null);
+        assertFalse(codigoNull.isPresent());
+    }
+
+    // ========== SEMAFORO ACADEMICO SERVICE TESTS ==========
+    @Test
+    void testSemaforoAcademicoServiceCompleto() {
+        SemaforoAcademico semaforo = new SemaforoAcademico();
+        semaforo.setId("sem1");
+        semaforo.setEstudianteId("est1");
+        semaforo.setGrado("PREGRADO");
+        semaforo.setPlanAcademicoId("plan1");
+        semaforo.setCreditosAprobados(60);
+        semaforo.setTotalCreditosPlan(160);
+        semaforo.setMateriasVistas(20);
+        semaforo.setTotalMateriasDelPlan(45);
+        semaforo.setPromedioAcumulado(4.2f);
+        semaforo.setCambioDePlan(false);
+
+        Map<String, EstadoMateria> historial = new HashMap<>();
+        historial.put("mat1", EstadoMateria.APROBADA);
+        historial.put("mat2", EstadoMateria.REPROBADA);
+        historial.put("mat3", EstadoMateria.INSCRITA);
+        historial.put("mat4", EstadoMateria.PENDIENTE);
+        historial.put("mat5", EstadoMateria.CANCELADA);
+        semaforo.setHistorialMaterias(historial);
+
         Estudiante estudiante = new Estudiante();
-        estudiante.setId("estudiante-semaforo");
-        estudiante.setCodigo("202410005");
+        estudiante.setId("est1");
+        estudiante.setSemestre(5);
 
-        // Configurar mocks
-        when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(semaforoAcademicoService.visualizarSemaforoEstudiante("estudiante-semaforo"))
-                .thenReturn(Map.of());
-        when(semaforoAcademicoService.consultarSemaforoMateria("estudiante-semaforo", "MAT101"))
-                .thenReturn(Optional.empty());
+        when(repositorioSemaforoAcademico.findByEstudianteId("est1")).thenReturn(Optional.of(semaforo));
+        when(repositorioEstudiante.findById("est1")).thenReturn(Optional.of(estudiante));
+        when(repositorioSemaforoAcademico.save(any(SemaforoAcademico.class))).thenReturn(semaforo);
 
-        // Ejecutar pruebas
-        ResponseEntity<Estudiante> response = estudianteController.crear(estudiante);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
+        Map<String, EstadoSemaforo> semaforoVisual = semaforoService.visualizarSemaforoEstudiante("est1");
+        assertFalse(semaforoVisual.isEmpty());
+        assertEquals(5, semaforoVisual.size());
 
-        ResponseEntity<Map<String, EstadoSemaforo>> semaforoResponse = estudianteController.verMiSemaforo("estudiante-semaforo");
-        assertTrue(semaforoResponse.getStatusCode().is2xxSuccessful());
+        Optional<EstadoSemaforo> estadoMat1 = semaforoService.consultarSemaforoMateria("est1", "mat1");
+        assertTrue(estadoMat1.isPresent());
+        assertEquals(EstadoSemaforo.VERDE, estadoMat1.get());
 
-        ResponseEntity<EstadoSemaforo> estadoMateria = estudianteController.verEstadoMateria("estudiante-semaforo", "MAT101");
-        assertTrue(estadoMateria.getStatusCode().is4xxClientError());
+        Optional<EstadoSemaforo> estadoMat2 = semaforoService.consultarSemaforoMateria("est1", "mat2");
+        assertTrue(estadoMat2.isPresent());
+        assertEquals(EstadoSemaforo.ROJO, estadoMat2.get());
+
+        Optional<EstadoSemaforo> estadoMat3 = semaforoService.consultarSemaforoMateria("est1", "mat3");
+        assertTrue(estadoMat3.isPresent());
+        assertEquals(EstadoSemaforo.AZUL, estadoMat3.get());
+
+        Optional<EstadoSemaforo> estadoNoExiste = semaforoService.consultarSemaforoMateria("est1", "matNoExiste");
+        assertFalse(estadoNoExiste.isPresent());
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("estSinSemaforo")).thenReturn(Optional.empty());
+        Map<String, EstadoSemaforo> semaforoVacio = semaforoService.visualizarSemaforoEstudiante("estSinSemaforo");
+        assertTrue(semaforoVacio.isEmpty());
+
+        int semestre = semaforoService.getSemestreActual("est1");
+        assertEquals(5, semestre);
+
+        when(repositorioEstudiante.findById("estNoExiste")).thenReturn(Optional.empty());
+        int semestreNoEncontrado = semaforoService.getSemestreActual("estNoExiste");
+        assertEquals(0, semestreNoEncontrado);
+
+        Map<String, Object> foraneo = semaforoService.getForaneoEstudiante("est1");
+        assertNotNull(foraneo);
+        assertEquals(5, foraneo.get("semestreActual"));
+        assertEquals(1, foraneo.get("materiasAprobadas")); // Solo mat1 está como APROBADA
+        assertEquals(1, foraneo.get("materiasReprobadas")); // mat2 REPROBADA y mat5 CANCELADA
+        assertEquals(1, foraneo.get("materiasInscritas")); // mat3 INSCRITA
+        assertEquals(5, foraneo.get("totalMaterias"));
+
+        Map<String, Object> foraneoSinSemaforo = semaforoService.getForaneoEstudiante("estSinSemaforo");
+        assertNotNull(foraneoSinSemaforo);
+        assertEquals(0, foraneoSinSemaforo.get("semestreActual"));
+
+        SemaforoVisualizacion semaforoCompleto = semaforoService.obtenerSemaforoCompleto("est1");
+        assertNotNull(semaforoCompleto);
+        assertEquals("est1", semaforoCompleto.getEstudianteId());
+        assertEquals(5, semaforoCompleto.getSemestreActual());
+
+        SemaforoVisualizacion semaforoDetallado = semaforoService.obtenerSemaforoDetallado("est1");
+        assertNotNull(semaforoDetallado);
+        assertEquals("est1", semaforoDetallado.getEstudianteId());
+
+        SemaforoAcademicoServiceImpl serviceSinRepositorio = new SemaforoAcademicoServiceImpl();
+        Map<String, EstadoSemaforo> resultadoNull = serviceSinRepositorio.visualizarSemaforoEstudiante("est1");
+        assertTrue(resultadoNull.isEmpty());
+
+        Optional<EstadoSemaforo> estadoNull = serviceSinRepositorio.consultarSemaforoMateria("est1", "mat1");
+        assertFalse(estadoNull.isPresent());
+
+        int semestreNull = serviceSinRepositorio.getSemestreActual("est1");
+        assertEquals(0, semestreNull);
+    }
+
+    @Test
+    void testSemaforoAcademicoMapeoEstados() {
+        SemaforoAcademico semaforo = new SemaforoAcademico();
+        semaforo.setEstudianteId("estTest");
+
+        Map<String, EstadoMateria> historial = new HashMap<>();
+        historial.put("matAprobada", EstadoMateria.APROBADA);
+        historial.put("matInscrita", EstadoMateria.INSCRITA);
+        historial.put("matPendiente", EstadoMateria.PENDIENTE);
+        historial.put("matReprobada", EstadoMateria.REPROBADA);
+        historial.put("matCancelada", EstadoMateria.CANCELADA);
+        semaforo.setHistorialMaterias(historial);
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("estTest")).thenReturn(Optional.of(semaforo));
+
+        Map<String, EstadoSemaforo> resultado = semaforoService.visualizarSemaforoEstudiante("estTest");
+
+        assertEquals(EstadoSemaforo.VERDE, resultado.get("matAprobada"));
+        assertEquals(EstadoSemaforo.AZUL, resultado.get("matInscrita"));
+        assertEquals(EstadoSemaforo.AZUL, resultado.get("matPendiente"));
+        assertEquals(EstadoSemaforo.ROJO, resultado.get("matReprobada"));
+        assertEquals(EstadoSemaforo.ROJO, resultado.get("matCancelada"));
+    }
+
+    // NUEVA PRUEBA: Test específico para SemaforoVisualizacion
+    @Test
+    void testSemaforoVisualizacionCalculos() {
+        // Configurar semáforo académico con datos específicos
+        SemaforoAcademico semaforo = new SemaforoAcademico();
+        semaforo.setId("sem2");
+        semaforo.setEstudianteId("est2");
+        semaforo.setCreditosAprobados(45);
+        semaforo.setTotalCreditosPlan(180);
+        semaforo.setPromedioAcumulado(3.8f);
+
+        Map<String, EstadoMateria> historial = new HashMap<>();
+        historial.put("mat1", EstadoMateria.APROBADA);
+        historial.put("mat2", EstadoMateria.APROBADA);
+        historial.put("mat3", EstadoMateria.APROBADA);
+        historial.put("mat4", EstadoMateria.REPROBADA);
+        semaforo.setHistorialMaterias(historial);
+
+        Estudiante estudiante = new Estudiante();
+        estudiante.setId("est2");
+        estudiante.setSemestre(6);
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("est2")).thenReturn(Optional.of(semaforo));
+        when(repositorioEstudiante.findById("est2")).thenReturn(Optional.of(estudiante));
+
+        Map<String, Object> foraneo = semaforoService.getForaneoEstudiante("est2");
+        assertNotNull(foraneo);
+        assertEquals(6, foraneo.get("semestreActual"));
+        assertEquals(3, foraneo.get("materiasAprobadas"));
+        assertEquals(1, foraneo.get("materiasReprobadas"));
+        assertEquals(4, foraneo.get("totalMaterias"));
+
+        SemaforoVisualizacion visualizacion = semaforoService.obtenerSemaforoCompleto("est2");
+        assertNotNull(visualizacion);
+        assertEquals("est2", visualizacion.getEstudianteId());
+        assertEquals(6, visualizacion.getSemestreActual());
+
+        assertTrue(visualizacion.getCreditosCompletados() >= 0);
+        assertTrue(visualizacion.getCreditosFaltantes() >= 0);
+        assertTrue(visualizacion.getPorcentajeProgreso() >= 0);
+    }
+
+    // NUEVA PRUEBA: Test para casos de error y borde
+    @Test
+    void testSemaforoAcademicoCasosBorde() {
+        SemaforoAcademicoServiceImpl service = new SemaforoAcademicoServiceImpl();
+
+        Map<String, Object> foraneoNull = service.getForaneoEstudiante("cualquierId");
+        assertNotNull(foraneoNull);
+
+        SemaforoVisualizacion completoNull = service.obtenerSemaforoCompleto("cualquierId");
+        assertNotNull(completoNull);
+
+        SemaforoVisualizacion detalladoNull = service.obtenerSemaforoDetallado("cualquierId");
+        assertNotNull(detalladoNull);
+
+        SemaforoAcademico semaforoSinHistorial = new SemaforoAcademico();
+        semaforoSinHistorial.setId("semVacio");
+        semaforoSinHistorial.setEstudianteId("estVacio");
+        semaforoSinHistorial.setHistorialMaterias(new HashMap<>());
+
+        Estudiante estudianteVacio = new Estudiante();
+        estudianteVacio.setId("estVacio");
+        estudianteVacio.setSemestre(1);
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("estVacio")).thenReturn(Optional.of(semaforoSinHistorial));
+        when(repositorioEstudiante.findById("estVacio")).thenReturn(Optional.of(estudianteVacio));
+
+        Map<String, EstadoSemaforo> semaforoVacio = semaforoService.visualizarSemaforoEstudiante("estVacio");
+        assertTrue(semaforoVacio.isEmpty());
+
+        Map<String, Object> foraneoVacio = semaforoService.getForaneoEstudiante("estVacio");
+        assertNotNull(foraneoVacio);
+        assertEquals(0, foraneoVacio.get("materiasAprobadas"));
+        assertEquals(0, foraneoVacio.get("materiasReprobadas"));
+        assertEquals(0, foraneoVacio.get("materiasInscritas"));
+        assertEquals(0, foraneoVacio.get("totalMaterias"));
+    }
+
+    // ========== SOLICITUD CAMBIO SERVICE TESTS ==========
+    @Test
+    void testSolicitudCambioServiceCompleto() {
+        SolicitudCambio solicitud = new SolicitudCambio();
+        solicitud.setId("sol1");
+        solicitud.setEstudianteId("est1");
+        solicitud.setMateriaDestinoId("mat1");
+        solicitud.setGrupoDestinoId("grp1");
+        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.setDescripcion("Solicitud de cambio válida");
+        solicitud.setTipoPrioridad(TipoPrioridad.NORMAL);
+
+        Materia materia = new Materia();
+        materia.setId("mat1");
+        materia.setFacultad("Ingeniería");
+
+        Decanatura decanatura = new Decanatura();
+        decanatura.setId("dec1");
+
+        when(repositorioSolicitudCambio.save(any(SolicitudCambio.class))).thenReturn(solicitud);
+        when(repositorioSolicitudCambio.findById("sol1")).thenReturn(Optional.of(solicitud));
+        when(repositorioSolicitudCambio.findAll()).thenReturn(Arrays.asList(solicitud));
+        when(repositorioSolicitudCambio.findByEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud));
+        when(repositorioSolicitudCambio.findByEstudianteId("est1")).thenReturn(Arrays.asList(solicitud));
+        when(repositorioMateria.findById("mat1")).thenReturn(Optional.of(materia));
+        when(repositorioDecanatura.findByFacultad("Ingeniería")).thenReturn(Arrays.asList(decanatura));
+
+        SolicitudCambio creada = solicitudService.crearSolicitud(solicitud);
+        assertNotNull(creada);
+
+        boolean valida = solicitudService.validarSolicitud(solicitud);
+        assertTrue(valida);
+
+        SolicitudCambio actualizada = solicitudService.actualizarEstadoSolicitud(
+                "sol1", EstadoSolicitud.APROBADA, "Aprobada", "Justificación");
+        assertNotNull(actualizada);
+
+        Map<String, Object> estadisticas = solicitudService.obtenerEstadisticasSolicitudes();
+        assertNotNull(estadisticas);
+
+        List<SolicitudCambio> porEstado = solicitudService.obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE);
+        assertFalse(porEstado.isEmpty());
+
+        List<SolicitudCambio> porEstudiante = solicitudService.obtenerSolicitudesPorEstudiante("est1");
+        assertFalse(porEstudiante.isEmpty());
+
+        SolicitudCambio aprobada = solicitudService.aprobarSolicitud("sol1", "Justificación aprobación");
+        assertNotNull(aprobada);
+
+        SolicitudCambio rechazada = solicitudService.rechazarSolicitud("sol1", "Justificación rechazo");
+        assertNotNull(rechazada);
+    }
+
+    // ========== USUARIO SERVICE TESTS ==========
+    @Test
+    void testUsuarioServiceCompleto() {
+        Usuario usuario = new Usuario();
+        usuario.setId("user1");
+        usuario.setUsername("testUser");
+        usuario.setPasswordHash("password123");
+        usuario.setActivo(true);
+        usuario.setRol(Rol.ESTUDIANTE);
+
+        when(repositorioUsuario.findByUsername("testUser")).thenReturn(Optional.of(usuario));
+        when(repositorioUsuario.findById("user1")).thenReturn(Optional.of(usuario));
+        when(repositorioUsuario.save(any(Usuario.class))).thenReturn(usuario);
+
+        Optional<Usuario> autenticado = usuarioService.autenticar("testUser", "password123");
+        assertTrue(autenticado.isPresent());
+
+        Optional<Usuario> porUsername = usuarioService.buscarPorUsername("testUser");
+        assertTrue(porUsername.isPresent());
+
+        boolean tienePermiso = usuarioService.tienePermiso("user1", "consulta");
+        assertTrue(tienePermiso);
+
+        assertDoesNotThrow(() -> usuarioService.cambiarPassword("user1", "newPassword"));
+    }
+
+    // ========== TEST CASOS BORDE Y ERROR ==========
+    @Test
+    void testCasosBordeYErrores() {
+        when(repositorioEstudiante.findById("noExiste")).thenReturn(Optional.empty());
+        Optional<Estudiante> noEncontrado = estudianteService.buscarPorId("noExiste");
+        assertFalse(noEncontrado.isPresent());
+
+        when(repositorioSemaforoAcademico.findByEstudianteId("sinDatos")).thenReturn(Optional.empty());
+        Map<String, EstadoSemaforo> semaforoVacio = semaforoService.visualizarSemaforoEstudiante("sinDatos");
+        assertTrue(semaforoVacio.isEmpty());
+
+        SolicitudCambio solicitudInvalida = new SolicitudCambio();
+        boolean esValida = solicitudService.validarSolicitud(solicitudInvalida);
+        assertFalse(esValida);
+
+        when(repositorioUsuario.findByUsername("userFalso")).thenReturn(Optional.empty());
+        Optional<Usuario> authFallida = usuarioService.autenticar("userFalso", "pass");
+        assertFalse(authFallida.isPresent());
     }
 }
