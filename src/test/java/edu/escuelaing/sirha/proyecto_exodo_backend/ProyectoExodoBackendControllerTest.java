@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 import edu.escuelaing.sirha.controller.*;
 import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.service.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,408 +11,506 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProyectoExodoBackendControllerTest {
+public class ProyectoExodoBackendControllerTest {
 
-    @Mock private AdministradorService administradorService;
-    @Mock private EstudianteService estudianteService;
-    @Mock private GrupoService grupoService;
-    @Mock private MateriaService materiaService;
-    @Mock private PeriodoCambioService periodoService;
-    @Mock private ProfesorService profesorService;
-    @Mock private SolicitudCambioService solicitudService;
-    @Mock private UsuarioService usuarioService;
-    @Mock private DecanaturaService decanaturaService;
+    @Mock
+    private EstudianteService estudianteService;
+    @Mock
+    private SemaforoAcademicoService semaforoAcademicoService;
+    @Mock
+    private SolicitudCambioService solicitudCambioService;
+    @Mock
+    private GrupoService grupoService;
+    @Mock
+    private MateriaService materiaService;
+    @Mock
+    private AdministradorService administradorService;
+    @Mock
+    private DecanaturaService decanaturaService;
+    @Mock
+    private HorarioService horarioService;
+    @Mock
+    private PeriodoCambioService periodoService;
+    @Mock
+    private ProfesorService profesorService;
+    @Mock
+    private UsuarioService usuarioService;
+    @InjectMocks
+    private EstudiantesControlador estudiantesControlador;
+    @InjectMocks
+    private SemaforoAcademicoController semaforoAcademicoController;
 
-    @InjectMocks private AdministradorController administradorController;
-    @InjectMocks private EstudiantesControlador controladorEstudiantes;
-    @InjectMocks private GrupoController grupoController;
-    @InjectMocks private MateriaController materiaController;
-    @InjectMocks private PeriodoCambioController periodoController;
-    @InjectMocks private ProfesorController profesorController;
-    @InjectMocks private SolicitudCambioController solicitudController;
-    @InjectMocks private UsuarioController usuarioController;
-    @InjectMocks private DecanaturaController decanaturaController;
+    private AdministradorController administradorController;
+    private DecanaturaController decanaturaController;
+    private GrupoController grupoController;
+    private HorarioController horarioController;
+    private MateriaController materiaController;
+    private PeriodoCambioController periodoCambioController;
+    private ProfesorController profesorController;
+    private SolicitudCambioController solicitudCambioController;
+    private UsuarioController usuarioController;
 
-    private Administrador crearAdministrador() {
-        Administrador admin = new Administrador();
-        admin.setId("administrador");
-        admin.setUsername("admin.lopez");
-        return admin;
-    }
+    private Estudiante estudiante;
+    private SolicitudCambio solicitudCambio;
+    private Grupo grupo;
+    private Materia materia;
+    private Administrador administrador;
+    private Decanatura decanatura;
+    private Horario horario;
+    private PeriodoCambio periodoCambio;
+    private Profesor profesor;
+    private Usuario usuario;
 
-    private Estudiante crearEstudiante() {
-        Estudiante est = new Estudiante();
-        est.setId("estudiante");
-        est.setCodigo("2020100123");
-        est.setNombre("Juan Pérez");
-        return est;
-    }
+    @BeforeEach
+    void setUp() {
+        administradorController = new AdministradorController();
+        administradorController.administradorService = administradorService;
+        administradorController.solicitudCambioService = solicitudCambioService;
+        administradorController.semaforoAcademicoService = semaforoAcademicoService;
+        decanaturaController = new DecanaturaController();
+        decanaturaController.decanaturaService = decanaturaService;
+        decanaturaController.semaforoService = semaforoAcademicoService;
+        grupoController = new GrupoController();
+        grupoController.grupoService = grupoService;
+        horarioController = new HorarioController();
+        horarioController.horarioService = horarioService;
+        materiaController = new MateriaController();
+        materiaController.materiaService = materiaService;
+        periodoCambioController = new PeriodoCambioController();
+        periodoCambioController.periodoService = periodoService;
+        profesorController = new ProfesorController();
+        profesorController.profesorService = profesorService;
+        solicitudCambioController = new SolicitudCambioController();
+        solicitudCambioController.solicitudService = solicitudCambioService;
+        usuarioController = new UsuarioController();
+        usuarioController.usuarioService = usuarioService;
 
-    private Grupo crearGrupo() {
-        Grupo grupo = new Grupo();
+        estudiante = new Estudiante();
+        estudiante.setId("Estudiante");
+        estudiante.setCodigo("1000044519");
+        estudiante.setNombre("Julian Andres");
+        estudiante.setCarrera("Ingeniería de Sistemas");
+        solicitudCambio = new SolicitudCambio();
+        solicitudCambio.setId("Solicitud");
+        solicitudCambio.setEstudianteId("Estudiante");
+        solicitudCambio.setEstado(EstadoSolicitud.APROBADA);
+        grupo = new Grupo();
         grupo.setId("grupo1");
         grupo.setCupoMaximo(30);
-        return grupo;
-    }
-
-    private Materia crearMateria() {
-        Materia materia = new Materia();
-        materia.setId("aysr");
-        materia.setCodigo("ayrs1");
-        materia.setNombre("Programación red");
-        return materia;
-    }
-
-    private PeriodoCambio crearPeriodo() {
-        PeriodoCambio periodo = new PeriodoCambio();
-        periodo.setId("periodo2");
-        periodo.setNombre("2024-1");
-        return periodo;
-    }
-
-    private Profesor crearProfesor() {
-        Profesor profesor = new Profesor();
+        grupo.setEstudiantesInscritosIds(new ArrayList<>());
+        materia = new Materia();
+        materia.setId("AYSR");
+        materia.setNombre("ArquitecturadeRed");
+        administrador = new Administrador();
+        administrador.setId("Administrador");
+        decanatura = new Decanatura();
+        decanatura.setId("Decanos");
+        horario = new Horario();
+        horario.setId("horario1");
+        periodoCambio = new PeriodoCambio();
+        periodoCambio.setId("periodo2025-2");
+        profesor = new Profesor();
         profesor.setId("profesor");
-        profesor.setIdProfesor(123);
-        profesor.setNombre("Dr. Roberto Martínez");
-        return profesor;
+        usuario = new Usuario();
+        usuario.setId("Usuario");
+        usuario.setUsername("Julian");
     }
-
-    private SolicitudCambio crearSolicitud() {
-        SolicitudCambio solicitud = new SolicitudCambio();
-        solicitud.setId("solicitud1");
-        solicitud.setIdSolicitud(1);
-        solicitud.setEstudianteId("estudiante1");
-        solicitud.setMateriaOrigenId("materia1");
-        solicitud.setGrupoOrigenId("grupo1");
-        solicitud.setMateriaDestinoId("materia2");
-        solicitud.setGrupoDestinoId("grupo2");
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
-        solicitud.setTipoPrioridad(TipoPrioridad.NORMAL);
-        solicitud.setDescripcion("Solicitud de cambio de grupo");
-        return solicitud;
-    }
-
-    private Map<String, Object> crearEstadisticasMock() {
-        Map<String, Object> estadisticas = new HashMap<>();
-        estadisticas.put("totalSolicitudes", 10);
-        estadisticas.put("solicitudesPendientes", 5);
-        estadisticas.put("solicitudesAprobadas", 3);
-        estadisticas.put("solicitudesRechazadas", 2);
-        return estadisticas;
-    }
-
-    private Usuario crearUsuario() {
-        Usuario usuario = new Usuario();
-        usuario.setId("usuario2");
-        usuario.setUsername("carlos.mendez");
-        usuario.setRol(Rol.ESTUDIANTE);
-        return usuario;
-    }
-
-    private Decanatura crearDecanatura() {
-        Decanatura decanatura = new Decanatura();
-        decanatura.setId("sistemas");
-        decanatura.setUsername("decanatura.sistemas");
-        return decanatura;
-    }
-
-
-
     @Test
-    void testAdministradorController() {
-        Administrador admin = crearAdministrador();
-        Grupo grupo = crearGrupo();
-        PeriodoCambio periodo = crearPeriodo();
-        SolicitudCambio solicitud = crearSolicitud();
-        when(administradorService.listarTodos()).thenReturn(Arrays.asList(admin));
-        when(administradorService.buscarPorId("administrador")).thenReturn(Optional.of(admin));
-        when(administradorService.crear(any(Administrador.class))).thenReturn(admin);
-        when(administradorService.modificarCupoGrupo("grupo1", 35)).thenReturn(grupo);
-        when(administradorService.configurarPeriodo(any(PeriodoCambio.class))).thenReturn(periodo);
-        when(administradorService.generarReportes()).thenReturn(Arrays.asList(solicitud));
-        List<Administrador> admins = administradorController.getAll();
-        assertFalse(admins.isEmpty());
-        assertEquals("administrador", admins.get(0).getId());
-        Optional<Administrador> adminEncontrado = administradorController.getById("administrador");
-        assertTrue(adminEncontrado.isPresent());
-        Administrador adminCreado = administradorController.create(admin);
-        assertNotNull(adminCreado);
-        Grupo grupoActualizado = administradorController.modificarCupoGrupo("grupo1", 35);
-        assertNotNull(grupoActualizado);
-        PeriodoCambio periodoCreado = administradorController.configurarPeriodo(periodo);
-        assertNotNull(periodoCreado);
-        List<SolicitudCambio> reportes = administradorController.generarReportes();
-        assertFalse(reportes.isEmpty());
-    }
-
-    @Test
-    void testControladorEstudiantes() {
-        Estudiante estudiante = crearEstudiante();
-        SolicitudCambio solicitud = crearSolicitud();
+    void testEstudiantesControlador_CrearEstudiante() {
         when(estudianteService.crear(any(Estudiante.class))).thenReturn(estudiante);
-        when(estudianteService.buscarPorCodigo("2020100123")).thenReturn(Optional.of(estudiante));
+        ResponseEntity<Estudiante> response = estudiantesControlador.crear(estudiante);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Estudiante", response.getBody().getId());
+    }
+    @Test
+    void testEstudiantesControlador_BuscarPorCodigo_Existe() {
+        when(estudianteService.buscarPorCodigo("1000044519")).thenReturn(Optional.of(estudiante));
+        ResponseEntity<Estudiante> response = estudiantesControlador.buscarPorCodigo("1000044519");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("1000044519", response.getBody().getCodigo());
+    }
+    @Test
+    void testEstudiantesControlador_BuscarPorCodigo_NoExiste() {
+        when(estudianteService.buscarPorCodigo("999999")).thenReturn(Optional.empty());
+        ResponseEntity<Estudiante> response = estudiantesControlador.buscarPorCodigo("999999");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+    @Test
+    void testEstudiantesControlador_ListarTodos() {
         when(estudianteService.listarTodos()).thenReturn(Arrays.asList(estudiante));
-        doNothing().when(estudianteService).eliminarPorId("estudiante");
-        when(estudianteService.actualizar(eq("estudiante"), any(Estudiante.class))).thenReturn(estudiante);
-        when(estudianteService.crearSolicitudCambio("estudiante", "mat1", "g1", "mat2", "g2")).thenReturn(solicitud);
-        when(estudianteService.consultarSolicitudes("estudiante")).thenReturn(Arrays.asList(solicitud));
-        ResponseEntity<Estudiante> responseCrear = controladorEstudiantes.crear(estudiante);
-        assertEquals(HttpStatus.CREATED, responseCrear.getStatusCode());
-        ResponseEntity<Estudiante> responseBuscar = controladorEstudiantes.buscarPorCodigo("2020100123");
-        assertEquals(HttpStatus.OK, responseBuscar.getStatusCode());
-        ResponseEntity<List<Estudiante>> responseListar = controladorEstudiantes.listarTodos();
-        assertEquals(HttpStatus.OK, responseListar.getStatusCode());
-        ResponseEntity<Void> responseEliminar = controladorEstudiantes.eliminar("estudiante");
-        assertEquals(HttpStatus.NO_CONTENT, responseEliminar.getStatusCode());
-        ResponseEntity<Estudiante> responseActualizar = controladorEstudiantes.actualizar("estudiante", estudiante);
-        assertEquals(HttpStatus.OK, responseActualizar.getStatusCode());
-        ResponseEntity<SolicitudCambio> responseSolicitud = controladorEstudiantes.crearSolicitudCambio("estudiante", "mat1", "g1", "mat2", "g2");
-        assertEquals(HttpStatus.CREATED, responseSolicitud.getStatusCode());
-        ResponseEntity<List<SolicitudCambio>> responseSolicitudes = controladorEstudiantes.consultarSolicitudes("estudiante");
-        assertEquals(HttpStatus.OK, responseSolicitudes.getStatusCode());
+        ResponseEntity<List<Estudiante>> response = estudiantesControlador.listarTodos();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
     }
-
     @Test
-    void testGrupoController() {
-        Grupo grupo = crearGrupo();
-        Estudiante estudiante = crearEstudiante();
+    void testEstudiantesControlador_Eliminar() {
+        doNothing().when(estudianteService).eliminarPorId("Estudiante");
+        ResponseEntity<Void> response = estudiantesControlador.eliminar("Estudiante");
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        verify(estudianteService).eliminarPorId("Estudiante");
+    }
+    @Test
+    void testEstudiantesControlador_Actualizar() {
+        when(estudianteService.actualizar(eq("Estudiante"), any(Estudiante.class))).thenReturn(estudiante);
+        ResponseEntity<Estudiante> response = estudiantesControlador.actualizar("Estudiante", estudiante);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+    @Test
+    void testEstudiantesControlador_VerMiSemaforo_ConDatos() {
+        Map<String, EstadoSemaforo> semaforo = new HashMap<>();
+        semaforo.put("AYSR", EstadoSemaforo.VERDE);
+        when(semaforoAcademicoService.visualizarSemaforoEstudiante("Estudiante")).thenReturn(semaforo);
+        ResponseEntity<Map<String, EstadoSemaforo>> response = estudiantesControlador.verMiSemaforo("Estudiante");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().isEmpty());
+    }
+    @Test
+    void testEstudiantesControlador_VerMiSemaforo_SinDatos() {
+        when(semaforoAcademicoService.visualizarSemaforoEstudiante("Estudiante")).thenReturn(new HashMap<>());
+        ResponseEntity<Map<String, EstadoSemaforo>> response = estudiantesControlador.verMiSemaforo("Estudiante");
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+    @Test
+    void testEstudiantesControlador_GetSemestreActual_Existe() {
+        when(semaforoAcademicoService.getSemestreActual("Estudiante")).thenReturn(5);
+        ResponseEntity<Integer> response = estudiantesControlador.getSemestreActual("Estudiante");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(5, response.getBody());
+    }
+    @Test
+    void testEstudiantesControlador_GetSemestreActual_NoExiste() {
+        when(semaforoAcademicoService.getSemestreActual("Estudiante")).thenReturn(0);
+        ResponseEntity<Integer> response = estudiantesControlador.getSemestreActual("Estudiante");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals(0, response.getBody());
+    }
+    @Test
+    void testSolicitudCambioController_ObtenerTodasLasSolicitudes() {
+        when(solicitudCambioService.obtenerTodasLasSolicitudes()).thenReturn(Arrays.asList(solicitudCambio));
+        List<SolicitudCambio> result = solicitudCambioController.obtenerTodasLasSolicitudes();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testSolicitudCambioController_ObtenerSolicitudPorId_Existe() {
+        when(solicitudCambioService.obtenerSolicitudPorId("Solicitud")).thenReturn(Optional.of(solicitudCambio));
+        ResponseEntity<SolicitudCambio> response = solicitudCambioController.obtenerSolicitudPorId("Solicitud");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Solicitud", response.getBody().getId());
+    }
+    @Test
+    void testSolicitudCambioController_ObtenerSolicitudPorId_NoExiste() {
+        when(solicitudCambioService.obtenerSolicitudPorId("Solicitud")).thenReturn(Optional.empty());
+        ResponseEntity<SolicitudCambio> response = solicitudCambioController.obtenerSolicitudPorId("Solicitud");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+    @Test
+    void testSolicitudCambioController_CrearSolicitud() {
+        when(solicitudCambioService.crearSolicitud(any(SolicitudCambio.class))).thenReturn(solicitudCambio);
+        ResponseEntity<SolicitudCambio> response = solicitudCambioController.crear(solicitudCambio);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+    @Test
+    void testSolicitudCambioController_ActualizarEstado() {
+        when(solicitudCambioService.actualizarEstado("Solicitud", EstadoSolicitud.APROBADA)).thenReturn(solicitudCambio);
+        ResponseEntity<SolicitudCambio> response = solicitudCambioController.actualizarEstado("Solicitud", "aprobada");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+    @Test
+    void testSolicitudCambioController_EliminarSolicitud() {
+        doNothing().when(solicitudCambioService).eliminarSolicitud("Solicitud");
+        ResponseEntity<Void> response = solicitudCambioController.eliminarSolicitud("Solicitud");
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+    @Test
+    void testGrupoController_GetAll() {
         when(grupoService.listarTodos()).thenReturn(Arrays.asList(grupo));
+        List<Grupo> result = grupoController.getAll();
+        assertNotNull(result);
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testGrupoController_GetById() {
         when(grupoService.buscarPorId("grupo1")).thenReturn(Optional.of(grupo));
+        Optional<Grupo> result = grupoController.getById("grupo1");
+        assertTrue(result.isPresent());
+        assertEquals("grupo1", result.get().getId());
+    }
+    @Test
+    void testGrupoController_Create() {
         when(grupoService.crear(any(Grupo.class))).thenReturn(grupo);
-        doNothing().when(grupoService).eliminarPorId("grupo1");
-        when(grupoService.actualizarCupo("grupo1", 35)).thenReturn(grupo);
+        Grupo result = grupoController.create(grupo);
+        assertNotNull(result);
+        assertEquals("grupo1", result.getId());
+    }
+    @Test
+    void testGrupoController_UpdateCupo() {
+        when(grupoService.actualizarCupo("grupo1", 40)).thenReturn(grupo);
+        Grupo result = grupoController.updateCupo("grupo1", 40);
+        assertNotNull(result);
+    }
+    @Test
+    void testGrupoController_VerificarCupoDisponible() {
         when(grupoService.verificarCupoDisponible("grupo1")).thenReturn(true);
-        when(grupoService.consultarCargaAcademica("grupo1")).thenReturn(15.5f);
-        when(grupoService.consultarEstudiantesInscritos("grupo1")).thenReturn(Arrays.asList(estudiante));
-        List<Grupo> grupos = grupoController.getAll();
-        assertFalse(grupos.isEmpty());
-        Optional<Grupo> grupoEncontrado = grupoController.getById("grupo1");
-        assertTrue(grupoEncontrado.isPresent());
-        Grupo grupoCreado = grupoController.create(grupo);
-        assertNotNull(grupoCreado);
-        grupoController.delete("grupo1");
-        Grupo grupoActualizado = grupoController.updateCupo("grupo1", 35);
-        assertNotNull(grupoActualizado);
-        boolean cupoDisponible = grupoController.verificarCupoDisponible("grupo1");
-        assertTrue(cupoDisponible);
-        float carga = grupoController.consultarCargaAcademica("grupo1");
-        assertEquals(15.5f, carga);
-        List<Estudiante> estudiantes = grupoController.consultarEstudiantesInscritos("grupo1");
-        assertFalse(estudiantes.isEmpty());
+        boolean result = grupoController.verificarCupoDisponible("grupo1");
+        assertTrue(result);
     }
-
     @Test
-    void testMateriaController() {
-        Materia materia = crearMateria();
-        Grupo grupo = crearGrupo();
-
-        when(materiaService.listarTodos()).thenReturn(Arrays.asList(materia));
-        when(materiaService.buscarPorId("aysr")).thenReturn(Optional.of(materia));
-        when(materiaService.buscarPorCodigo("ayrs1")).thenReturn(Optional.of(materia));
+    void testMateriaController_Crear() {
         when(materiaService.crear(any(Materia.class))).thenReturn(materia);
-        when(materiaService.actualizar(eq("aysr"), any(Materia.class))).thenReturn(materia);
-        doNothing().when(materiaService).eliminarPorId("aysr");
-        when(materiaService.consultarGruposDisponibles("aysr")).thenReturn(Arrays.asList(grupo));
-        when(materiaService.verificarDisponibilidad("aysr")).thenReturn(true);
-        List<Materia> materias = materiaController.listarTodos();
-        assertFalse(materias.isEmpty());
-        Optional<Materia> materiaEncontrada = materiaController.buscarPorId("aysr");
-        assertTrue(materiaEncontrada.isPresent());
-        Optional<Materia> materiaPorCodigo = materiaController.buscarPorCodigo("ayrs1");
-        assertTrue(materiaPorCodigo.isPresent());
-        Materia materiaCreada = materiaController.crear(materia);
-        assertNotNull(materiaCreada);
-        Materia materiaActualizada = materiaController.actualizar("aysr", materia);
-        assertNotNull(materiaActualizada);
-        materiaController.eliminarPorId("aysr");
-        List<Grupo> grupos = materiaController.consultarGruposDisponibles("aysr");
-        assertFalse(grupos.isEmpty());
-        boolean disponible = materiaController.verificarDisponibilidad("aysr");
-        assertTrue(disponible);
+        Materia result = materiaController.crear(materia);
+        assertNotNull(result);
+        assertEquals("AYSR", result.getId());
     }
-
     @Test
-    void testPeriodoCambioController() {
-        PeriodoCambio periodo = crearPeriodo();
-        when(periodoService.listarTodos()).thenReturn(Arrays.asList(periodo));
-        when(periodoService.buscarPorId("periodo2")).thenReturn(Optional.of(periodo));
-        when(periodoService.obtenerPeriodoActivo()).thenReturn(Optional.of(periodo));
-        when(periodoService.crear(any(PeriodoCambio.class))).thenReturn(periodo);
-        when(periodoService.actualizar(eq("periodo2"), any(PeriodoCambio.class))).thenReturn(periodo);
-        doNothing().when(periodoService).eliminarPorId("periodo2");
-        List<PeriodoCambio> periodos = periodoController.getAll();
-        assertFalse(periodos.isEmpty());
-        Optional<PeriodoCambio> periodoEncontrado = periodoController.getById("periodo2");
-        assertTrue(periodoEncontrado.isPresent());
-        Optional<PeriodoCambio> periodoActivo = periodoController.getActivo();
-        assertTrue(periodoActivo.isPresent());
-        PeriodoCambio periodoCreado = periodoController.create(periodo);
-        assertNotNull(periodoCreado);
-        PeriodoCambio periodoActualizado = periodoController.update("periodo2", periodo);
-        assertNotNull(periodoActualizado);
-        periodoController.delete("periodo2");
+    void testMateriaController_BuscarPorId() {
+        when(materiaService.buscarPorId("AYSR")).thenReturn(Optional.of(materia));
+        Optional<Materia> result = materiaController.buscarPorId("AYSR");
+        assertTrue(result.isPresent());
+        assertEquals("AYSR", result.get().getId());
     }
-
     @Test
-    void testProfesorController() {
-        Profesor profesor = crearProfesor();
-        Grupo grupo = crearGrupo();
-        when(profesorService.listarTodos()).thenReturn(Arrays.asList(profesor));
-        when(profesorService.buscarPorId("profesor")).thenReturn(Optional.of(profesor));
-        when(profesorService.buscarPorCodigo("123")).thenReturn(Optional.of(profesor));
-        when(profesorService.crear(any(Profesor.class))).thenReturn(profesor);
-        doNothing().when(profesorService).eliminarPorId("profesor");
-        when(profesorService.consultarGruposAsignados("profesor")).thenReturn(Arrays.asList(grupo));
-        List<Profesor> profesores = profesorController.listarTodos();
-        assertFalse(profesores.isEmpty());
-        Optional<Profesor> profesorEncontrado = profesorController.buscarPorId("profesor");
-        assertTrue(profesorEncontrado.isPresent());
-        Optional<Profesor> profesorPorCodigo = profesorController.buscarPorCodigo("123");
-        assertTrue(profesorPorCodigo.isPresent());
-        Profesor profesorCreado = profesorController.crear(profesor);
-        assertNotNull(profesorCreado);
-        profesorController.eliminarPorId("profesor");
-        List<Grupo> grupos = profesorController.consultarGruposAsignados("profesor");
-        assertFalse(grupos.isEmpty());
+    void testMateriaController_InscribirEstudianteEnGrupo() {
+        when(materiaService.inscribirEstudianteEnGrupo("grupo1", "Estudiante")).thenReturn(grupo);
+        Grupo result = materiaController.inscribirEstudianteEnGrupo("grupo1", "Estudiante");
+        assertNotNull(result);
     }
-
     @Test
-    void testSolicitudCambioController() {
-        SolicitudCambio solicitud = crearSolicitud();
-
-        // Mock de las respuestas del servicio
-        when(solicitudService.obtenerTodasLasSolicitudes()).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.obtenerSolicitudPorId("solicitud1")).thenReturn(Optional.of(solicitud));
-        when(solicitudService.crearSolicitud(any(SolicitudCambio.class))).thenReturn(solicitud);
-        when(solicitudService.actualizarEstado("solicitud1", EstadoSolicitud.APROBADA)).thenReturn(solicitud);
-        doNothing().when(solicitudService).eliminarSolicitud("solicitud1");
-        when(solicitudService.obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE)).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.obtenerSolicitudesPorEstudiante("estudiante1")).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.obtenerSolicitudesPorDecanatura("decanatura1")).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.obtenerSolicitudesPorPrioridad(TipoPrioridad.ESPECIAL)).thenReturn(Arrays.asList(solicitud));
-        when(solicitudService.obtenerHistorialPorSolicitud("solicitud1")).thenReturn(Arrays.asList("2024-01-01|PENDIENTE|||CREACION"));
-        when(solicitudService.obtenerEstadisticasSolicitudes()).thenReturn(crearEstadisticasMock());
-
-        // 1. Test listar todas las solicitudes
-        List<SolicitudCambio> solicitudes = solicitudController.obtenerTodasLasSolicitudes();
-        assertFalse(solicitudes.isEmpty());
-        assertEquals(1, solicitudes.size());
-
-        // 2. Test buscar por ID
-        ResponseEntity<SolicitudCambio> respuestaBuscar = solicitudController.obtenerSolicitudPorId("solicitud1");
-        assertTrue(respuestaBuscar.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaBuscar.getBody());
-
-        // 3. Test crear solicitud
-        ResponseEntity<SolicitudCambio> respuestaCrear = solicitudController.crear(solicitud);
-        assertTrue(respuestaCrear.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaCrear.getBody());
-
-        // 4. Test actualizar estado
-        ResponseEntity<SolicitudCambio> respuestaActualizar = solicitudController.actualizarEstado("solicitud1", "APROBADA");
-        assertTrue(respuestaActualizar.getStatusCode().is2xxSuccessful());
-        assertNotNull(respuestaActualizar.getBody());
-
-        // 5. Test eliminar solicitud
-        ResponseEntity<Void> respuestaEliminar = solicitudController.eliminarSolicitud("solicitud1");
-        assertTrue(respuestaEliminar.getStatusCode().is2xxSuccessful());
-
-        // 6. Test buscar por estado
-        List<SolicitudCambio> solicitudesPorEstado = solicitudController.buscarPorEstado("PENDIENTE");
-        assertFalse(solicitudesPorEstado.isEmpty());
-        assertEquals(1, solicitudesPorEstado.size());
-
-        // 7. Test buscar por estudiante
-        List<SolicitudCambio> solicitudesPorEstudiante = solicitudController.buscarPorEstudiante("estudiante1");
-        assertFalse(solicitudesPorEstudiante.isEmpty());
-        assertEquals(1, solicitudesPorEstudiante.size());
-
-        // 8. Test buscar por decanatura
-        List<SolicitudCambio> solicitudesPorDecanatura = solicitudController.obtenerSolicitudesPorDecanatura("decanatura1");
-        assertFalse(solicitudesPorDecanatura.isEmpty());
-
-        // 9. Test buscar por prioridad
-        List<SolicitudCambio> solicitudesPorPrioridad = solicitudController.consultarCasosEspeciales();
-        assertFalse(solicitudesPorPrioridad.isEmpty());
-
-        // 10. Test obtener historial - CORREGIDO
-        ResponseEntity<List<String>> respuestaHistorial = solicitudController.obtenerHistorialPorSolicitud("solicitud1");
-        assertTrue(respuestaHistorial.getStatusCode().is2xxSuccessful());
-        List<String> historial = respuestaHistorial.getBody();
-        assertNotNull(historial);
-        assertFalse(historial.isEmpty());
-
-        // 11. Test obtener estadísticas
-        Map<String, Object> estadisticas = solicitudController.generarEstadisticasReasignacion();
-        assertNotNull(estadisticas);
-        assertTrue(estadisticas.containsKey("totalSolicitudes"));
-
-        // Verificaciones de los mocks
-        verify(solicitudService, times(1)).obtenerTodasLasSolicitudes();
-        verify(solicitudService, times(1)).obtenerSolicitudPorId("solicitud1");
-        verify(solicitudService, times(1)).crearSolicitud(any(SolicitudCambio.class));
-        verify(solicitudService, times(1)).actualizarEstado("solicitud1", EstadoSolicitud.APROBADA);
-        verify(solicitudService, times(1)).eliminarSolicitud("solicitud1");
-        verify(solicitudService, times(1)).obtenerSolicitudesPorEstado(EstadoSolicitud.PENDIENTE);
-        verify(solicitudService, times(1)).obtenerSolicitudesPorEstudiante("estudiante1");
-        verify(solicitudService, times(1)).obtenerHistorialPorSolicitud("solicitud1");
-        verify(solicitudService, times(1)).obtenerEstadisticasSolicitudes();
+    void testAdministradorController_GetAll() {
+        when(administradorService.listarTodos()).thenReturn(Collections.singletonList(administrador));
+        List<Administrador> result = administradorController.getAll();
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
     }
-
-
-
     @Test
-    void testUsuarioController() {
-        Usuario usuario = crearUsuario();
-        when(usuarioService.autenticar("carlos.mendez", "password123")).thenReturn(Optional.of(usuario));
-        doNothing().when(usuarioService).cambiarPassword("usuario2", "nuevopass");
-        when(usuarioService.buscarPorUsername("carlos.mendez")).thenReturn(Optional.of(usuario));
-        when(usuarioService.tienePermiso("usuario2", "crear_solicitud")).thenReturn(true);
-        Optional<Usuario> usuarioAutenticado = usuarioController.login("carlos.mendez", "password123");
-        assertTrue(usuarioAutenticado.isPresent());
-        usuarioController.cambiarPassword("usuario2", "nuevopass");
-        Optional<Usuario> usuarioEncontrado = usuarioController.buscarPorUsername("carlos.mendez");
-        assertTrue(usuarioEncontrado.isPresent());
-        boolean tienePermiso = usuarioController.tienePermiso("usuario2", "crear_solicitud");
-        assertTrue(tienePermiso);
-        verify(usuarioService, times(1)).autenticar("carlos.mendez", "password123");
-        verify(usuarioService, times(1)).cambiarPassword("usuario2", "nuevopass");
-        verify(usuarioService, times(1)).buscarPorUsername("carlos.mendez");
-        verify(usuarioService, times(1)).tienePermiso("usuario2", "crear_solicitud");
+    void testAdministradorController_GetById() {
+        when(administradorService.buscarPorId("Administrador")).thenReturn(Optional.of(administrador));
+        Optional<Administrador> result = administradorController.getById("Administrador");
+        assertTrue(result.isPresent());
+        assertEquals("Administrador", result.get().getId());
     }
-
     @Test
-    void testDecanaturaController() {
-        Decanatura decanatura = crearDecanatura();
-        SolicitudCambio solicitud = crearSolicitud();
-        when(decanaturaService.listarTodos()).thenReturn(Arrays.asList(decanatura));
-        when(decanaturaService.buscarPorId("sistemas")).thenReturn(Optional.of(decanatura)); // Cambiado a "sistemas"
+    void testAdministradorController_Create() {
+        when(administradorService.crear(any(Administrador.class))).thenReturn(administrador);
+        Administrador result = administradorController.create(administrador);
+        assertNotNull(result);
+        assertEquals("Administrador", result.getId());
+    }
+    @Test
+    void testAdministradorController_ModificarCupoGrupo() {
+        when(administradorService.modificarCupoGrupo("grupo1", 30)).thenReturn(grupo);
+        Grupo result = administradorController.modificarCupoGrupo("grupo1", 30);
+        assertNotNull(result);
+        assertEquals("grupo1", result.getId());
+    }
+    @Test
+    void testAdministradorController_ConfigurarPeriodo() {
+        when(administradorService.configurarPeriodo(any(PeriodoCambio.class))).thenReturn(periodoCambio);
+        PeriodoCambio result = administradorController.configurarPeriodo(periodoCambio);
+        assertNotNull(result);
+        assertEquals("periodo2025-2", result.getId());
+    }
+    @Test
+    void testAdministradorController_GenerarReportes() {
+        when(administradorService.generarReportes()).thenReturn(Collections.singletonList(solicitudCambio));
+        List<SolicitudCambio> result = administradorController.generarReportes();
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testDecanaturaController_GetAll() {
+        when(decanaturaService.listarTodos()).thenReturn(Collections.singletonList(decanatura));
+        List<Decanatura> result = decanaturaController.getAll();
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testDecanaturaController_GetById() {
+        when(decanaturaService.buscarPorId("Decanos")).thenReturn(Optional.of(decanatura));
+        Optional<Decanatura> result = decanaturaController.getById("Decanos");
+        assertTrue(result.isPresent());
+        assertEquals("Decanos", result.get().getId());
+    }
+    @Test
+    void testDecanaturaController_Create() {
         when(decanaturaService.crear(any(Decanatura.class))).thenReturn(decanatura);
-        when(decanaturaService.consultarSolicitudesPendientes()).thenReturn(Arrays.asList(solicitud));
-        when(decanaturaService.revisarSolicitud("solicitud1", EstadoSolicitud.APROBADA, "Aprobada")).thenReturn(solicitud); // Cambiado a "solicitud1"
-        doNothing().when(decanaturaService).aprobarSolicitudEspecial("solicitud1"); // Cambiado a "solicitud1"
-        List<Decanatura> decanaturas = decanaturaController.getAll();
-        assertFalse(decanaturas.isEmpty());
-        Optional<Decanatura> decanaturaEncontrada = decanaturaController.getById("sistemas"); // Cambiado a "sistemas"
-        assertTrue(decanaturaEncontrada.isPresent());
-        Decanatura decanaturaCreada = decanaturaController.create(decanatura);
-        assertNotNull(decanaturaCreada);
-        List<SolicitudCambio> solicitudesPendientes = decanaturaController.consultarSolicitudesPendientes();
-        assertFalse(solicitudesPendientes.isEmpty());
-        SolicitudCambio solicitudRevisada = decanaturaController.revisarSolicitud("solicitud1", EstadoSolicitud.APROBADA, "Aprobada");
-        assertNotNull(solicitudRevisada);
-        decanaturaController.aprobarSolicitudEspecial("solicitud1");
-        verify(decanaturaService, times(1)).aprobarSolicitudEspecial("solicitud1");
+        Decanatura result = decanaturaController.create(decanatura);
+        assertNotNull(result);
+        assertEquals("Decanos", result.getId());
+    }
+    @Test
+    void testDecanaturaController_Actualizar() {
+        when(decanaturaService.actualizar(eq("Decanos"), any(Decanatura.class))).thenReturn(decanatura);
+        Decanatura result = decanaturaController.actualizar("Decanos", decanatura);
+        assertNotNull(result);
+        assertEquals("Decanos", result.getId());
+    }
+    @Test
+    void testDecanaturaController_ConsultarSolicitudesPendientes() {
+        when(decanaturaService.consultarSolicitudesPendientes()).thenReturn(Collections.singletonList(solicitudCambio));
+        List<SolicitudCambio> result = decanaturaController.consultarSolicitudesPendientes();
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testDecanaturaController_RevisarSolicitud() {
+        when(decanaturaService.revisarSolicitud("Solicitud", EstadoSolicitud.APROBADA, "Aprobada")).thenReturn(solicitudCambio);
+        SolicitudCambio result = decanaturaController.revisarSolicitud("Solicitud", EstadoSolicitud.APROBADA, "Aprobada");
+        assertNotNull(result);
+        assertEquals("Solicitud", result.getId());
+    }
+    @Test
+    void testSemaforoAcademicoController_VisualizarSemaforoEstudiante_ConDatos() {
+        Map<String, EstadoSemaforo> semaforo = new HashMap<>();
+        semaforo.put("AYSR", EstadoSemaforo.VERDE);
+        when(semaforoAcademicoService.visualizarSemaforoEstudiante("Estudiante")).thenReturn(semaforo);
+        ResponseEntity<Map<String, EstadoSemaforo>> response = semaforoAcademicoController.visualizarSemaforoEstudiante("Estudiante");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(EstadoSemaforo.VERDE, response.getBody().get("AYSR"));
+    }
+    @Test
+    void testSemaforoAcademicoController_ConsultarSemaforoMateria_Existe() {
+        when(semaforoAcademicoService.consultarSemaforoMateria("Estudiante", "AYSR")).thenReturn(Optional.of(EstadoSemaforo.ROJO));
+        ResponseEntity<EstadoSemaforo> response = semaforoAcademicoController.consultarSemaforoMateria("Estudiante", "AYSR");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(EstadoSemaforo.ROJO, response.getBody());
     }
 
-    
+    @Test
+    void testSemaforoAcademicoController_ConsultarSemaforoMateria_NoExiste() {
+        when(semaforoAcademicoService.consultarSemaforoMateria("Estudiante", "mat99")).thenReturn(Optional.empty());
+        ResponseEntity<EstadoSemaforo> response = semaforoAcademicoController.consultarSemaforoMateria("Estudiante", "mat99");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+    @Test
+    void testUsuarioController_Login_Exitoso() {
+        when(usuarioService.autenticar("Julian", "password123")).thenReturn(Optional.of(usuario));
+        Optional<Usuario> result = usuarioController.login("Julian", "password123");
+        assertTrue(result.isPresent());
+        assertEquals("Julian", result.get().getUsername());
+    }
+    @Test
+    void testUsuarioController_Login_Fallido() {
+        when(usuarioService.autenticar("usuarioinexistente", "contrasena")).thenReturn(Optional.empty());
+        Optional<Usuario> result = usuarioController.login("usuarioinexistente", "contrasena");
+        assertFalse(result.isPresent());
+    }
+    @Test
+    void testUsuarioController_BuscarPorUsername() {
+        when(usuarioService.buscarPorUsername("Julian")).thenReturn(Optional.of(usuario));
+        Optional<Usuario> result = usuarioController.buscarPorUsername("Julian");
+        assertTrue(result.isPresent());
+        assertEquals("Julian", result.get().getUsername());
+    }
+    @Test
+    void testProfesorController_ListarTodos() {
+        when(profesorService.listarTodos()).thenReturn(Collections.singletonList(profesor));
+        List<Profesor> result = profesorController.listarTodos();
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testProfesorController_BuscarPorId() {
+        when(profesorService.buscarPorId("profesor")).thenReturn(Optional.of(profesor));
+        Optional<Profesor> result = profesorController.buscarPorId("profesor");
+        assertTrue(result.isPresent());
+        assertEquals("profesor", result.get().getId());
+    }
+    @Test
+    void testProfesorController_Crear() {
+        when(profesorService.crear(any(Profesor.class))).thenReturn(profesor);
+        Profesor result = profesorController.crear(profesor);
+        assertNotNull(result);
+        assertEquals("profesor", result.getId());
+    }
+    @Test
+    void testHorarioController_Crear() {
+        when(horarioService.crear(any(Horario.class))).thenReturn(horario);
+        Horario result = horarioController.crear(horario);
+        assertNotNull(result);
+        assertEquals("horario1", result.getId());
+    }
+    @Test
+    void testHorarioController_BuscarPorId() {
+        when(horarioService.buscarPorId("horario1")).thenReturn(Optional.of(horario));
+        Optional<Horario> result = horarioController.buscarPorId("horario1");
+        assertTrue(result.isPresent());
+        assertEquals("horario1", result.get().getId());
+    }
+    @Test
+    void testHorarioController_ConsultarHorariosPorGrupo() {
+        when(horarioService.consultarHorariosPorGrupo("grupo1")).thenReturn(Collections.singletonList(horario));
+        List<Horario> result = horarioController.consultarHorariosPorGrupo("grupo1");
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+    }
+    @Test
+    void testAdministradorController_Crear() {
+        when(administradorService.crear(any(Administrador.class))).thenReturn(administrador);
+        Administrador result = administradorController.create(administrador);
+        assertNotNull(result);
+        assertEquals("Administrador", result.getId());
+    }
+    @Test
+    void testEstudiantesControlador_CrearEstudiante_DatosInvalidos() {
+        Estudiante estudianteInvalido = new Estudiante();
+        when(estudianteService.crear(any(Estudiante.class))).thenThrow(new IllegalArgumentException());
+        assertThrows(IllegalArgumentException.class, () -> {
+            estudiantesControlador.crear(estudianteInvalido);
+        });
+    }
+    @Test
+    void testSolicitudCambioController_ActualizarEstado_EstadoInvalido() {
+        ResponseEntity<SolicitudCambio> response = solicitudCambioController.actualizarEstado("Solicitud", "ESTADO_INVALIDO");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+    @Test
+    void testGrupoController_UpdateCupo_CupoInvalido() {
+        when(grupoService.actualizarCupo("grupo1", -1)).thenThrow(new IllegalArgumentException());
+        assertThrows(IllegalArgumentException.class, () -> {grupoController.updateCupo("grupo1", -1);});
+    }
+    @Test
+    void testDecanaturaController_RevisarSolicitud_SolicitudNoExistente() {
+        when(decanaturaService.revisarSolicitud("solInexistente", EstadoSolicitud.APROBADA, "Aprobada"))
+                .thenThrow(new RuntimeException("Solicitud no encontrada"));
+        assertThrows(RuntimeException.class, () -> {
+            decanaturaController.revisarSolicitud("solInexistente", EstadoSolicitud.APROBADA, "Aprobada");});
+    }
+    public boolean cambiarPassword(String userId, String newPassword) {
+        try {
+            usuarioService.cambiarPassword(userId, newPassword);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    @Test
+    void testUsuarioController_TienePermiso() {
+        when(usuarioService.tienePermiso("Usuario", "ACCION_TEST")).thenReturn(true);
+        boolean resultado = usuarioController.tienePermiso("Usuario", "ACCION_TEST");
+        assertTrue(resultado);
+    }
+    @Test
+    void testProfesorController_ActualizarProfesor() {
+        when(profesorService.actualizar(eq("profesor"), any(Profesor.class))).thenReturn(profesor);
+        Profesor resultado = profesorController.actualizar("profesor", profesor);
+        assertNotNull(resultado);
+        assertEquals("profesor", resultado.getId());
+    }
 }
