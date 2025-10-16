@@ -1,4 +1,3 @@
-yaml
 name: Deploy Java project to Azure Function App
 
 on:
@@ -6,7 +5,7 @@ on:
     branches: ["main"]
 
 env:
-  AZURE_FUNCTIONAPP_NAME: 'your-app-name'
+  AZURE_FUNCTIONAPP_NAME: 'SIHRA'
   POM_XML_DIRECTORY: '.' 
   DISTRIBUTION: 'temurin'      
   JAVA_VERSION: '17'          
@@ -44,5 +43,5 @@ jobs:
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: '${{ env.POM_XML_DIRECTORY }}/target' 
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_JULIAN }}
           respect-pom-xml: true
