@@ -30,4 +30,24 @@ public interface RepositorioUsuario extends MongoRepository<Usuario, String> {
     long countByRolAndActivoTrue(Rol rol);
 
     long countByRol(Rol rol);
+
+    default Usuario guardarUsuario(Usuario usuario) {
+        return save(usuario);
+    }
+
+    default boolean eliminarUsuarioSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Usuario> obtenerUsuarioPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeUsuarioPorId(String id) {
+        return existsById(id);
+    }
 }

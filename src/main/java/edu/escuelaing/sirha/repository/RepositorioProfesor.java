@@ -36,4 +36,24 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     @Query(value = "{ '$where': 'this.gruposAsignadosIds.length > 0' }", count = true)
     long countProfesoresConGrupos();
+
+    default Profesor guardarProfesor(Profesor profesor) {
+        return save(profesor);
+    }
+
+    default boolean eliminarProfesorSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Profesor> obtenerProfesorPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeProfesorPorId(String id) {
+        return existsById(id);
+    }
 }

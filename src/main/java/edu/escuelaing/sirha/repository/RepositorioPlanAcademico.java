@@ -131,4 +131,24 @@ public interface RepositorioPlanAcademico extends MongoRepository<PlanAcademico,
                         !plan.getMateriasElectivasIds().isEmpty())
                 .orElse(false);
     }
+
+    default PlanAcademico guardarPlan(PlanAcademico plan) {
+        return save(plan);
+    }
+
+    default boolean eliminarPlanSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<PlanAcademico> obtenerPlanPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existePlanPorId(String id) {
+        return existsById(id);
+    }
 }

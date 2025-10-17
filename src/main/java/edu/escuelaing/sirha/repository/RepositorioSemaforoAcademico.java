@@ -28,4 +28,24 @@ public interface RepositorioSemaforoAcademico extends MongoRepository<SemaforoAc
     long countByGrado(String grado);
     long countByCambioDePlanTrue();
     boolean existsByEstudianteId(String estudianteId);
+
+    default SemaforoAcademico guardarSemaforo(SemaforoAcademico semaforo) {
+        return save(semaforo);
+    }
+
+    default boolean eliminarSemaforoSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<SemaforoAcademico> obtenerSemaforoPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeSemaforoPorId(String id) {
+        return existsById(id);
+    }
 }

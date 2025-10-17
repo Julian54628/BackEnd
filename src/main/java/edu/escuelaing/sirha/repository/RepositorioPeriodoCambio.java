@@ -41,4 +41,24 @@ public interface RepositorioPeriodoCambio extends MongoRepository<PeriodoCambio,
     long countByActivoTrue();
 
     long countByTipo(String tipo);
+
+    default PeriodoCambio guardarPeriodo(PeriodoCambio periodo) {
+        return save(periodo);
+    }
+
+    default boolean eliminarPeriodoSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<PeriodoCambio> obtenerPeriodoPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existePeriodoPorId(String id) {
+        return existsById(id);
+    }
 }

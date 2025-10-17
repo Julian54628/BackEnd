@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCambio, String> {
@@ -45,4 +46,24 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
     List<SolicitudCambio> findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(String estudianteId, String materiaDestinoId, List<EstadoSolicitud> estados);
     List<SolicitudCambio> findByAdministradorId(String administradorId);
     List<SolicitudCambio> findByTipoPrioridadAndEstado(TipoPrioridad tipoPrioridad, EstadoSolicitud estado);
+
+    default SolicitudCambio guardarSolicitud(SolicitudCambio solicitud) {
+        return save(solicitud);
+    }
+
+    default boolean eliminarSolicitudSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<SolicitudCambio> obtenerSolicitudPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeSolicitudPorId(String id) {
+        return existsById(id);
+    }
 }
