@@ -1,0 +1,63 @@
+package edu.escuelaing.sirha.controller;
+
+import edu.escuelaing.sirha.model.Profesor;
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.service.ProfesorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/profesores")
+public class ProfesorController {
+
+    @Autowired
+    public ProfesorService profesorService;
+
+    @GetMapping
+    public List<Profesor> listarTodos() {
+        return profesorService.listarTodos();
+    }
+
+    @GetMapping("/{id}")
+    public Optional<Profesor> buscarPorId(@PathVariable String id) {
+        return profesorService.buscarPorId(id);
+    }
+
+    @GetMapping("/codigo/{codigo}")
+    public Optional<Profesor> buscarPorCodigo(@PathVariable String codigo) {
+        return profesorService.buscarPorCodigo(codigo);
+    }
+
+    @PostMapping
+    public Profesor crear(@RequestBody Profesor profesor) {
+        return profesorService.crear(profesor);
+    }
+
+    @PutMapping("/{id}")
+    public Profesor actualizar(@PathVariable String id, @RequestBody Profesor profesor) {
+        return profesorService.actualizar(id, profesor);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminarPorId(@PathVariable String id) {
+        profesorService.eliminarPorId(id);
+    }
+
+    @GetMapping("/{id}/grupos")
+    public List<Grupo> consultarGruposAsignados(@PathVariable String id) {
+        return profesorService.consultarGruposAsignados(id);
+    }
+
+    @PostMapping("/{profesorId}/grupos/{grupoId}")
+    public Grupo asignarProfesorAGrupo(@PathVariable String profesorId, @PathVariable String grupoId) {
+        return profesorService.asignarProfesorAGrupo(profesorId, grupoId);
+    }
+
+    @DeleteMapping("/grupos/{grupoId}/profesor")
+    public Grupo retirarProfesorDeGrupo(@PathVariable String grupoId) {
+        return profesorService.retirarProfesorDeGrupo(grupoId);
+    }
+}
