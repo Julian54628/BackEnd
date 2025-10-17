@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SIHRA - App</title>
+  <meta http-equiv="refresh" content="0;url=/api">
+  <style>
+    body{font-family:Segoe UI,Roboto,Arial,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0}
+    .card{max-width:800px;padding:24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    a{color:#0b5cff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>SIHRA - Aplicación desplegada</h1>
+    <p>Redirigiendo a <a href="/api">/api</a>. Si prefieres que la raíz (/) la atienda un controlador, añade un mapeo "/" en uno de tus controladores existentes.</p>
+    <p>Recursos útiles:</p>
+    <ul style="text-align:left">
+      <li><a href="/api">Ver endpoints (si tienes un controlador en /api)</a></li>
+      <li><a href="/actuator/health">Health (si Actuator está habilitado)</a></li>
+      <li><a href="/swagger-ui.html">Swagger UI (si lo configuraste)</a></li>
+    </ul>
+    <p>Si prefieres que lo atienda un controlador, pega el snippet Java que te di en una clase @RestController existente.</p>
+  </div>
+</body>
+</html>
+
