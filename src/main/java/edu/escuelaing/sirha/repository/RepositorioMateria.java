@@ -37,4 +37,24 @@ public interface RepositorioMateria extends MongoRepository<Materia, String> {
     long countByFacultad(String facultad);
 
     List<Materia> findAllById(List<String> ids);
+
+    default Materia guardarMateria(Materia materia) {
+        return save(materia);
+    }
+
+    default boolean eliminarMateriaSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Materia> obtenerMateriaPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeMateriaPorId(String id) {
+        return existsById(id);
+    }
 }

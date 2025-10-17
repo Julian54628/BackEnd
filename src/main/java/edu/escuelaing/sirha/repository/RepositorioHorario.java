@@ -34,4 +34,24 @@ public interface RepositorioHorario extends MongoRepository<Horario, String> {
     boolean existsHorarioConflictivo(String diaSemana, String salon, Time horaInicio, Time horaFin);
 
     boolean existsByIdHorario(int idHorario);
+
+    default Horario guardarHorario(Horario horario) {
+        return save(horario);
+    }
+
+    default boolean eliminarHorarioSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Horario> obtenerHorarioPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeHorarioPorId(String id) {
+        return existsById(id);
+    }
 }

@@ -33,4 +33,24 @@ public interface RepositorioDecanatura extends MongoRepository<Decanatura, Strin
     long countByFacultad(String facultad);
 
     long countByActivoTrue();
+
+    default Decanatura guardarDecanatura(Decanatura decanatura) {
+        return save(decanatura);
+    }
+
+    default boolean eliminarDecanaturaSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Decanatura> obtenerDecanaturaPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeDecanaturaPorId(String id) {
+        return existsById(id);
+    }
 }

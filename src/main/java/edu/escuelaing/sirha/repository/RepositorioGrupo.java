@@ -40,4 +40,24 @@ public interface RepositorioGrupo extends MongoRepository<Grupo, String> {
     boolean existsByIdGrupo(int idGrupo);
 
     List<Grupo> findByOrderByCupoMaximoDesc();
+
+    default Grupo guardarGrupo(Grupo grupo) {
+        return save(grupo);
+    }
+
+    default boolean eliminarGrupoSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Grupo> obtenerGrupoPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeGrupoPorId(String id) {
+        return existsById(id);
+    }
 }

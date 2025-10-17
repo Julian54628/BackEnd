@@ -31,4 +31,24 @@ public interface RepositorioEstudiante extends MongoRepository<Estudiante, Strin
     long countByCarrera(String carrera);
 
     long countBySemestreAndActivoTrue(int semestre);
+
+    default Estudiante guardarEstudiante(Estudiante estudiante) {
+        return save(estudiante);
+    }
+
+    default boolean eliminarEstudianteSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Estudiante> obtenerEstudiantePorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeEstudiantePorId(String id) {
+        return existsById(id);
+    }
 }

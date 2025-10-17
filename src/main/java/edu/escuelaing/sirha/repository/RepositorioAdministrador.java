@@ -21,4 +21,24 @@ public interface RepositorioAdministrador extends MongoRepository<Administrador,
     boolean existsByCorreoInstitucional(String correoInstitucional);
 
     long countByActivoTrue();
+
+    default Administrador guardarAdministrador(Administrador administrador) {
+        return save(administrador);
+    }
+
+    default boolean eliminarAdministradorSiExiste(String id) {
+        if (existsById(id)) {
+            deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    default Optional<Administrador> obtenerAdministradorPorId(String id) {
+        return findById(id);
+    }
+
+    default boolean existeAdministradorPorId(String id) {
+        return existsById(id);
+    }
 }
