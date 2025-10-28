@@ -3,7 +3,10 @@ package edu.escuelaing.sirha.service;
 import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import edu.escuelaing.sirha.repository.RepositorioEstudiante;
 import edu.escuelaing.sirha.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,9 @@ public class GrupoServiceImpl implements GrupoService {
         this.repositorioGrupo = repositorioGrupo;
         this.repositorioEstudiante = repositorioEstudiante;
     }
+
+    @Autowired
+    private AdministradorService administradorService;
 
     @Override
     public Grupo crear(Grupo grupo) {
@@ -99,6 +105,24 @@ public class GrupoServiceImpl implements GrupoService {
                     return porcentajeOcupacion >= porcentajeAlerta;
                 })
                 .collect(Collectors.toList());
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(GrupoServiceImpl.class);
+
+    @Scheduled(fixedDelayString = "${monitor.grupos.delay.ms:300000}")
+    public void monitorCargaGrupos() {
+        List<Grupo> grupos = repositorioGrupo.findAll();
+        for (Grupo g : grupos) {
+            int capacidad = g.getCupoMaximo();
+            int inscritos = g.getCantidadInscritos();
+            if (capacidad > 0) {
+                double ratio = (double) inscritos / capacidad;
+                if (ratio >= 0.9) {
+                    double porcentaje = ratio * 100;
+                    logger.warn("Alerta carga alta grupo {}: {}/{} ({}%)", g.getId(), inscritos, capacidad, porcentaje);
+                }
+            }
+        }
     }
 
     @Override
