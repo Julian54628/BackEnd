@@ -1,5 +1,7 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Profesor;
+import edu.escuelaing.sirha.model.Grupo;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,5 +15,6 @@ public interface ProfesorService {
     List<Grupo> consultarGruposAsignados(String profesorId);
     Grupo asignarProfesorAGrupo(String profesorId, String grupoId);
     Grupo retirarProfesorDeGrupo(String grupoId);
+    List<Profesor> buscarPorDepartamento(String departamento);
+    List<Profesor> buscarActivos();
 }
-

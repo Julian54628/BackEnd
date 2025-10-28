@@ -2,14 +2,18 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import edu.escuelaing.sirha.repository.RepositorioEstudiante;
+import edu.escuelaing.sirha.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
+@Transactional
 public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
+
     private final RepositorioSemaforoAcademico repositorioSemaforoAcademico;
     private final RepositorioEstudiante repositorioEstudiante;
 
@@ -20,68 +24,38 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         this.repositorioEstudiante = repositorioEstudiante;
     }
 
-    public SemaforoAcademicoServiceImpl() {
-        this.repositorioSemaforoAcademico = null;
-        this.repositorioEstudiante = null;
-    }
-
     @Override
     public Map<String, EstadoSemaforo> visualizarSemaforoEstudiante(String estudianteId) {
-        if (repositorioSemaforoAcademico == null) {
-            return Collections.emptyMap();
-        }
-        Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
-        if (!optSemaforo.isPresent()) {
-            return Collections.emptyMap();
-        }
-        Map<String, EstadoMateria> historial = optSemaforo.get().getHistorialMaterias();
-        return historial.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> mapearEstado(entry.getValue())));
+        return repositorioSemaforoAcademico.findByEstudianteId(estudianteId)
+                .map(semaforo -> semaforo.getHistorialMaterias().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                entry -> mapearEstado(entry.getValue())
+                        )))
+                .orElse(Collections.emptyMap());
     }
 
     @Override
     public Optional<EstadoSemaforo> consultarSemaforoMateria(String estudianteId, String materiaId) {
-        if (repositorioSemaforoAcademico == null) {
-            return Optional.empty();
-        }
-        Optional<SemaforoAcademico> optSemaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
-        if (optSemaforo.isPresent()) {
-            EstadoMateria estadoMateria = optSemaforo.get().getHistorialMaterias().get(materiaId);
-            if (estadoMateria != null) {
-                return Optional.of(mapearEstado(estadoMateria));
-            }
-        }
-        return Optional.empty();
+        return repositorioSemaforoAcademico.findByEstudianteId(estudianteId)
+                .map(semaforo -> semaforo.getHistorialMaterias().get(materiaId))
+                .map(this::mapearEstado);
     }
 
     private EstadoSemaforo mapearEstado(EstadoMateria estadoMateria) {
-        switch (estadoMateria) {
-            case APROBADA:
-                return EstadoSemaforo.VERDE;
-            case INSCRITA:
-            case PENDIENTE:
-                return EstadoSemaforo.AZUL;
-            case REPROBADA:
-            case CANCELADA:
-                return EstadoSemaforo.ROJO;
-            default:
-                return EstadoSemaforo.AZUL;
-        }
+        return switch (estadoMateria) {
+            case APROBADA -> EstadoSemaforo.VERDE;
+            case INSCRITA, PENDIENTE -> EstadoSemaforo.AZUL;
+            case REPROBADA, CANCELADA -> EstadoSemaforo.ROJO;
+            default -> EstadoSemaforo.AZUL;
+        };
     }
 
     @Override
     public int getSemestreActual(String estudianteId) {
-        try {
-            if (repositorioEstudiante == null) {
-                return 0;
-            }
-            Optional<Estudiante> estudiante = repositorioEstudiante.findById(estudianteId);
-            if (estudiante.isPresent()) {
-                return estudiante.get().getSemestre();
-            }
-        } catch (Exception e) {
-            System.out.println("Error buscando estudiante: " + e.getMessage());
-        }
-        return 0;
+        return repositorioEstudiante.findById(estudianteId)
+                .map(Estudiante::getSemestre)
+                .orElse(0);
     }
 
     @Override
@@ -97,32 +71,28 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
         }
         resultado.put("semestresAnteriores", semestresAnteriores);
 
-        Optional<SemaforoAcademico> semaforo = Optional.empty();
-        if (repositorioSemaforoAcademico != null) {
-            semaforo = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
-        }
-        if (semaforo.isPresent()) {
-            SemaforoAcademico sem = semaforo.get();
+        Optional<SemaforoAcademico> semaforoOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
+        if (semaforoOpt.isPresent()) {
+            SemaforoAcademico semaforo = semaforoOpt.get();
+            Map<String, EstadoMateria> materias = semaforo.getHistorialMaterias();
 
-            int aprobadas = 0;
-            int reprobadas = 0;
-            int inscritas = 0;
-
-            Map<String, EstadoMateria> materias = sem.getHistorialMaterias();
-            for (EstadoMateria estado : materias.values()) {
-                if (estado == EstadoMateria.APROBADA) {
-                    aprobadas++;
-                } else if (estado == EstadoMateria.REPROBADA) {
-                    reprobadas++;
-                } else if (estado == EstadoMateria.INSCRITA) {
-                    inscritas++;
-                }
-            }
+            long aprobadas = materias.values().stream().filter(e -> e == EstadoMateria.APROBADA).count();
+            long reprobadas = materias.values().stream().filter(e -> e == EstadoMateria.REPROBADA).count();
+            long inscritas = materias.values().stream().filter(e -> e == EstadoMateria.INSCRITA).count();
 
             resultado.put("materiasAprobadas", aprobadas);
             resultado.put("materiasReprobadas", reprobadas);
             resultado.put("materiasInscritas", inscritas);
             resultado.put("totalMaterias", materias.size());
+            resultado.put("creditosAprobados", semaforo.getCreditosAprobados());
+            resultado.put("promedio", semaforo.getPromedioAcumulado());
+        } else {
+            resultado.put("materiasAprobadas", 0);
+            resultado.put("materiasReprobadas", 0);
+            resultado.put("materiasInscritas", 0);
+            resultado.put("totalMaterias", 0);
+            resultado.put("creditosAprobados", 0);
+            resultado.put("promedio", 0.0);
         }
 
         return resultado;
@@ -130,117 +100,47 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
 
     @Override
     public SemaforoVisualizacion obtenerSemaforoCompleto(String estudianteId) {
-        Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
-
-        SemaforoVisualizacion vis = new SemaforoVisualizacion();
-        vis.setEstudianteId(estudianteId);
-
-        Object semestreActual = foraneo.get("semestreActual");
-        if (semestreActual instanceof Number) {
-            vis.setSemestreActual(((Number) semestreActual).intValue());
-        }
-
-        Object creditosAprobados = foraneo.get("creditosAprobados");
-        if (creditosAprobados instanceof Number) {
-            vis.setCreditosCompletados(((Number) creditosAprobados).intValue());
-        }
-
-        Object promedio = foraneo.get("promedio");
-        if (promedio instanceof Number) {
-            vis.setPromedioAcumulado(((Number) promedio).floatValue());
-        }
-
-        Object materiasAprobadas = foraneo.get("materiasAprobadas");
-        if (materiasAprobadas instanceof Number) {
-            vis.setMateriasAprobadas(((Number) materiasAprobadas).intValue());
-        }
-
-        Object materiasReprobadas = foraneo.get("materiasReprobadas");
-        if (materiasReprobadas instanceof Number) {
-            vis.setMateriasReprobadas(((Number) materiasReprobadas).intValue());
-        }
-
-        Object materiasInscritas = foraneo.get("materiasInscritas");
-        if (materiasInscritas instanceof Number) {
-            vis.setMateriasCursando(((Number) materiasInscritas).intValue());
-        }
-
-        Object totalMaterias = foraneo.get("totalMaterias");
-        if (totalMaterias instanceof Number) {
-            vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
-        }
-
-        if (repositorioSemaforoAcademico != null) {
-            Optional<SemaforoAcademico> semOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
-            if (semOpt.isPresent()) {
-                SemaforoAcademico sem = semOpt.get();
-                int totalCreditosPlan = sem.getTotalCreditosPlan();
-                vis.setTotalCreditosPlan(totalCreditosPlan);
-                int creditosCompletados = vis.getCreditosCompletados();
-                int faltantes = totalCreditosPlan > 0 ? Math.max(0, totalCreditosPlan - creditosCompletados) : 0;
-                vis.setCreditosFaltantes(faltantes);
-                float progreso = totalCreditosPlan > 0 ? (creditosCompletados * 100.0f) / totalCreditosPlan : 0f;
-                vis.setPorcentajeProgreso(progreso);
-            }
-        }
-
-        return vis;
+        return construirSemaforoVisualizacion(estudianteId, false);
     }
 
     @Override
     public SemaforoVisualizacion obtenerSemaforoDetallado(String estudianteId) {
+        return construirSemaforoVisualizacion(estudianteId, true);
+    }
+
+    @Override
+    public boolean tieneProblemasAcademicos(String estudianteId) {
         Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
+        long reprobadas = (long) foraneo.getOrDefault("materiasReprobadas", 0L);
+        double promedio = (double) foraneo.getOrDefault("promedio", 0.0);
+
+        return reprobadas > 3 || promedio < 3.0;
+    }
+
+    private SemaforoVisualizacion construirSemaforoVisualizacion(String estudianteId, boolean detallado) {
+        Map<String, Object> foraneo = getForaneoEstudiante(estudianteId);
+        Optional<SemaforoAcademico> semaforoOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
 
         SemaforoVisualizacion vis = new SemaforoVisualizacion();
         vis.setEstudianteId(estudianteId);
+        vis.setSemestreActual((int) foraneo.get("semestreActual"));
+        vis.setCreditosCompletados(((Number) foraneo.get("creditosAprobados")).intValue());
+        vis.setPromedioAcumulado(((Number) foraneo.get("promedio")).floatValue());
+        vis.setMateriasAprobadas(((Number) foraneo.get("materiasAprobadas")).intValue());
+        vis.setMateriasReprobadas(((Number) foraneo.get("materiasReprobadas")).intValue());
+        vis.setMateriasCursando(((Number) foraneo.get("materiasInscritas")).intValue());
+        vis.setTotalMateriasPlan(((Number) foraneo.get("totalMaterias")).intValue());
 
-        Object semestreActual = foraneo.get("semestreActual");
-        if (semestreActual instanceof Number) {
-            vis.setSemestreActual(((Number) semestreActual).intValue());
-        }
+        if (semaforoOpt.isPresent()) {
+            SemaforoAcademico semaforo = semaforoOpt.get();
+            int totalCreditosPlan = semaforo.getTotalCreditosPlan();
+            vis.setTotalCreditosPlan(totalCreditosPlan);
 
-        Object creditosAprobados = foraneo.get("creditosAprobados");
-        if (creditosAprobados instanceof Number) {
-            vis.setCreditosCompletados(((Number) creditosAprobados).intValue());
-        }
+            int creditosCompletados = vis.getCreditosCompletados();
+            vis.setCreditosFaltantes(Math.max(0, totalCreditosPlan - creditosCompletados));
 
-        Object promedio = foraneo.get("promedio");
-        if (promedio instanceof Number) {
-            vis.setPromedioAcumulado(((Number) promedio).floatValue());
-        }
-
-        Object materiasAprobadas = foraneo.get("materiasAprobadas");
-        if (materiasAprobadas instanceof Number) {
-            vis.setMateriasAprobadas(((Number) materiasAprobadas).intValue());
-        }
-
-        Object materiasReprobadas = foraneo.get("materiasReprobadas");
-        if (materiasReprobadas instanceof Number) {
-            vis.setMateriasReprobadas(((Number) materiasReprobadas).intValue());
-        }
-
-        Object materiasInscritas = foraneo.get("materiasInscritas");
-        if (materiasInscritas instanceof Number) {
-            vis.setMateriasCursando(((Number) materiasInscritas).intValue());
-        }
-
-        Object totalMaterias = foraneo.get("totalMaterias");
-        if (totalMaterias instanceof Number) {
-            vis.setTotalMateriasPlan(((Number) totalMaterias).intValue());
-        }
-
-        if (repositorioSemaforoAcademico != null) {
-            Optional<SemaforoAcademico> semOpt = repositorioSemaforoAcademico.findByEstudianteId(estudianteId);
-            if (semOpt.isPresent()) {
-                SemaforoAcademico sem = semOpt.get();
-                int totalCreditosPlan = sem.getTotalCreditosPlan();
-                vis.setTotalCreditosPlan(totalCreditosPlan);
-                int creditosCompletados = vis.getCreditosCompletados();
-                int faltantes = totalCreditosPlan > 0 ? Math.max(0, totalCreditosPlan - creditosCompletados) : 0;
-                vis.setCreditosFaltantes(faltantes);
-                float progreso = totalCreditosPlan > 0 ? (creditosCompletados * 100.0f) / totalCreditosPlan : 0f;
-                vis.setPorcentajeProgreso(progreso);
-            }
+            float progreso = totalCreditosPlan > 0 ? (creditosCompletados * 100.0f) / totalCreditosPlan : 0f;
+            vis.setPorcentajeProgreso(progreso);
         }
 
         return vis;

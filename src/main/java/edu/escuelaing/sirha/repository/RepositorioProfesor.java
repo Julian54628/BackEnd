@@ -12,6 +12,10 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     Optional<Profesor> findByIdProfesor(int idProfesor);
 
+    List<Profesor> findByDepartamento(String departamento);
+
+    List<Profesor> findByActivoTrue();
+
     List<Profesor> findByNombre(String nombre);
 
     List<Profesor> findByNombreContainingIgnoreCase(String nombre);

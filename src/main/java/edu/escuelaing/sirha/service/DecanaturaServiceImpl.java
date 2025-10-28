@@ -2,19 +2,27 @@ package edu.escuelaing.sirha.service;
 
 import edu.escuelaing.sirha.repository.RepositorioDecanatura;
 import edu.escuelaing.sirha.repository.RepositorioSolicitudCambio;
+import edu.escuelaing.sirha.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class DecanaturaServiceImpl implements DecanaturaService {
 
-    @Autowired
-    private RepositorioDecanatura repositorioDecanatura;
+    private final RepositorioDecanatura repositorioDecanatura;
+    private final RepositorioSolicitudCambio repositorioSolicitudCambio;
 
     @Autowired
-    private RepositorioSolicitudCambio repositorioSolicitudCambio;
+    public DecanaturaServiceImpl(RepositorioDecanatura repositorioDecanatura,
+                                 RepositorioSolicitudCambio repositorioSolicitudCambio) {
+        this.repositorioDecanatura = repositorioDecanatura;
+        this.repositorioSolicitudCambio = repositorioSolicitudCambio;
+    }
 
     @Override
     public Decanatura crear(Decanatura decanatura) {
@@ -33,12 +41,11 @@ public class DecanaturaServiceImpl implements DecanaturaService {
 
     @Override
     public Decanatura actualizar(String id, Decanatura decanatura) {
-        Optional<Decanatura> decanaturaExistente = repositorioDecanatura.findById(id);
-        if (decanaturaExistente.isPresent()) {
-            decanatura.setId(id);
-            return repositorioDecanatura.save(decanatura);
+        if (!repositorioDecanatura.existsById(id)) {
+            throw new IllegalArgumentException("Decanatura no encontrada: " + id);
         }
-        return null;
+        decanatura.setId(id);
+        return repositorioDecanatura.save(decanatura);
     }
 
     @Override
@@ -53,79 +60,77 @@ public class DecanaturaServiceImpl implements DecanaturaService {
 
     @Override
     public SolicitudCambio revisarSolicitud(String solicitudId, EstadoSolicitud estado, String respuesta) {
-        Optional<SolicitudCambio> solicitudOpt = repositorioSolicitudCambio.findById(solicitudId);
-        if (solicitudOpt.isPresent()) {
-            SolicitudCambio solicitud = solicitudOpt.get();
-            solicitud.setEstado(estado);
-            solicitud.setRespuesta(respuesta);
-            solicitud.setFechaRespuesta(new Date());
-            return repositorioSolicitudCambio.save(solicitud);
-        }
-        return null;
+        return repositorioSolicitudCambio.findById(solicitudId)
+                .map(solicitud -> {
+                    solicitud.setEstado(estado);
+                    solicitud.setRespuesta(respuesta);
+                    solicitud.setFechaRespuesta(new Date());
+                    return repositorioSolicitudCambio.save(solicitud);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada: " + solicitudId));
     }
 
     @Override
     public void aprobarSolicitudEspecial(String solicitudId) {
-        Optional<SolicitudCambio> solicitudOpt = repositorioSolicitudCambio.findById(solicitudId);
-        if (solicitudOpt.isPresent()) {
-            SolicitudCambio solicitud = solicitudOpt.get();
-            solicitud.setEstado(EstadoSolicitud.APROBADA);
-            solicitud.setFechaRespuesta(new Date());
-            repositorioSolicitudCambio.save(solicitud);
-        }
+        repositorioSolicitudCambio.findById(solicitudId)
+                .ifPresent(solicitud -> {
+                    solicitud.setEstado(EstadoSolicitud.APROBADA);
+                    solicitud.setFechaRespuesta(new Date());
+                    repositorioSolicitudCambio.save(solicitud);
+                });
     }
 
     @Override
     public Decanatura otorgarPermisosAdministrador(String decanaturaId) {
-        Optional<Decanatura> decanaturaOpt = repositorioDecanatura.findById(decanaturaId);
-        if (decanaturaOpt.isPresent()) {
-            Decanatura decanatura = decanaturaOpt.get();
-            decanatura.setEsAdministrador(true);
-            return repositorioDecanatura.save(decanatura);
-        }
-        return null;
+        return repositorioDecanatura.findById(decanaturaId)
+                .map(decanatura -> {
+                    decanatura.setEsAdministrador(true);
+                    return repositorioDecanatura.save(decanatura);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Decanatura no encontrada: " + decanaturaId));
     }
 
     @Override
     public Decanatura revocarPermisosAdministrador(String decanaturaId) {
-        Optional<Decanatura> decanaturaOpt = repositorioDecanatura.findById(decanaturaId);
-        if (decanaturaOpt.isPresent()) {
-            Decanatura decanatura = decanaturaOpt.get();
-            decanatura.setEsAdministrador(false);
-            return repositorioDecanatura.save(decanatura);
-        }
-        return null;
+        return repositorioDecanatura.findById(decanaturaId)
+                .map(decanatura -> {
+                    decanatura.setEsAdministrador(false);
+                    return repositorioDecanatura.save(decanatura);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Decanatura no encontrada: " + decanaturaId));
     }
 
     @Override
     public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYPrioridad(String decanaturaId) {
-        List<SolicitudCambio> solicitudesDecanatura = repositorioSolicitudCambio.findAll().stream()
-                .filter(s -> s.getDecanaturaId() != null && s.getDecanaturaId().equals(decanaturaId)).toList();
-        return solicitudesDecanatura.stream()
-                .sorted((s1, s2) -> Integer.compare(s2.getPrioridad(), s1.getPrioridad())).toList();
+        return repositorioSolicitudCambio.findByDecanaturaId(decanaturaId).stream()
+                .sorted(Comparator.comparing(SolicitudCambio::getPrioridad).reversed())
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<SolicitudCambio> consultarSolicitudesPorDecanaturaYFechaLlegada(String decanaturaId) {
-        List<SolicitudCambio> solicitudesDecanatura = repositorioSolicitudCambio.findAll().stream()
-                .filter(s -> s.getDecanaturaId() != null && s.getDecanaturaId().equals(decanaturaId)).toList();
-        return solicitudesDecanatura.stream().sorted((s1, s2) -> s1.getFechaCreacion().compareTo(s2.getFechaCreacion()))
-                .toList();
+        return repositorioSolicitudCambio.findByDecanaturaId(decanaturaId).stream()
+                .sorted(Comparator.comparing(SolicitudCambio::getFechaCreacion))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Map<String, Object> consultarTasaAprobacionRechazo(String decanaturaId) {
-        List<SolicitudCambio> solicitudesDecanatura = repositorioSolicitudCambio.findAll().stream()
-                .filter(s -> s.getDecanaturaId() != null && s.getDecanaturaId().equals(decanaturaId)).toList();
+        List<SolicitudCambio> solicitudesDecanatura = repositorioSolicitudCambio.findByDecanaturaId(decanaturaId);
+
         long total = solicitudesDecanatura.size();
-        long aprobadas = solicitudesDecanatura.stream().filter(s -> s.getEstado() == EstadoSolicitud.APROBADA).count();
-        long rechazadas = solicitudesDecanatura.stream().filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count();
+        long aprobadas = solicitudesDecanatura.stream()
+                .filter(s -> s.getEstado() == EstadoSolicitud.APROBADA).count();
+        long rechazadas = solicitudesDecanatura.stream()
+                .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count();
+
         Map<String, Object> tasas = new HashMap<>();
         tasas.put("totalSolicitudes", total);
         tasas.put("aprobadas", aprobadas);
         tasas.put("rechazadas", rechazadas);
         tasas.put("tasaAprobacion", total > 0 ? (double) aprobadas / total * 100 : 0);
         tasas.put("tasaRechazo", total > 0 ? (double) rechazadas / total * 100 : 0);
+
         return tasas;
     }
 }

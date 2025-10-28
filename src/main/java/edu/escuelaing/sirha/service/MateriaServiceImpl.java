@@ -1,28 +1,37 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.repository.RepositorioGrupo;
-import edu.escuelaing.sirha.repository.RepositorioMateria;
-import edu.escuelaing.sirha.repository.RepositorioEstudiante;
+import edu.escuelaing.sirha.repository.*;
+import edu.escuelaing.sirha.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class MateriaServiceImpl implements MateriaService {
 
-    @Autowired
-    private RepositorioMateria repositorioMateria;
+    private final RepositorioMateria repositorioMateria;
+    private final RepositorioGrupo repositorioGrupo;
+    private final RepositorioEstudiante repositorioEstudiante;
 
     @Autowired
-    private RepositorioGrupo repositorioGrupo;
-
-    @Autowired
-    private RepositorioEstudiante repositorioEstudiante;
+    public MateriaServiceImpl(RepositorioMateria repositorioMateria,
+                              RepositorioGrupo repositorioGrupo,
+                              RepositorioEstudiante repositorioEstudiante) {
+        this.repositorioMateria = repositorioMateria;
+        this.repositorioGrupo = repositorioGrupo;
+        this.repositorioEstudiante = repositorioEstudiante;
+    }
 
     @Override
     public Materia crear(Materia materia) {
+        if (repositorioMateria.existsByCodigo(materia.getCodigo())) {
+            throw new IllegalArgumentException("Ya existe una materia con el código: " + materia.getCodigo());
+        }
         return repositorioMateria.save(materia);
     }
 
@@ -48,32 +57,36 @@ public class MateriaServiceImpl implements MateriaService {
 
     @Override
     public Materia actualizar(String id, Materia materia) {
+        if (!repositorioMateria.existsById(id)) {
+            throw new IllegalArgumentException("Materia no encontrada: " + id);
+        }
         materia.setId(id);
         return repositorioMateria.save(materia);
     }
 
     @Override
     public List<Grupo> consultarGruposDisponibles(String materiaId) {
-        return repositorioGrupo.findByMateriaId(materiaId);
+        return repositorioGrupo.findByMateriaId(materiaId).stream()
+                .filter(grupo -> grupo.getEstudiantesInscritosIds().size() < grupo.getCupoMaximo())
+                .collect(Collectors.toList());
     }
 
     @Override
     public boolean verificarDisponibilidad(String materiaId) {
-        List<Grupo> grupos = repositorioGrupo.findByMateriaId(materiaId);
-        for (Grupo grupo : grupos) {
-            int estudiantesInscritos = grupo.getEstudiantesInscritosIds().size();
-            int cupoMaximo = grupo.getCupoMaximo();
-            if (estudiantesInscritos < cupoMaximo) {
-                return true;
-            }
-        }
-        return false;
+        return !consultarGruposDisponibles(materiaId).isEmpty();
     }
 
     @Override
     public void modificarCuposMateria(String materiaId, int nuevoCupo) {
+        if (nuevoCupo <= 0) {
+            throw new IllegalArgumentException("El cupo debe ser mayor a 0");
+        }
+
         List<Grupo> grupos = repositorioGrupo.findByMateriaId(materiaId);
         for (Grupo grupo : grupos) {
+            if (grupo.getEstudiantesInscritosIds().size() > nuevoCupo) {
+                throw new IllegalArgumentException("El nuevo cupo es menor al número de estudiantes inscritos en el grupo: " + grupo.getId());
+            }
             grupo.setCupoMaximo(nuevoCupo);
             repositorioGrupo.save(grupo);
         }
@@ -82,62 +95,72 @@ public class MateriaServiceImpl implements MateriaService {
     @Override
     public Materia registrarMateriaConGrupos(Materia materia, List<Grupo> grupos) {
         Materia materiaCreada = repositorioMateria.save(materia);
+
         for (Grupo grupo : grupos) {
             grupo.setMateriaId(materiaCreada.getId());
             Grupo grupoCreado = repositorioGrupo.save(grupo);
             materiaCreada.getGruposIds().add(grupoCreado.getId());
         }
+
         return repositorioMateria.save(materiaCreada);
     }
 
     @Override
     public int consultarTotalInscritosPorMateria(String materiaId) {
-        List<Grupo> grupos = repositorioGrupo.findByMateriaId(materiaId);
-        return grupos.stream().mapToInt(grupo -> grupo.getEstudiantesInscritosIds().size()).sum();
+        return repositorioGrupo.findByMateriaId(materiaId).stream()
+                .mapToInt(grupo -> grupo.getEstudiantesInscritosIds().size())
+                .sum();
     }
 
     @Override
     public Grupo inscribirEstudianteEnGrupo(String grupoId, String estudianteId) {
         Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
         Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
-        if (grupoOpt.isPresent() && estOpt.isPresent()) {
-            Grupo g = grupoOpt.get();
-            if (!g.getEstudiantesInscritosIds().contains(estudianteId)
-                    && g.getEstudiantesInscritosIds().size() < g.getCupoMaximo()) {
-                g.getEstudiantesInscritosIds().add(estudianteId);
-                return repositorioGrupo.save(g);
-            }
-            return g;
+
+        if (grupoOpt.isEmpty() || estOpt.isEmpty()) {
+            throw new IllegalArgumentException("Grupo o estudiante no encontrado");
         }
-        return null;
+
+        Grupo grupo = grupoOpt.get();
+        if (grupo.getEstudiantesInscritosIds().contains(estudianteId)) {
+            throw new IllegalArgumentException("El estudiante ya está inscrito en este grupo");
+        }
+
+        if (grupo.getEstudiantesInscritosIds().size() >= grupo.getCupoMaximo()) {
+            throw new IllegalArgumentException("No hay cupo disponible en este grupo");
+        }
+
+        grupo.getEstudiantesInscritosIds().add(estudianteId);
+        return repositorioGrupo.save(grupo);
     }
 
     @Override
     public Grupo retirarEstudianteDeGrupo(String grupoId, String estudianteId) {
-        Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
-        if (grupoOpt.isPresent()) {
-            Grupo g = grupoOpt.get();
-            g.getEstudiantesInscritosIds().remove(estudianteId);
-            return repositorioGrupo.save(g);
-        }
-        return null;
+        return repositorioGrupo.findById(grupoId)
+                .map(grupo -> {
+                    grupo.getEstudiantesInscritosIds().remove(estudianteId);
+                    return repositorioGrupo.save(grupo);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Grupo no encontrado: " + grupoId));
     }
 
     @Override
     public boolean asignarMateriaAEstudiante(String materiaId, String estudianteId) {
-        Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
-        if (estOpt.isPresent()) {
-            return repositorioMateria.findById(materiaId).isPresent();
-        }
-        return false;
+        return repositorioMateria.existsById(materiaId) && repositorioEstudiante.existsById(estudianteId);
     }
 
     @Override
     public boolean retirarMateriaDeEstudiante(String materiaId, String estudianteId) {
-        Optional<Estudiante> estOpt = repositorioEstudiante.findById(estudianteId);
-        if (estOpt.isPresent()) {
-            return repositorioMateria.findById(materiaId).isPresent();
-        }
-        return false;
+        return repositorioMateria.existsById(materiaId) && repositorioEstudiante.existsById(estudianteId);
+    }
+
+    @Override
+    public List<Materia> buscarPorFacultad(String facultad) {
+        return repositorioMateria.findByFacultad(facultad);
+    }
+
+    @Override
+    public List<Materia> buscarPorCreditos(int creditos) {
+        return repositorioMateria.findByCreditos(creditos);
     }
 }

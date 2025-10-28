@@ -1,5 +1,8 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Materia;
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.model.Estudiante;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +22,6 @@ public interface MateriaService {
     Grupo retirarEstudianteDeGrupo(String grupoId, String estudianteId);
     boolean asignarMateriaAEstudiante(String materiaId, String estudianteId);
     boolean retirarMateriaDeEstudiante(String materiaId, String estudianteId);
+    List<Materia> buscarPorFacultad(String facultad);
+    List<Materia> buscarPorCreditos(int creditos);
 }
-

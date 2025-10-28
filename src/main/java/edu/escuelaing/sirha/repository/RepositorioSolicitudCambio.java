@@ -31,6 +31,8 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
 
     List<SolicitudCambio> findByOrderByPrioridadDesc();
 
+    List<SolicitudCambio> findAllByOrderByFechaCreacionDesc();
+
     @Query("Solicitud activa para materias")
     boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId);
 

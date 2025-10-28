@@ -1,5 +1,7 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Grupo;
+import edu.escuelaing.sirha.model.Estudiante;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,5 +15,6 @@ public interface GrupoService {
     float consultarCargaAcademica(String grupoId);
     List<Estudiante> consultarEstudiantesInscritos(String grupoId);
     List<Grupo> obtenerGruposConAlertaCapacidad(double porcentajeAlerta);
+    List<Grupo> buscarPorMateria(String materiaId);
+    List<Grupo> buscarPorProfesor(String profesorId);
 }
-

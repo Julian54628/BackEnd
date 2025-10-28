@@ -1,33 +1,36 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.repository.*;
 import edu.escuelaing.sirha.model.*;
-import edu.escuelaing.sirha.repository.RepositorioSolicitudCambio;
-import edu.escuelaing.sirha.repository.RepositorioEstudiante;
-import edu.escuelaing.sirha.repository.RepositorioDecanatura;
-import edu.escuelaing.sirha.repository.RepositorioMateria;
-import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.text.SimpleDateFormat;
 
 @Service
+@Transactional
 public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
-    @Autowired
-    private RepositorioSolicitudCambio repositorioSolicitudCambio;
+    private final RepositorioSolicitudCambio repositorioSolicitudCambio;
+    private final RepositorioEstudiante repositorioEstudiante;
+    private final RepositorioDecanatura repositorioDecanatura;
+    private final RepositorioMateria repositorioMateria;
+    private final RepositorioPeriodoCambio repositorioPeriodoCambio;
 
     @Autowired
-    private RepositorioEstudiante repositorioEstudiante;
-
-    @Autowired
-    private RepositorioDecanatura repositorioDecanatura;
-
-    @Autowired
-    private RepositorioMateria repositorioMateria;
-
+    public SolicitudCambioServiceImpl(RepositorioSolicitudCambio repositorioSolicitudCambio,
+                                      RepositorioEstudiante repositorioEstudiante,
+                                      RepositorioDecanatura repositorioDecanatura,
+                                      RepositorioMateria repositorioMateria,
+                                      RepositorioPeriodoCambio repositorioPeriodoCambio) {
+        this.repositorioSolicitudCambio = repositorioSolicitudCambio;
+        this.repositorioEstudiante = repositorioEstudiante;
+        this.repositorioDecanatura = repositorioDecanatura;
+        this.repositorioMateria = repositorioMateria;
+        this.repositorioPeriodoCambio = repositorioPeriodoCambio;
+    }
 
     @Override
     public SolicitudCambio crear(SolicitudCambio solicitud) {
@@ -39,18 +42,24 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
         if (!validarSolicitud(solicitud)) {
             throw new IllegalArgumentException("La solicitud no es válida");
         }
-        
+
+        if (!puedeCrearSolicitud(solicitud.getEstudianteId(), solicitud.getMateriaDestinoId())) {
+            throw new IllegalArgumentException("El estudiante ya tiene una solicitud activa para esta materia");
+        }
+
+        if (!estaEnPeriodoActivo()) {
+            throw new IllegalArgumentException("No hay un período activo para crear solicitudes");
+        }
+
         asignarDecanatura(solicitud);
-        
+
         if (solicitud.getId() == null || solicitud.getId().isEmpty()) {
             solicitud.setId(UUID.randomUUID().toString());
         }
-        
+
         solicitud.setFechaCreacion(new Date());
-        
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
-        solicitud.addHistorialEstado(formatearHistorial(new Date(), EstadoSolicitud.PENDIENTE, null, null, "CREACION"));
-        
+
         return repositorioSolicitudCambio.save(solicitud);
     }
 
@@ -76,6 +85,9 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
     @Override
     public SolicitudCambio actualizar(SolicitudCambio solicitud) {
+        if (!repositorioSolicitudCambio.existsById(solicitud.getId())) {
+            throw new IllegalArgumentException("Solicitud no encontrada: " + solicitud.getId());
+        }
         return repositorioSolicitudCambio.save(solicitud);
     }
 
@@ -131,25 +143,22 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
     @Override
     public SolicitudCambio actualizarEstadoSolicitud(String id, EstadoSolicitud estado, String respuesta, String justificacion) {
-        Optional<SolicitudCambio> solicitudOpt = repositorioSolicitudCambio.findById(id);
-        if (solicitudOpt.isEmpty()) {
-            throw new IllegalArgumentException("Solicitud no encontrada");
-        }
-        
-        SolicitudCambio solicitud = solicitudOpt.get();
-        solicitud.setEstado(estado);
-        solicitud.setFechaRespuesta(new Date());
-        
-        if (respuesta != null) {
-            solicitud.setRespuesta(respuesta);
-        }
-        
-        if (justificacion != null) {
-            solicitud.setJustificacion(justificacion);
-        }
-        solicitud.addHistorialEstado(formatearHistorial(new Date(), estado, respuesta, justificacion, "ACTUALIZACION"));
-        
-        return repositorioSolicitudCambio.save(solicitud);
+        return repositorioSolicitudCambio.findById(id)
+                .map(solicitud -> {
+                    solicitud.setEstado(estado);
+                    solicitud.setFechaRespuesta(new Date());
+
+                    if (respuesta != null) {
+                        solicitud.setRespuesta(respuesta);
+                    }
+
+                    if (justificacion != null) {
+                        solicitud.setJustificacion(justificacion);
+                    }
+
+                    return repositorioSolicitudCambio.save(solicitud);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Solicitud no encontrada: " + id));
     }
 
     @Override
@@ -164,29 +173,56 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
 
     @Override
     public List<SolicitudCambio> obtenerHistorialSolicitudes() {
-        return repositorioSolicitudCambio.findAll().stream()
-                .sorted((s1, s2) -> s2.getFechaCreacion().compareTo(s1.getFechaCreacion()))
-                .collect(Collectors.toList());
+        return repositorioSolicitudCambio.findAllByOrderByFechaCreacionDesc();
     }
 
     @Override
     public Map<String, Object> obtenerEstadisticasSolicitudes() {
-        Map<String, Object> estadisticas = new HashMap<>();
-        
         List<SolicitudCambio> todasLasSolicitudes = repositorioSolicitudCambio.findAll();
-        
+
+        Map<String, Object> estadisticas = new HashMap<>();
         estadisticas.put("totalSolicitudes", todasLasSolicitudes.size());
-        estadisticas.put("solicitudesPendientes", todasLasSolicitudes.stream()
-                .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE).count());
-        estadisticas.put("solicitudesAprobadas", todasLasSolicitudes.stream()
-                .filter(s -> s.getEstado() == EstadoSolicitud.APROBADA).count());
-        estadisticas.put("solicitudesRechazadas", todasLasSolicitudes.stream()
-                .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count());
-        
+        estadisticas.put("solicitudesPendientes",
+                todasLasSolicitudes.stream().filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE).count());
+        estadisticas.put("solicitudesAprobadas",
+                todasLasSolicitudes.stream().filter(s -> s.getEstado() == EstadoSolicitud.APROBADA).count());
+        estadisticas.put("solicitudesRechazadas",
+                todasLasSolicitudes.stream().filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA).count());
+
         Map<TipoPrioridad, Long> porPrioridad = todasLasSolicitudes.stream()
                 .collect(Collectors.groupingBy(SolicitudCambio::getTipoPrioridad, Collectors.counting()));
         estadisticas.put("porPrioridad", porPrioridad);
+
         return estadisticas;
+    }
+
+    @Override
+    public boolean validarSolicitud(SolicitudCambio solicitud) {
+        if (solicitud == null) {
+            return false;
+        }
+
+        if (solicitud.getEstudianteId() == null || !repositorioEstudiante.existsById(solicitud.getEstudianteId())) {
+            return false;
+        }
+
+        if (solicitud.getMateriaDestinoId() == null || !repositorioMateria.existsById(solicitud.getMateriaDestinoId())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean puedeCrearSolicitud(String estudianteId, String materiaId) {
+        List<SolicitudCambio> solicitudesActivas = repositorioSolicitudCambio
+                .findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(
+                        estudianteId,
+                        materiaId,
+                        Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION)
+                );
+
+        return solicitudesActivas.isEmpty();
     }
 
     @Override
@@ -196,44 +232,25 @@ public class SolicitudCambioServiceImpl implements SolicitudCambioService {
                 .orElseGet(ArrayList::new);
     }
 
-    @Override
-    public boolean puedeCrearSolicitud(String estudianteId, String materiaId) {
-        List<SolicitudCambio> solicitudesActivas = repositorioSolicitudCambio.findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(
-                estudianteId, materiaId, Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION));
-        
-        return solicitudesActivas.isEmpty();
-    }
-
     private void asignarDecanatura(SolicitudCambio solicitud) {
         String materiaId = solicitud.getMateriaDestinoId();
         if (materiaId != null) {
-            Optional<Materia> materiaOpt = repositorioMateria.findById(materiaId);
-            if (materiaOpt.isPresent()) {
-                String facultad = materiaOpt.get().getFacultad();
-                
-                List<Decanatura> decanaturas = repositorioDecanatura.findByFacultad(facultad);
-                if (!decanaturas.isEmpty()) {
-                    solicitud.setDecanaturaId(decanaturas.get(0).getId());
-                }
-            }
+            repositorioMateria.findById(materiaId)
+                    .ifPresent(materia -> {
+                        String facultad = materia.getFacultad();
+                        List<Decanatura> decanaturas = repositorioDecanatura.findByFacultad(facultad);
+                        if (!decanaturas.isEmpty()) {
+                            solicitud.setDecanaturaId(decanaturas.get(0).getId());
+                        }
+                    });
         }
     }
 
-    @Override
-    public boolean validarSolicitud(SolicitudCambio solicitud) {
-        if (solicitud == null) {
-            return false;
-        }
-        return solicitud.esValida();
-    }
-
-    private String formatearHistorial(Date fecha, EstadoSolicitud estado, String respuesta, String justificacion, String actor) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String f = (fecha != null) ? sdf.format(fecha) : "";
-        String est = (estado != null) ? estado.name() : "";
-        String resp = (respuesta != null) ? respuesta : "";
-        String just = (justificacion != null) ? justificacion : "";
-        String act = (actor != null) ? actor : "";
-        return String.join("|", Arrays.asList(f, est, resp, just, act));
+    private boolean estaEnPeriodoActivo() {
+        return repositorioPeriodoCambio.findByActivoTrue().stream()
+                .anyMatch(periodo -> {
+                    Date ahora = new Date();
+                    return !ahora.before(periodo.getFechaInicio()) && !ahora.after(periodo.getFechaFin());
+                });
     }
 }

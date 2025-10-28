@@ -1,5 +1,6 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Usuario;
 import java.util.Optional;
 
 public interface UsuarioService {
@@ -7,5 +8,8 @@ public interface UsuarioService {
     Optional<Usuario> buscarPorUsername(String username);
     boolean tienePermiso(String usuarioId, String accion);
     void cambiarPassword(String usuarioId, String nuevoPassword);
+    Usuario crearUsuario(Usuario usuario);
+    Optional<Usuario> buscarPorId(String id);
+    void desactivarUsuario(String usuarioId);
+    void activarUsuario(String usuarioId);
 }
-

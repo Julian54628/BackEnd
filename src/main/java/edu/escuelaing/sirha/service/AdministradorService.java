@@ -1,5 +1,6 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +13,5 @@ public interface AdministradorService {
     PeriodoCambio configurarPeriodo(PeriodoCambio periodo);
     List<SolicitudCambio> generarReportes();
     Administrador crearDesdeDecanatura(String decanaturaId);
+    boolean eliminarAdministrador(String id);
 }

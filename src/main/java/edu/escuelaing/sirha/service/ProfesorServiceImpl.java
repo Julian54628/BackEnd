@@ -1,24 +1,34 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import edu.escuelaing.sirha.repository.RepositorioProfesor;
+import edu.escuelaing.sirha.repository.RepositorioGrupo;
+import edu.escuelaing.sirha.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ProfesorServiceImpl implements ProfesorService {
 
-    @Autowired
-    private RepositorioProfesor repositorioProfesor;
+    private final RepositorioProfesor repositorioProfesor;
+    private final RepositorioGrupo repositorioGrupo;
 
     @Autowired
-    private RepositorioGrupo repositorioGrupo;
+    public ProfesorServiceImpl(RepositorioProfesor repositorioProfesor,
+                               RepositorioGrupo repositorioGrupo) {
+        this.repositorioProfesor = repositorioProfesor;
+        this.repositorioGrupo = repositorioGrupo;
+    }
 
     @Override
     public Profesor crear(Profesor profesor) {
+        if (repositorioProfesor.existsByIdProfesor(profesor.getIdProfesor())) {
+            throw new IllegalArgumentException("Ya existe un profesor con el ID: " + profesor.getIdProfesor());
+        }
         return repositorioProfesor.save(profesor);
     }
 
@@ -29,10 +39,9 @@ public class ProfesorServiceImpl implements ProfesorService {
 
     @Override
     public Optional<Profesor> buscarPorCodigo(String codigo) {
-        return repositorioProfesor.findAll().stream()
-                .filter(p -> String.valueOf(p.getIdProfesor()).equals(codigo))
-                .findFirst();
+        return repositorioProfesor.findByIdProfesor(Integer.parseInt(codigo));
     }
+
     @Override
     public List<Profesor> listarTodos() {
         return repositorioProfesor.findAll();
@@ -40,27 +49,18 @@ public class ProfesorServiceImpl implements ProfesorService {
 
     @Override
     public Profesor actualizar(String id, Profesor profesor) {
-        Optional<Profesor> existenteOpt = repositorioProfesor.findById(id);
-        if (existenteOpt.isPresent()) {
-            Profesor existente = existenteOpt.get();
-            existente.setNombre(profesor.getNombre());
-            existente.setCorreoInstitucional(profesor.getCorreoInstitucional());
-            existente.setIdProfesor(profesor.getIdProfesor());
-            existente.setMateriasAsignadasIds(profesor.getMateriasAsignadasIds());
-            existente.setGruposAsignadosIds(profesor.getGruposAsignadosIds());
-            existente.setUsername(profesor.getUsername());
-            existente.setPasswordHash(profesor.getPasswordHash());
-            existente.setActivo(profesor.isActivo());
-            return repositorioProfesor.save(existente);
-        } else {
-            profesor.setId(id);
-            return repositorioProfesor.save(profesor);
+        if (!repositorioProfesor.existsById(id)) {
+            throw new IllegalArgumentException("Profesor no encontrado: " + id);
         }
+        profesor.setId(id);
+        return repositorioProfesor.save(profesor);
     }
+
     @Override
     public void eliminarPorId(String id) {
         repositorioProfesor.deleteById(id);
     }
+
     @Override
     public List<Grupo> consultarGruposAsignados(String profesorId) {
         return repositorioGrupo.findByProfesorId(profesorId);
@@ -70,35 +70,48 @@ public class ProfesorServiceImpl implements ProfesorService {
     public Grupo asignarProfesorAGrupo(String profesorId, String grupoId) {
         Optional<Profesor> profesorOpt = repositorioProfesor.findById(profesorId);
         Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
-        if (profesorOpt.isPresent() && grupoOpt.isPresent()) {
-            Profesor profesor = profesorOpt.get();
-            Grupo grupo = grupoOpt.get();
-            grupo.setProfesorId(profesorId);
-            profesor.getGruposAsignadosIds().add(grupoId);
-            repositorioGrupo.save(grupo);
-            repositorioProfesor.save(profesor);
-            return grupo;
+
+        if (profesorOpt.isEmpty() || grupoOpt.isEmpty()) {
+            throw new IllegalArgumentException("Profesor o grupo no encontrado");
         }
-        return null;
+
+        Profesor profesor = profesorOpt.get();
+        Grupo grupo = grupoOpt.get();
+
+        grupo.setProfesorId(profesorId);
+        profesor.getGruposAsignadosIds().add(grupoId);
+
+        repositorioGrupo.save(grupo);
+        repositorioProfesor.save(profesor);
+
+        return grupo;
     }
 
     @Override
     public Grupo retirarProfesorDeGrupo(String grupoId) {
-        Optional<Grupo> grupoOpt = repositorioGrupo.findById(grupoId);
-        if (grupoOpt.isPresent()) {
-            Grupo grupo = grupoOpt.get();
-            String profesorId = grupo.getProfesorId();
-            if (profesorId != null) {
-                Optional<Profesor> profesorOpt = repositorioProfesor.findById(profesorId);
-                if (profesorOpt.isPresent()) {
-                    Profesor profesor = profesorOpt.get();
-                    profesor.getGruposAsignadosIds().remove(grupoId);
-                    repositorioProfesor.save(profesor);
-                }
-            }
-            grupo.setProfesorId(null);
-            return repositorioGrupo.save(grupo);
-        }
-        return null;
+        return repositorioGrupo.findById(grupoId)
+                .map(grupo -> {
+                    String profesorId = grupo.getProfesorId();
+                    if (profesorId != null) {
+                        repositorioProfesor.findById(profesorId)
+                                .ifPresent(profesor -> {
+                                    profesor.getGruposAsignadosIds().remove(grupoId);
+                                    repositorioProfesor.save(profesor);
+                                });
+                    }
+                    grupo.setProfesorId(null);
+                    return repositorioGrupo.save(grupo);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Grupo no encontrado: " + grupoId));
+    }
+
+    @Override
+    public List<Profesor> buscarPorDepartamento(String departamento) {
+        return repositorioProfesor.findByDepartamento(departamento);
+    }
+
+    @Override
+    public List<Profesor> buscarActivos() {
+        return repositorioProfesor.findByActivoTrue();
     }
 }

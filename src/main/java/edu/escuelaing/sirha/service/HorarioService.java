@@ -1,5 +1,6 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Horario;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,4 +11,6 @@ public interface HorarioService {
     Horario actualizar(String id, Horario horario);
     void eliminarPorId(String id);
     List<Horario> consultarHorariosPorGrupo(String grupoId);
+    List<Horario> consultarHorariosPorDia(String diaSemana);
+    List<Horario> consultarHorariosPorSalon(String salon);
 }
