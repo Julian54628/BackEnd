@@ -24,10 +24,10 @@ public interface RepositorioSemaforoAcademico extends MongoRepository<SemaforoAc
 
     List<SemaforoAcademico> findByMateriasVistasGreaterThanEqual(int materiasMinimas);
 
-    @Query("{ '$expr': { $gte: [ { $divide: ['$creditosAprobados', '$totalCreditosPlan'] }, ?0 ] } }")
+    @Query("prosentaje del progreso del estudiante")
     List<SemaforoAcademico> findByProgresoMayorIgual(float porcentajeMinimo);
 
-    @Query("{ 'promedioAcumulado': { $lt: ?0 }, 'materiasVistas': { $gte: ?1 } }")
+    @Query("se miran los estudiantes en riesgo academico")
     List<SemaforoAcademico> findEstudiantesEnRiesgo(float promedioMaximo, int materiasMinimas);
 
     long countByGrado(String grado);

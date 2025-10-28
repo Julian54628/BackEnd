@@ -26,7 +26,7 @@ public interface RepositorioPlanAcademico extends MongoRepository<PlanAcademico,
 
     List<PlanAcademico> findByMateriasElectivasIdsContaining(String materiaId);
 
-    @Query("{ '$expr': { $lt: [ { $size: '$materiasObligatoriasIds' }, ?0 ] } }")
+    @Query("planes de materias obligatorias maximas")
     List<PlanAcademico> findPlanesConMenosMateriasObligatorias(int maxMaterias);
 
     boolean existsByNombre(String nombre);
@@ -37,13 +37,13 @@ public interface RepositorioPlanAcademico extends MongoRepository<PlanAcademico,
 
     Optional<PlanAcademico> findFirstByGradoOrderByIdPlanDesc(String grado);
 
-    @Query("{ '$expr': { $gt: [ { $size: '$materiasObligatoriasIds' }, ?0 ] } }")
+    @Query("planes de materias obligatorias minimas")
     List<PlanAcademico> findPlanesConMasMateriasObligatorias(int minMaterias);
 
-    @Query("{ '$expr': { $lt: [ { $size: '$materiasElectivasIds' }, ?0 ] } }")
+    @Query("planes de materias electivas maximas")
     List<PlanAcademico> findPlanesConMenosMateriasElectivas(int maxMaterias);
 
-    @Query("{ '$expr': { $gt: [ { $size: '$materiasElectivasIds' }, ?0 ] } }")
+    @Query("planes de materias electivas minimas")
     List<PlanAcademico> findPlanesConMasMateriasElectivas(int minMaterias);
 
     default PlanAcademico guardarPlan(PlanAcademico plan) {

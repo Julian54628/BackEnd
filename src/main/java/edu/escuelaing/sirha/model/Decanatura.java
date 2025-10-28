@@ -15,16 +15,14 @@ public class Decanatura extends Usuario {
     private String facultad;
     private boolean esAdministrador = false;
 
-    public Decanatura(int idUsuario, String username, String passwordHash, String correo,
-                      int idDecanatura, String nombre, String facultad) {
+    public Decanatura(int idUsuario, String username, String passwordHash, String correo,int idDecanatura, String nombre, String facultad) {
         super(idUsuario, username, passwordHash, correo, Rol.DECANATURA);
         this.idDecanatura = idDecanatura;
         this.nombre = nombre;
         this.facultad = facultad;
     }
 
-    public Decanatura(int idUsuario, String username, String passwordHash, String correo,
-                      int idDecanatura, String nombre, String facultad, boolean esAdministrador) {
+    public Decanatura(int idUsuario, String username, String passwordHash, String correo, int idDecanatura, String nombre, String facultad, boolean esAdministrador) {
         super(idUsuario, username, passwordHash, correo, Rol.DECANATURA);
         this.idDecanatura = idDecanatura;
         this.nombre = nombre;

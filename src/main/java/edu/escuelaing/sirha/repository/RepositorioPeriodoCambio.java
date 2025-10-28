@@ -21,16 +21,16 @@ public interface RepositorioPeriodoCambio extends MongoRepository<PeriodoCambio,
 
     List<PeriodoCambio> findByTipoAndActivoTrue(String tipo);
 
-    @Query("{ 'fechaInicio': { $lte: ?0 }, 'fechaFin': { $gte: ?0 } }")
+    @Query("periodos vigentes en fecha")
     List<PeriodoCambio> findPeriodosVigentesEnFecha(Date fecha);
 
-    @Query("{ 'activo': true, 'fechaInicio': { $lte: ?0 }, 'fechaFin': { $gte: ?0 } }")
+    @Query("periodo activo en fecha")
     Optional<PeriodoCambio> findPeriodoActivoEnFecha(Date fecha);
 
-    @Query("{ 'fechaInicio': { $gt: ?0 } }")
+    @Query("periodos futuros")
     List<PeriodoCambio> findPeriodosFuturos(Date fechaReferencia);
 
-    @Query("{ 'fechaFin': { $lt: ?0 } }")
+    @Query("periodos pasados")
     List<PeriodoCambio> findPeriodosPasados(Date fechaReferencia);
 
     Optional<PeriodoCambio> findFirstByOrderByFechaInicioDesc();

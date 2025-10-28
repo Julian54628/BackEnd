@@ -31,17 +31,17 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
 
     List<SolicitudCambio> findByOrderByPrioridadDesc();
 
-    @Query("{ 'estudianteId': ?0, 'materiaDestinoId': ?1, 'estado': { $in: ['PENDIENTE', 'EN_REVISION'] } }")
+    @Query("Solicitud activa para materias")
     boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId);
 
-    @Query("{ 'fechaCreacion': { $gte: ?0 } }")
+    @Query("solicitudes recientes")
     List<SolicitudCambio> findSolicitudesRecientes(Date fechaLimite);
 
     List<SolicitudCambio> findByDecanaturaId(String decanaturaId);
 
     List<SolicitudCambio> findByTipoPrioridad(TipoPrioridad tipoPrioridad);
 
-    @Query("{ 'decanaturaId': ?0, 'estado': ?1 }")
+    @Query("estado de solicitud por id en decantura")
     List<SolicitudCambio> findByDecanaturaIdAndEstado(String decanaturaId, EstadoSolicitud estado);
 
     List<SolicitudCambio> findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(String estudianteId, String materiaDestinoId, List<EstadoSolicitud> estados);

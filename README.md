@@ -131,7 +131,7 @@ Representa las funcionalidades del sistema desde la perspectiva de los usuarios,
   - Responsabilidades: Configuración global, gestión de usuarios, supervisión
   - Cantidad: Limitada (personal administrativo especializado)
 
-![img.png](img/CasosDeUso.png)
+![img.png](img/diagramas/CasosDeUso.png)
 
 ### Diagrama de Componentes Generales
 #### Descripción
