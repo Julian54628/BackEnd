@@ -1,8 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.service.EstudianteService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.http.ResponseEntity;

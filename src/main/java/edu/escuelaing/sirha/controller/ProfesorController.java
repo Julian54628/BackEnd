@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.Profesor;
-import edu.escuelaing.sirha.model.Grupo;
 import edu.escuelaing.sirha.service.ProfesorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

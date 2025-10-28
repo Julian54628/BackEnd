@@ -1,9 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.Decanatura;
-import edu.escuelaing.sirha.model.EstadoSolicitud;
-import edu.escuelaing.sirha.model.SolicitudCambio;
-import edu.escuelaing.sirha.model.TipoPrioridad;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;

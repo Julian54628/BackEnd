@@ -1,10 +1,7 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Materia;
 import edu.escuelaing.sirha.service.MateriaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;

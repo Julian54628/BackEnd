@@ -1,8 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Decanatura;
-import edu.escuelaing.sirha.model.EstadoSolicitud;
-import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.repository.RepositorioDecanatura;
 import edu.escuelaing.sirha.repository.RepositorioSolicitudCambio;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Materia;
-import edu.escuelaing.sirha.model.Estudiante;
 import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import edu.escuelaing.sirha.repository.RepositorioMateria;
 import edu.escuelaing.sirha.repository.RepositorioEstudiante;

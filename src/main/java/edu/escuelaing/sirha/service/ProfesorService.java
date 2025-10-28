@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Profesor;
-import edu.escuelaing.sirha.model.Grupo;
 import java.util.List;
 import java.util.Optional;
 

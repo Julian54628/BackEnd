@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.PeriodoCambio;
 import edu.escuelaing.sirha.repository.RepositorioPeriodoCambio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

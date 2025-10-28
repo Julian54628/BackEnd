@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

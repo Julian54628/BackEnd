@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Usuario;
 import java.util.Optional;
 
 public interface UsuarioService {

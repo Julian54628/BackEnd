@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.Horario;
 import edu.escuelaing.sirha.service.HorarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,5 @@
 package edu.escuelaing.sirha.controller;
 
-import edu.escuelaing.sirha.model.PeriodoCambio;
 import edu.escuelaing.sirha.service.PeriodoCambioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

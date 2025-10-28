@@ -1,12 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Administrador;
-import edu.escuelaing.sirha.model.EstadoMateria;
-import edu.escuelaing.sirha.model.SemaforoAcademico;
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Decanatura;
-import edu.escuelaing.sirha.model.PeriodoCambio;
-import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import org.springframework.beans.factory.annotation.Autowired;
 import edu.escuelaing.sirha.repository.RepositorioAdministrador;

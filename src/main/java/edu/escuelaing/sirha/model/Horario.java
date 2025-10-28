@@ -1,11 +1,15 @@
 package edu.escuelaing.sirha.model;
 
-import java.sql.Time;
-import java.util.Objects;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.sql.Time;
+import java.util.Objects;
 
 @Document(collection = "Horario")
+@Data
+@NoArgsConstructor
 public class Horario {
     @Id
     private String id;
@@ -17,8 +21,6 @@ public class Horario {
     private String materiaId;
     private String grupoId;
 
-    public Horario() {}
-
     public Horario(int idHorario, String diaSemana, Time horaInicio, Time horaFin, String salon) {
         this.idHorario = idHorario;
         this.diaSemana = diaSemana;
@@ -28,28 +30,8 @@ public class Horario {
     }
 
     public boolean esValido() {
-        return diaSemana != null && !diaSemana.trim().isEmpty() &&
-                horaInicio != null && horaFin != null &&
-                horaInicio.before(horaFin) &&
-                salon != null && !salon.trim().isEmpty();
+        return HorarioValidator.isValid(this);
     }
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public int getIdHorario() { return idHorario; }
-    public void setIdHorario(int idHorario) { this.idHorario = idHorario; }
-    public String getDiaSemana() { return diaSemana; }
-    public void setDiaSemana(String diaSemana) { this.diaSemana = diaSemana; }
-    public Time getHoraInicio() { return horaInicio; }
-    public void setHoraInicio(Time horaInicio) { this.horaInicio = horaInicio; }
-    public Time getHoraFin() { return horaFin; }
-    public void setHoraFin(Time horaFin) { this.horaFin = horaFin; }
-    public String getSalon() { return salon; }
-    public void setSalon(String salon) { this.salon = salon; }
-    public String getMateriaId() { return materiaId; }
-    public void setMateriaId(String materiaId) { this.materiaId = materiaId; }
-    public String getGrupoId() { return grupoId; }
-    public void setGrupoId(String grupoId) { this.grupoId = grupoId; }
 
     @Override
     public boolean equals(Object o) {

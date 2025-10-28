@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Grupo;
-import edu.escuelaing.sirha.model.Profesor;
 import edu.escuelaing.sirha.repository.RepositorioGrupo;
 import edu.escuelaing.sirha.repository.RepositorioProfesor;
 import org.springframework.beans.factory.annotation.Autowired;

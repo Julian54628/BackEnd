@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.SolicitudCambio;
 import java.util.List;
 import java.util.Optional;
 

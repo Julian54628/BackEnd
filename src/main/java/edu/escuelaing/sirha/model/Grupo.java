@@ -1,11 +1,15 @@
 package edu.escuelaing.sirha.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "Grupo")
+@Data
+@NoArgsConstructor
 public class Grupo {
     @Id
     private String id;
@@ -17,8 +21,6 @@ public class Grupo {
     private String materiaId;
     private String periodoId;
     private int totalSolicitudes;
-
-    public Grupo() {}
 
     public Grupo(int idGrupo, int cupoMaximo, String materiaId, String profesorId, String periodoId) {
         this.idGrupo = idGrupo;
@@ -35,23 +37,4 @@ public class Grupo {
     public int getCantidadInscritos() {
         return estudiantesInscritosIds.size();
     }
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public int getIdGrupo() { return idGrupo; }
-    public void setIdGrupo(int idGrupo) { this.idGrupo = idGrupo; }
-    public int getCupoMaximo() { return cupoMaximo; }
-    public void setCupoMaximo(int cupoMaximo) { this.cupoMaximo = cupoMaximo; }
-    public List<String> getEstudiantesInscritosIds() { return estudiantesInscritosIds; }
-    public void setEstudiantesInscritosIds(List<String> estudiantesInscritosIds) { this.estudiantesInscritosIds = estudiantesInscritosIds; }
-    public String getProfesorId() { return profesorId; }
-    public void setProfesorId(String profesorId) { this.profesorId = profesorId; }
-    public List<String> getHorarioIds() { return horarioIds; }
-    public void setHorarioIds(List<String> horarioIds) { this.horarioIds = horarioIds; }
-    public String getMateriaId() { return materiaId; }
-    public void setMateriaId(String materiaId) { this.materiaId = materiaId; }
-    public String getPeriodoId() { return periodoId; }
-    public void setPeriodoId(String periodoId) { this.periodoId = periodoId; }
-    public int getTotalSolicitudes() { return totalSolicitudes; }
-    public void setTotalSolicitudes(int totalSolicitudes) { this.totalSolicitudes = totalSolicitudes; }
 }

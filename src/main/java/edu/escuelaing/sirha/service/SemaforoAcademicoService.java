@@ -1,7 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
-import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import java.util.Map;
 import java.util.Optional;
 

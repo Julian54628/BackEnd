@@ -1,10 +1,5 @@
 package edu.escuelaing.sirha.service;
 
-import edu.escuelaing.sirha.model.EstadoSemaforo;
-import edu.escuelaing.sirha.model.EstadoMateria;
-import edu.escuelaing.sirha.model.SemaforoAcademico;
-import edu.escuelaing.sirha.model.Estudiante;
-import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.repository.RepositorioSemaforoAcademico;
 import edu.escuelaing.sirha.repository.RepositorioEstudiante;
 import org.springframework.beans.factory.annotation.Autowired;

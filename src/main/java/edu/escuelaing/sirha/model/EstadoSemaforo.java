@@ -5,4 +5,3 @@ public enum EstadoSemaforo {
     AZUL,
     ROJO
 }
-

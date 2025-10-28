@@ -6,4 +6,3 @@ public enum Rol {
     ADMIN,
     PROFESOR
 }
-
