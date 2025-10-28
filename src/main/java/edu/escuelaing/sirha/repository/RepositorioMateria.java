@@ -1,9 +1,9 @@
 package edu.escuelaing.sirha.repository;
 
+import edu.escuelaing.sirha.model.Materia;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +18,9 @@ public interface RepositorioMateria extends MongoRepository<Materia, String> {
 
     List<Materia> findByFacultad(String facultad);
 
-    List<Materia> findByEsObligatoria(boolean esObligatoria);
+    List<Materia> findByEsObligatoriaTrue();
+
+    List<Materia> findByEsObligatoriaFalse();
 
     List<Materia> findByCreditos(int creditos);
 
@@ -32,6 +34,8 @@ public interface RepositorioMateria extends MongoRepository<Materia, String> {
     List<Materia> findMateriasSinPrerrequisitos();
 
     boolean existsByCodigo(String codigo);
+
+    boolean existsByIdMateria(int idMateria);
 
     long countByFacultad(String facultad);
 

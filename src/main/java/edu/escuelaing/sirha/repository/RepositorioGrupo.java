@@ -1,9 +1,9 @@
 package edu.escuelaing.sirha.repository;
 
+import edu.escuelaing.sirha.model.Grupo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -23,11 +23,9 @@ public interface RepositorioGrupo extends MongoRepository<Grupo, String> {
     @Query("{ 'estudiantesInscritosIds': { $size: ?0 } }")
     List<Grupo> findByCantidadEstudiantes(int cantidad);
 
-    @Query("{ '$where': 'this.estudiantesInscritosIds.length > ?0' }")
-    List<Grupo> findByCantidadEstudiantesGreaterThan(int cantidad);
+    List<Grupo> findByEstudiantesInscritosIdsSizeGreaterThan(int cantidad);
 
-    @Query("{ '$where': 'this.estudiantesInscritosIds.length < ?0' }")
-    List<Grupo> findByCantidadEstudiantesLessThan(int cantidad);
+    List<Grupo> findByEstudiantesInscritosIdsSizeLessThan(int cantidad);
 
     @Query("{ 'estudiantesInscritosIds': { $size: 0 } }")
     List<Grupo> findGruposVacios();
@@ -36,9 +34,15 @@ public interface RepositorioGrupo extends MongoRepository<Grupo, String> {
 
     List<Grupo> findByHorarioIdsContaining(String horarioId);
 
+    List<Grupo> findByPeriodoId(String periodoId);
+
+    List<Grupo> findByMateriaIdAndProfesorId(String materiaId, String profesorId);
+
     boolean existsByIdGrupo(int idGrupo);
 
     List<Grupo> findByOrderByCupoMaximoDesc();
+
+    List<Grupo> findByOrderByTotalSolicitudesDesc();
 
     default Grupo guardarGrupo(Grupo grupo) {
         return save(grupo);

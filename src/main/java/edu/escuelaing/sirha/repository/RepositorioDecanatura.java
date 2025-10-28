@@ -1,8 +1,8 @@
 package edu.escuelaing.sirha.repository;
 
+import edu.escuelaing.sirha.model.Decanatura;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -25,9 +25,15 @@ public interface RepositorioDecanatura extends MongoRepository<Decanatura, Strin
 
     Optional<Decanatura> findByCorreoInstitucional(String correoInstitucional);
 
+    List<Decanatura> findByEsAdministradorTrue();
+
+    List<Decanatura> findByEsAdministradorFalse();
+
     boolean existsByFacultad(String facultad);
 
     boolean existsByUsername(String username);
+
+    boolean existsByIdDecanatura(int idDecanatura);
 
     long countByFacultad(String facultad);
 

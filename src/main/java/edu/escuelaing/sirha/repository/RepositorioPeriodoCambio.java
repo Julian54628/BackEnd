@@ -1,9 +1,9 @@
 package edu.escuelaing.sirha.repository;
 
+import edu.escuelaing.sirha.model.PeriodoCambio;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +36,10 @@ public interface RepositorioPeriodoCambio extends MongoRepository<PeriodoCambio,
     Optional<PeriodoCambio> findFirstByOrderByFechaInicioDesc();
 
     boolean existsByActivoTrue();
+
+    boolean existsByNombre(String nombre);
+
+    boolean existsByIdPeriodo(int idPeriodo);
 
     long countByActivoTrue();
 

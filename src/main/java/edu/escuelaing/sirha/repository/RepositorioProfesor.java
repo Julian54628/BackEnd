@@ -1,9 +1,9 @@
 package edu.escuelaing.sirha.repository;
 
+import edu.escuelaing.sirha.model.Profesor;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -22,19 +22,17 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     List<Profesor> findByGruposAsignadosIdsContaining(String grupoId);
 
-    @Query("{ '$where': 'this.gruposAsignadosIds.length > 0' }")
+    @Query("{ 'gruposAsignadosIds.0': { $exists: true } }")
     List<Profesor> findProfesoresConGruposAsignados();
 
-    @Query("{ '$where': 'this.gruposAsignadosIds.length == 0' }")
+    @Query("{ 'gruposAsignadosIds': { $size: 0 } }")
     List<Profesor> findProfesoresSinGruposAsignados();
 
     boolean existsByCorreoInstitucional(String correoInstitucional);
 
-    @Query("{ '$where': '(this.materiasAsignadasIds.length + this.gruposAsignadosIds.length) < ?0' }")
-    List<Profesor> findProfesoresDisponibles(int maxCarga);
+    boolean existsByIdProfesor(int idProfesor);
 
-    @Query(value = "{ '$where': 'this.gruposAsignadosIds.length > 0' }", count = true)
-    long countProfesoresConGrupos();
+    long countByGruposAsignadosIdsIsNotEmpty();
 
     default Profesor guardarProfesor(Profesor profesor) {
         return save(profesor);
