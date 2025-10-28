@@ -1,11 +1,12 @@
 package edu.escuelaing.sirha.controller;
 
+import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.service.DecanaturaService;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,10 +16,10 @@ import java.util.Optional;
 public class DecanaturaController {
 
     @Autowired
-    public DecanaturaService decanaturaService;
+    private DecanaturaService decanaturaService;
 
     @Autowired
-    public SemaforoAcademicoService semaforoService;
+    private SemaforoAcademicoService semaforoService;
 
     @GetMapping
     public List<Decanatura> getAll() {
@@ -26,8 +27,10 @@ public class DecanaturaController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Decanatura> getById(@PathVariable String id) {
-        return decanaturaService.buscarPorId(id);
+    public ResponseEntity<Decanatura> getById(@PathVariable String id) {
+        return decanaturaService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -36,13 +39,23 @@ public class DecanaturaController {
     }
 
     @PutMapping("/{id}")
-    public Decanatura actualizar(@PathVariable String id, @RequestBody Decanatura decanatura) {
-        return decanaturaService.actualizar(id, decanatura);
+    public ResponseEntity<Decanatura> actualizar(@PathVariable String id, @RequestBody Decanatura decanatura) {
+        try {
+            Decanatura actualizada = decanaturaService.actualizar(id, decanatura);
+            return ResponseEntity.ok(actualizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@PathVariable String id) {
-        decanaturaService.eliminarPorId(id);
+    public ResponseEntity<Void> eliminar(@PathVariable String id) {
+        try {
+            decanaturaService.eliminarPorId(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/solicitudes/pendientes")
@@ -51,34 +64,61 @@ public class DecanaturaController {
     }
 
     @PutMapping("/solicitudes/{solicitudId}/revisar")
-    public SolicitudCambio revisarSolicitud(
+    public ResponseEntity<SolicitudCambio> revisarSolicitud(
             @PathVariable String solicitudId,
             @RequestParam EstadoSolicitud estado,
             @RequestParam String respuesta) {
-        return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta);
+        try {
+            SolicitudCambio solicitud = decanaturaService.revisarSolicitud(solicitudId, estado, respuesta);
+            return ResponseEntity.ok(solicitud);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/solicitudes/{solicitudId}/aprobar-especial")
-    public void aprobarSolicitudEspecial(@PathVariable String solicitudId) {
-        decanaturaService.aprobarSolicitudEspecial(solicitudId);
+    public ResponseEntity<Void> aprobarSolicitudEspecial(@PathVariable String solicitudId) {
+        try {
+            decanaturaService.aprobarSolicitudEspecial(solicitudId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
-    
+
     @PutMapping("/{id}/otorgar-admin")
-    public Decanatura otorgarPermisosAdministrador(@PathVariable String id) {
-        return decanaturaService.otorgarPermisosAdministrador(id);
+    public ResponseEntity<Decanatura> otorgarPermisosAdministrador(@PathVariable String id) {
+        try {
+            Decanatura decanatura = decanaturaService.otorgarPermisosAdministrador(id);
+            return ResponseEntity.ok(decanatura);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}/revocar-admin")
-    public Decanatura revocarPermisosAdministrador(@PathVariable String id) {
-        return decanaturaService.revocarPermisosAdministrador(id);
+    public ResponseEntity<Decanatura> revocarPermisosAdministrador(@PathVariable String id) {
+        try {
+            Decanatura decanatura = decanaturaService.revocarPermisosAdministrador(id);
+            return ResponseEntity.ok(decanatura);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
     @PutMapping("/solicitudes/{solicitudId}/responder")
-    public SolicitudCambio responderSolicitud(
+    public ResponseEntity<SolicitudCambio> responderSolicitud(
             @PathVariable String solicitudId,
             @RequestParam EstadoSolicitud estado,
             @RequestParam(required = false) String respuesta,
             @RequestParam(required = false) String justificacion) {
-        return decanaturaService.revisarSolicitud(solicitudId, estado, respuesta != null ? respuesta : "");
+        try {
+            String respuestaFinal = respuesta != null ? respuesta : "";
+            SolicitudCambio solicitud = decanaturaService.revisarSolicitud(solicitudId, estado, respuestaFinal);
+            return ResponseEntity.ok(solicitud);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{decanaturaId}/solicitudes/prioridad")
@@ -94,10 +134,5 @@ public class DecanaturaController {
     @GetMapping("/{decanaturaId}/tasas-aprobacion")
     public Map<String, Object> consultarTasasAprobacionRechazo(@PathVariable String decanaturaId) {
         return decanaturaService.consultarTasaAprobacionRechazo(decanaturaId);
-    }
-
-    @GetMapping("/solicitudes/global-prioridad")
-    public List<SolicitudCambio> consultarSolicitudesGlobalPorPrioridad(@RequestParam TipoPrioridad prioridad) {
-        return new ArrayList<>(); // Implementación requiere inyección de SolicitudCambioService
     }
 }

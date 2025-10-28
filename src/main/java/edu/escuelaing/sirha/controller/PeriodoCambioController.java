@@ -1,7 +1,9 @@
 package edu.escuelaing.sirha.controller;
 
+import edu.escuelaing.sirha.model.PeriodoCambio;
 import edu.escuelaing.sirha.service.PeriodoCambioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,21 +14,25 @@ import java.util.Optional;
 public class PeriodoCambioController {
 
     @Autowired
-    public PeriodoCambioService periodoService;
+    private PeriodoCambioService periodoService;
 
     @GetMapping
     public List<PeriodoCambio> getAll() {
         return periodoService.listarTodos();
     }
 
-    @GetMapping("/Obtiene un período de cambio específico por{id}")
-    public Optional<PeriodoCambio> getById(@PathVariable String id) {
-        return periodoService.buscarPorId(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<PeriodoCambio> getById(@PathVariable String id) {
+        return periodoService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/Obtiene el período de cambio actualmente activo")
-    public Optional<PeriodoCambio> getActivo() {
-        return periodoService.obtenerPeriodoActivo();
+    @GetMapping("/activo")
+    public ResponseEntity<PeriodoCambio> getActivo() {
+        return periodoService.obtenerPeriodoActivo()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -34,13 +40,50 @@ public class PeriodoCambioController {
         return periodoService.crear(periodo);
     }
 
-    @PutMapping("/Actualiza la información de un período de cambio{id}")
-    public PeriodoCambio update(@PathVariable String id, @RequestBody PeriodoCambio periodo) {
-        return periodoService.actualizar(id, periodo);
+    @PutMapping("/{id}")
+    public ResponseEntity<PeriodoCambio> update(@PathVariable String id, @RequestBody PeriodoCambio periodo) {
+        try {
+            PeriodoCambio actualizado = periodoService.actualizar(id, periodo);
+            return ResponseEntity.ok(actualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @DeleteMapping("/Elimina un período de cambio del sistema por su{id}")
-    public void delete(@PathVariable String id) {
-        periodoService.eliminarPorId(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        try {
+            periodoService.eliminarPorId(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/vigente")
+    public boolean estaPeriodoActivo() {
+        return periodoService.estaPeriodoActivo();
+    }
+
+    @GetMapping("/vigentes")
+    public List<PeriodoCambio> obtenerPeriodosVigentes() {
+        return periodoService.obtenerPeriodosVigentes();
+    }
+
+    @GetMapping("/activo-actual")
+    public ResponseEntity<PeriodoCambio> obtenerPeriodoActivoActual() {
+        return periodoService.obtenerPeriodoActivoActual()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/futuros")
+    public List<PeriodoCambio> obtenerPeriodosFuturos() {
+        return periodoService.obtenerPeriodosFuturos();
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    public List<PeriodoCambio> obtenerPeriodosPorTipo(@PathVariable String tipo) {
+        return periodoService.obtenerPeriodosPorTipo(tipo);
     }
 }

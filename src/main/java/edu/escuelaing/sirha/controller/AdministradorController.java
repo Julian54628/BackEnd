@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 public class AdministradorController {
 
     @Autowired
-    public SolicitudCambioService solicitudCambioService;
+    private SolicitudCambioService solicitudCambioService;
 
     @Autowired
-    public AdministradorService administradorService;
+    private AdministradorService administradorService;
 
     @Autowired
-    public SemaforoAcademicoService semaforoAcademicoService;
+    private SemaforoAcademicoService semaforoAcademicoService;
 
     @GetMapping
     public List<Administrador> getAll() {
@@ -33,8 +33,10 @@ public class AdministradorController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Administrador> getById(@PathVariable String id) {
-        return administradorService.buscarPorId(id);
+    public ResponseEntity<Administrador> getById(@PathVariable String id) {
+        return administradorService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -43,8 +45,13 @@ public class AdministradorController {
     }
 
     @PutMapping("/grupo/{grupoId}/cupo")
-    public Grupo modificarCupoGrupo(@PathVariable String grupoId, @RequestParam int nuevoCupo) {
-        return administradorService.modificarCupoGrupo(grupoId, nuevoCupo);
+    public ResponseEntity<Grupo> modificarCupoGrupo(@PathVariable String grupoId, @RequestParam int nuevoCupo) {
+        try {
+            Grupo grupo = administradorService.modificarCupoGrupo(grupoId, nuevoCupo);
+            return ResponseEntity.ok(grupo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/periodo")
@@ -61,42 +68,47 @@ public class AdministradorController {
     public ResponseEntity<?> modificarEstadoMateriaSemaforo(@PathVariable String estudianteId, @PathVariable String materiaId,
                                                             @RequestParam EstadoMateria nuevoEstado) {
         Optional<SemaforoAcademico> resultado = administradorService.modificarEstadoMateriaSemaforo(estudianteId, materiaId, nuevoEstado);
-        if (resultado.isPresent()) {
-            return ResponseEntity.ok(resultado.get());
-        } else {
+        return resultado.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/desde-decanatura/{decanaturaId}")
+    public ResponseEntity<Administrador> crearDesdeDecanatura(@PathVariable String decanaturaId) {
+        try {
+            Administrador admin = administradorService.crearDesdeDecanatura(decanaturaId);
+            return ResponseEntity.ok(admin);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @PostMapping("/desde-decanatura/{decanaturaId}")
-    public Administrador crearDesdeDecanatura(@PathVariable String decanaturaId) {
-        return administradorService.crearDesdeDecanatura(decanaturaId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarAdministrador(@PathVariable String id) {
+        boolean eliminado = administradorService.eliminarAdministrador(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/semaforo/estudiante/{estudianteId}/completo")
     public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String estudianteId) {
         SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoCompleto(estudianteId);
-        if (semaforo.getEstudianteId() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(semaforo);
+        return semaforo.getEstudianteId() != null ? ResponseEntity.ok(semaforo) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/semaforo/estudiante/{estudianteId}/detallado")
     public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String estudianteId) {
         SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoDetallado(estudianteId);
-        if (semaforo.getEstudianteId() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(semaforo);
+        return semaforo.getEstudianteId() != null ? ResponseEntity.ok(semaforo) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/reportes/grupos-solicitados")
     public List<Map<String, Object>> generarReporteGruposMasSolicitados() {
         List<SolicitudCambio> solicitudes = solicitudCambioService.obtenerTodasLasSolicitudes();
-        Map<String, Long> conteoPorGrupo = solicitudes.stream().filter(s -> s.getGrupoDestinoId() != null)
+        Map<String, Long> conteoPorGrupo = solicitudes.stream()
+                .filter(s -> s.getGrupoDestinoId() != null)
                 .collect(Collectors.groupingBy(SolicitudCambio::getGrupoDestinoId, Collectors.counting()));
-        return conteoPorGrupo.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+
+        return conteoPorGrupo.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .map(entry -> {
                     Map<String, Object> reporte = new HashMap<>();
                     reporte.put("grupoId", entry.getKey());
@@ -104,6 +116,7 @@ public class AdministradorController {
                     return reporte;
                 }).collect(Collectors.toList());
     }
+
     @GetMapping("/reportes/estadisticas-reasignacion")
     public Map<String, Object> generarReporteEstadisticasReasignacion() {
         return solicitudCambioService.obtenerEstadisticasSolicitudes();

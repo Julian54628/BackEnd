@@ -15,8 +15,7 @@ import java.util.Optional;
 public class SolicitudCambioController {
 
     @Autowired
-    public SolicitudCambioService solicitudService;
-
+    private SolicitudCambioService solicitudService;
 
     @GetMapping
     public List<SolicitudCambio> obtenerTodasLasSolicitudes() {
@@ -25,8 +24,9 @@ public class SolicitudCambioController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SolicitudCambio> obtenerSolicitudPorId(@PathVariable String id) {
-        Optional<SolicitudCambio> solicitud = solicitudService.obtenerSolicitudPorId(id);
-        return solicitud.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return solicitudService.obtenerSolicitudPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -62,16 +62,18 @@ public class SolicitudCambioController {
 
     @GetMapping("/estado/{estado}")
     public List<SolicitudCambio> buscarPorEstado(@PathVariable String estado) {
-        EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
-        return solicitudService.obtenerSolicitudesPorEstado(est);
+        try {
+            EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
+            return solicitudService.obtenerSolicitudesPorEstado(est);
+        } catch (IllegalArgumentException e) {
+            return List.of();
+        }
     }
 
     @GetMapping("/estudiante/{estudianteId}")
     public List<SolicitudCambio> buscarPorEstudiante(@PathVariable String estudianteId) {
         return solicitudService.obtenerSolicitudesPorEstudiante(estudianteId);
     }
-
-    // ✅ ENDPOINTS ORIGINALES
 
     @PostMapping("/crear")
     public ResponseEntity<SolicitudCambio> crearSolicitud(@RequestBody SolicitudCambio solicitud) {
@@ -85,8 +87,9 @@ public class SolicitudCambioController {
 
     @GetMapping("/buscar/{id}")
     public ResponseEntity<SolicitudCambio> buscarSolicitudPorId(@PathVariable String id) {
-        Optional<SolicitudCambio> solicitud = solicitudService.obtenerSolicitudPorId(id);
-        return solicitud.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return solicitudService.obtenerSolicitudPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/listar-todas")
@@ -132,6 +135,26 @@ public class SolicitudCambioController {
             return ResponseEntity.ok(aprobada);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/prioridad/{prioridad}")
+    public List<SolicitudCambio> obtenerPorPrioridad(@PathVariable TipoPrioridad prioridad) {
+        return solicitudService.obtenerSolicitudesPorPrioridad(prioridad);
+    }
+
+    @GetMapping("/periodo/{periodoId}")
+    public List<SolicitudCambio> obtenerPorPeriodo(@PathVariable String periodoId) {
+        return solicitudService.obtenerSolicitudesPorPeriodo(periodoId);
+    }
+
+    @GetMapping("/contar/estado/{estado}")
+    public long contarPorEstado(@PathVariable String estado) {
+        try {
+            EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
+            return solicitudService.contarSolicitudesPorEstado(est);
+        } catch (IllegalArgumentException e) {
+            return 0;
         }
     }
 }

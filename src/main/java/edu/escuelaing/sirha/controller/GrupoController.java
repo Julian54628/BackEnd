@@ -1,5 +1,6 @@
 package edu.escuelaing.sirha.controller;
 
+import edu.escuelaing.sirha.model.*;
 import edu.escuelaing.sirha.service.GrupoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +15,7 @@ import java.util.Optional;
 public class GrupoController {
 
     @Autowired
-    public GrupoService grupoService;
+    private GrupoService grupoService;
 
     @GetMapping
     public List<Grupo> getAll() {
@@ -22,8 +23,10 @@ public class GrupoController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Grupo> getById(@PathVariable String id) {
-        return grupoService.buscarPorId(id);
+    public ResponseEntity<Grupo> getById(@PathVariable String id) {
+        return grupoService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -32,23 +35,35 @@ public class GrupoController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) {
-        grupoService.eliminarPorId(id);
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        try {
+            grupoService.eliminarPorId(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}/cupo")
-    public Grupo updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
-        return grupoService.actualizarCupo(id, nuevoCupo);
+    public ResponseEntity<Grupo> updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
+        try {
+            Grupo grupo = grupoService.actualizarCupo(id, nuevoCupo);
+            return ResponseEntity.ok(grupo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{id}/cupo-disponible")
-    public boolean verificarCupoDisponible(@PathVariable String id) {
-        return grupoService.verificarCupoDisponible(id);
+    public ResponseEntity<Boolean> verificarCupoDisponible(@PathVariable String id) {
+        boolean disponible = grupoService.verificarCupoDisponible(id);
+        return ResponseEntity.ok(disponible);
     }
 
     @GetMapping("/{id}/carga-academica")
-    public float consultarCargaAcademica(@PathVariable String id) {
-        return grupoService.consultarCargaAcademica(id);
+    public ResponseEntity<Float> consultarCargaAcademica(@PathVariable String id) {
+        float carga = grupoService.consultarCargaAcademica(id);
+        return ResponseEntity.ok(carga);
     }
 
     @GetMapping("/{id}/estudiantes")
@@ -87,6 +102,7 @@ public class GrupoController {
                 if (grupo.getEstudiantesInscritosIds().size() >= grupo.getCupoMaximo()) {
                     if (!grupo.getEstudiantesInscritosIds().contains(estudianteId)) {
                         grupo.getEstudiantesInscritosIds().add(estudianteId);
+                        grupoService.crear(grupo);
                         return ResponseEntity.ok("Estudiante agregado a lista de espera del grupo " + id);
                     } else {
                         return ResponseEntity.badRequest().body("El estudiante ya está en el grupo o lista de espera");
@@ -100,8 +116,19 @@ public class GrupoController {
             return ResponseEntity.badRequest().body("Error al agregar a lista de espera: " + e.getMessage());
         }
     }
+
     @GetMapping("/alertas-capacidad")
     public List<Grupo> consultarGruposConAlertaCapacidad(@RequestParam(defaultValue = "90") double porcentajeAlerta) {
         return grupoService.obtenerGruposConAlertaCapacidad(porcentajeAlerta);
+    }
+
+    @GetMapping("/materia/{materiaId}")
+    public List<Grupo> buscarPorMateria(@PathVariable String materiaId) {
+        return grupoService.buscarPorMateria(materiaId);
+    }
+
+    @GetMapping("/profesor/{profesorId}")
+    public List<Grupo> buscarPorProfesor(@PathVariable String profesorId) {
+        return grupoService.buscarPorProfesor(profesorId);
     }
 }
