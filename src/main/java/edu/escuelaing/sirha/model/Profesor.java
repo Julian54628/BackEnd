@@ -16,6 +16,7 @@ public class Profesor extends Usuario {
     private String nombre;
     private List<String> materiasAsignadasIds = new ArrayList<>();
     private List<String> gruposAsignadosIds = new ArrayList<>();
+    private String departamento;
 
     public Profesor(int idProfesor, String nombre, String correoInstitucional) {
         super(0, nombre, "", correoInstitucional, Rol.PROFESOR);
@@ -30,6 +31,5 @@ public class Profesor extends Usuario {
     }
 
     public void setFacultad(String ingenieria) {
-        // Método mantenido por compatibilidad
     }
 }

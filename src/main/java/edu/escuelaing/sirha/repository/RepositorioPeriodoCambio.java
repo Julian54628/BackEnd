@@ -27,10 +27,10 @@ public interface RepositorioPeriodoCambio extends MongoRepository<PeriodoCambio,
     @Query("{ 'fechaInicio': { $lte: ?0 }, 'fechaFin': { $gte: ?0 }, 'activo': true }")
     Optional<PeriodoCambio> findPeriodoActivoEnFecha(Date fecha);
 
-    @Query("periodos futuros")
+    @Query("{ 'fechaInicio': { $gt: ?0 } }")
     List<PeriodoCambio> findPeriodosFuturos(Date fechaReferencia);
 
-    @Query("periodos pasados")
+    @Query("{ 'fechaFin': { $lt: ?0 } }")
     List<PeriodoCambio> findPeriodosPasados(Date fechaReferencia);
 
     Optional<PeriodoCambio> findFirstByOrderByFechaInicioDesc();

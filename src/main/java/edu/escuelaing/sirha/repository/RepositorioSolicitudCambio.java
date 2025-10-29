@@ -4,11 +4,11 @@ import edu.escuelaing.sirha.model.SolicitudCambio;
 import edu.escuelaing.sirha.model.EstadoSolicitud;
 import edu.escuelaing.sirha.model.TipoPrioridad;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Arrays;
 
 @Repository
 public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCambio, String> {
@@ -33,17 +33,19 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
 
     List<SolicitudCambio> findAllByOrderByFechaCreacionDesc();
 
-    @Query("Solicitud activa para materias")
-    boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId);
+    // Comprueba si existe una solicitud con estados 'activos' (pendiente o en revisión)
+    default boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId) {
+        List<EstadoSolicitud> activos = Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION);
+        return !findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(estudianteId, materiaDestinoId, activos).isEmpty();
+    }
 
-    @Query("solicitudes recientes")
-    List<SolicitudCambio> findSolicitudesRecientes(Date fechaLimite);
+    // Devuelve solicitudes posteriores a una fecha, ordenadas por fecha de creación (más recientes primero)
+    List<SolicitudCambio> findByFechaCreacionAfterOrderByFechaCreacionDesc(Date fechaLimite);
 
     List<SolicitudCambio> findByDecanaturaId(String decanaturaId);
 
     List<SolicitudCambio> findByTipoPrioridad(TipoPrioridad tipoPrioridad);
 
-    @Query("estado de solicitud por id en decantura")
     List<SolicitudCambio> findByDecanaturaIdAndEstado(String decanaturaId, EstadoSolicitud estado);
 
     List<SolicitudCambio> findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(String estudianteId, String materiaDestinoId, List<EstadoSolicitud> estados);

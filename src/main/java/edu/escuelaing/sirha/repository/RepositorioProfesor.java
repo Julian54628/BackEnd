@@ -26,10 +26,10 @@ public interface RepositorioProfesor extends MongoRepository<Profesor, String> {
 
     List<Profesor> findByGruposAsignadosIdsContaining(String grupoId);
 
-    @Query("asignacion de grupos a profesores")
+    @Query("{ 'gruposAsignadosIds': { $exists: true, $ne: [] } }")
     List<Profesor> findProfesoresConGruposAsignados();
 
-    @Query("profesores sin asignacion de grupos")
+    @Query("{ $or: [ { 'gruposAsignadosIds': { $exists: false } }, { 'gruposAsignadosIds': { $size: 0 } } ] }")
     List<Profesor> findProfesoresSinGruposAsignados();
 
     boolean existsByCorreoInstitucional(String correoInstitucional);
