@@ -72,37 +72,10 @@ public class EstudiantesControlador {
         }
     }
 
-    @PostMapping("/{id}/solicitudes")
-    public ResponseEntity<SolicitudCambio> crearSolicitudCambio(
-            @PathVariable String id,
-            @RequestParam String materiaOrigenId,
-            @RequestParam String grupoOrigenId,
-            @RequestParam String materiaDestinoId,
-            @RequestParam String grupoDestinoId) {
-        try {
-            SolicitudCambio solicitud = estudianteService.crearSolicitudCambio(id, materiaOrigenId, grupoOrigenId, materiaDestinoId, grupoDestinoId);
-            return ResponseEntity.created(URI.create("/api/estudiantes/" + id + "/solicitudes/" + solicitud.getId())).body(solicitud);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/{id}/solicitudes")
-    public List<SolicitudCambio> consultarSolicitudes(@PathVariable String id) {
-        return estudianteService.consultarSolicitudes(id);
-    }
-
     @GetMapping("/{id}/semaforo")
     public ResponseEntity<Map<String, EstadoSemaforo>> verMiSemaforo(@PathVariable String id) {
         Map<String, EstadoSemaforo> semaforo = semaforoAcademicoService.visualizarSemaforoEstudiante(id);
-        return semaforo.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(semaforo);
-    }
-
-    @GetMapping("/{id}/semaforo/materia/{materiaId}")
-    public ResponseEntity<EstadoSemaforo> verEstadoMateria(@PathVariable String id, @PathVariable String materiaId) {
-        return semaforoAcademicoService.consultarSemaforoMateria(id, materiaId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return semaforo == null || semaforo.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(semaforo);
     }
 
     @GetMapping("/{id}/semestre-actual")
@@ -115,55 +88,33 @@ public class EstudiantesControlador {
         }
     }
 
-    @GetMapping("/{id}/semestres-anteriores")
-    public ResponseEntity<List<Integer>> getSemestresAnteriores(@PathVariable String id) {
-        try {
-            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(id);
-            @SuppressWarnings("unchecked")
-            List<Integer> semestres = (List<Integer>) foraneo.get("semestresAnteriores");
-            return ResponseEntity.ok(semestres);
-        } catch (Exception e) {
-            return ResponseEntity.ok(new ArrayList<>());
-        }
+    @PostMapping("/{estudianteId}/materia/{materiaId}")
+    public ResponseEntity<?> assignMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
+        Object res = estudianteService.assignMateriaToStudent(estudianteId, materiaId);
+        return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/{id}/foraneo")
-    public ResponseEntity<Map<String, Object>> getForaneoCompleto(@PathVariable String id) {
-        try {
-            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(id);
-            return ResponseEntity.ok(foraneo);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    @DeleteMapping("/{estudianteId}/materia/{materiaId}")
+    public ResponseEntity<?> removeMateria(@PathVariable String estudianteId, @PathVariable String materiaId) {
+        estudianteService.removeMateriaFromStudent(estudianteId, materiaId);
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/informacion-academica")
-    public ResponseEntity<Map<String, Object>> getInformacionAcademica(@PathVariable String id) {
-        try {
-            Map<String, Object> informacion = new HashMap<>();
-            Optional<Estudiante> estudianteOpt = estudianteService.buscarPorId(id);
-            if (estudianteOpt.isPresent()) {
-                Estudiante estudiante = estudianteOpt.get();
-                informacion.put("codigo", estudiante.getCodigo());
-                informacion.put("nombre", estudiante.getNombre());
-                informacion.put("semestre", estudiante.getSemestre());
-                informacion.put("programa", estudiante.getCarrera());
-            }
-            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(id);
-            informacion.putAll(foraneo);
-            return ResponseEntity.ok(informacion);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    @GetMapping("/{estudianteId}/foro/actual")
+    public ResponseEntity<?> foroSemestreActual(@PathVariable String estudianteId) {
+        Object res = estudianteService.getCurrentSemesterForum(estudianteId);
+        return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/carrera/{carrera}")
-    public List<Estudiante> buscarPorCarrera(@PathVariable String carrera) {
-        return estudianteService.buscarPorCarrera(carrera);
+    @GetMapping("/{estudianteId}/foro/anteriores")
+    public ResponseEntity<?> foroSemestresAnteriores(@PathVariable String estudianteId) {
+        Object res = estudianteService.getPastSemestersForum(estudianteId);
+        return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/semestre/{semestre}")
-    public List<Estudiante> buscarPorSemestre(@PathVariable int semestre) {
-        return estudianteService.buscarPorSemestre(semestre);
+    @GetMapping("/{estudianteId}/info")
+    public ResponseEntity<?> infoEstudiante(@PathVariable String estudianteId) {
+        Object res = estudianteService.getStudentFullInfo(estudianteId);
+        return ResponseEntity.ok(res);
     }
 }

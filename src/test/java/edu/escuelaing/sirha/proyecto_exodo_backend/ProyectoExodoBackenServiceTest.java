@@ -628,7 +628,6 @@ public class ProyectoExodoBackenServiceTest {
         assertTrue(visualizacion.getPorcentajeProgreso() >= 0);
     }
 
-    // NUEVA PRUEBA: Test para casos de error y borde
     @Test
     void testSemaforoAcademicoCasosBorde() {
         SemaforoAcademicoServiceImpl service = new SemaforoAcademicoServiceImpl();

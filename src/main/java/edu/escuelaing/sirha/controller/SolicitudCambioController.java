@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/solicitudes")
@@ -60,43 +59,6 @@ public class SolicitudCambioController {
         }
     }
 
-    @GetMapping("/estado/{estado}")
-    public List<SolicitudCambio> buscarPorEstado(@PathVariable String estado) {
-        try {
-            EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
-            return solicitudService.obtenerSolicitudesPorEstado(est);
-        } catch (IllegalArgumentException e) {
-            return List.of();
-        }
-    }
-
-    @GetMapping("/estudiante/{estudianteId}")
-    public List<SolicitudCambio> buscarPorEstudiante(@PathVariable String estudianteId) {
-        return solicitudService.obtenerSolicitudesPorEstudiante(estudianteId);
-    }
-
-    @PostMapping("/crear")
-    public ResponseEntity<SolicitudCambio> crearSolicitud(@RequestBody SolicitudCambio solicitud) {
-        try {
-            SolicitudCambio creada = solicitudService.crearSolicitud(solicitud);
-            return ResponseEntity.ok(creada);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/buscar/{id}")
-    public ResponseEntity<SolicitudCambio> buscarSolicitudPorId(@PathVariable String id) {
-        return solicitudService.obtenerSolicitudPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/listar-todas")
-    public List<SolicitudCambio> listarTodasLasSolicitudes() {
-        return solicitudService.obtenerTodasLasSolicitudes();
-    }
-
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminarPorId(@PathVariable String id) {
         try {
@@ -106,55 +68,94 @@ public class SolicitudCambioController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/filtrar")
+    public ResponseEntity<?> listSolicitudes(
+            @RequestParam(required = false) String decanaturaId,
+            @RequestParam(required = false) String prioridad,
+            @RequestParam(required = false, defaultValue = "fecha") String ordenarPor,
+            @RequestParam(required = false, defaultValue = "asc") String orden) {
 
-    @GetMapping("/{id}/historial")
-    public ResponseEntity<List<String>> obtenerHistorialPorSolicitud(@PathVariable String id) {
-        List<String> historial = solicitudService.obtenerHistorialPorSolicitud(id);
-        return ResponseEntity.ok(historial);
+        List<SolicitudCambio> res = solicitudService.obtenerTodasLasSolicitudes();
+
+        if (decanaturaId != null && !decanaturaId.isBlank()) {
+            res = res.stream()
+                    .filter(s -> decanaturaId.equals(s.getDecanaturaId()))
+                    .collect(Collectors.toList());
+        }
+
+        if (prioridad != null && !prioridad.isBlank()) {
+            try {
+                TipoPrioridad p = TipoPrioridad.valueOf(prioridad.toUpperCase());
+                res = res.stream()
+                        .filter(s -> p == s.getTipoPrioridad())
+                        .collect(Collectors.toList());
+            } catch (IllegalArgumentException ex) {
+                return ResponseEntity.badRequest().body("Prioridad inválida");
+            }
+        }
+
+        if ("fecha".equalsIgnoreCase(ordenarPor)) {
+            Comparator<SolicitudCambio> cmp = Comparator.comparing(SolicitudCambio::getFechaCreacion, Comparator.nullsLast(Date::compareTo));
+            if ("desc".equalsIgnoreCase(orden)) {
+                cmp = cmp.reversed();
+            }
+            res.sort(cmp);
+        }
+
+        return ResponseEntity.ok(res);
     }
 
-    @GetMapping("/decanatura/{decanaturaId}")
-    public List<SolicitudCambio> obtenerSolicitudesPorDecanatura(@PathVariable String decanaturaId) {
-        return solicitudService.obtenerSolicitudesPorDecanatura(decanaturaId);
+    @GetMapping("/{id}/decisiones")
+    public ResponseEntity<?> decisionHistory(@PathVariable String id) {
+        List<String> history = solicitudService.obtenerHistorialPorSolicitud(id);
+        return ResponseEntity.ok(history);
     }
 
-    @GetMapping("/casos-especiales")
-    public List<SolicitudCambio> consultarCasosEspeciales() {
-        return solicitudService.obtenerSolicitudesPorPrioridad(TipoPrioridad.ESPECIAL);
-    }
-
-    @GetMapping("/estadisticas")
-    public Map<String, Object> generarEstadisticasReasignacion() {
-        return solicitudService.obtenerEstadisticasSolicitudes();
-    }
-
-    @PutMapping("/{id}/aprobar-especial")
-    public ResponseEntity<SolicitudCambio> aprobarSolicitudEspecial(@PathVariable String id, @RequestParam String justificacion) {
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSolicitud(@PathVariable String id, @RequestBody SolicitudCambio payload) {
         try {
-            SolicitudCambio aprobada = solicitudService.aprobarSolicitud(id, justificacion);
-            return ResponseEntity.ok(aprobada);
+            if (payload.getId() == null || payload.getId().isEmpty()) {
+                payload.setId(id);
+            } else if (!id.equals(payload.getId())) {
+                return ResponseEntity.badRequest().body("El id del path debe coincidir con el id del body");
+            }
+            SolicitudCambio updated = solicitudService.actualizar(payload);
+            return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
 
-    @GetMapping("/prioridad/{prioridad}")
-    public List<SolicitudCambio> obtenerPorPrioridad(@PathVariable TipoPrioridad prioridad) {
-        return solicitudService.obtenerSolicitudesPorPrioridad(prioridad);
-    }
-
-    @GetMapping("/periodo/{periodoId}")
-    public List<SolicitudCambio> obtenerPorPeriodo(@PathVariable String periodoId) {
-        return solicitudService.obtenerSolicitudesPorPeriodo(periodoId);
-    }
-
-    @GetMapping("/contar/estado/{estado}")
-    public long contarPorEstado(@PathVariable String estado) {
+    @PostMapping("/{id}/responder")
+    public ResponseEntity<?> responderSolicitud(@PathVariable String id, @RequestBody Map<String, Object> action) {
+        String accion = action.getOrDefault("accion", "").toString().toUpperCase();
+        String justificacion = action.getOrDefault("justificacion", null) != null
+                ? action.get("justificacion").toString()
+                : null;
         try {
-            EstadoSolicitud est = EstadoSolicitud.valueOf(estado.toUpperCase());
-            return solicitudService.contarSolicitudesPorEstado(est);
-        } catch (IllegalArgumentException e) {
-            return 0;
+            switch (accion) {
+                case "APROBAR":
+                    return ResponseEntity.ok(solicitudService.aprobarSolicitud(id, justificacion));
+                case "RECHAZAR":
+                    return ResponseEntity.ok(solicitudService.rechazarSolicitud(id, justificacion));
+                case "SOLICITAR_INFO":
+                    return ResponseEntity.ok(solicitudService.actualizarEstadoSolicitud(id, EstadoSolicitud.EN_REVISION, "Solicitar información", justificacion));
+                default:
+                    return ResponseEntity.badRequest().body("Acción inválida. Use APROBAR, RECHAZAR o SOLICITAR_INFO");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/por-prioridad")
+    public ResponseEntity<?> solicitudesPorPrioridad(@RequestParam String prioridad) {
+        try {
+            TipoPrioridad p = TipoPrioridad.valueOf(prioridad.toUpperCase());
+            List<SolicitudCambio> res = solicitudService.obtenerSolicitudesPorPrioridad(p);
+            return ResponseEntity.ok(res);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body("Prioridad inválida");
         }
     }
 }

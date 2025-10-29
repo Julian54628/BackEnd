@@ -52,46 +52,4 @@ public class UsuarioController {
         return ResponseEntity.ok(tienePermiso);
     }
 
-    @PostMapping
-    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
-        try {
-            Usuario creado = usuarioService.crearUsuario(usuario);
-            return ResponseEntity.ok(creado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PutMapping("/{id}/desactivar")
-    public ResponseEntity<Void> desactivarUsuario(@PathVariable String id) {
-        try {
-            usuarioService.desactivarUsuario(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/{id}/activar")
-    public ResponseEntity<Void> activarUsuario(@PathVariable String id) {
-        try {
-            usuarioService.activarUsuario(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/{id}/activo")
-    public ResponseEntity<Boolean> estaActivo(@PathVariable String id) {
-        return usuarioService.buscarPorId(id)
-                .map(usuario -> ResponseEntity.ok(usuario.isActivo()))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/verificar/{username}")
-    public ResponseEntity<Boolean> existeUsuario(@PathVariable String username) {
-        boolean existe = usuarioService.buscarPorUsername(username).isPresent();
-        return ResponseEntity.ok(existe);
-    }
 }

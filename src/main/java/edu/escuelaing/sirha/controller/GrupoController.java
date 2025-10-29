@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -34,23 +35,15 @@ public class GrupoController {
         return grupoService.crear(grupo);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        try {
-            grupoService.eliminarPorId(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @PutMapping("/{id}/cupo")
-    public ResponseEntity<Grupo> updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
+    public ResponseEntity<?> updateCupo(@PathVariable String id, @RequestParam int nuevoCupo) {
         try {
             Grupo grupo = grupoService.actualizarCupo(id, nuevoCupo);
             return ResponseEntity.ok(grupo);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno"));
         }
     }
 
@@ -60,75 +53,61 @@ public class GrupoController {
         return ResponseEntity.ok(disponible);
     }
 
-    @GetMapping("/{id}/carga-academica")
-    public ResponseEntity<Float> consultarCargaAcademica(@PathVariable String id) {
-        float carga = grupoService.consultarCargaAcademica(id);
-        return ResponseEntity.ok(carga);
+    @GetMapping("/alerts")
+    public ResponseEntity<?> groupsWithHighLoad(@RequestParam(required = false, defaultValue = "90") double threshold) {
+        List<Grupo> groups = grupoService.obtenerGruposConAlertaCapacidad(threshold);
+        return ResponseEntity.ok(groups);
+    }
+
+    @GetMapping("/{id}/cupo-info")
+    public ResponseEntity<?> getCupoInfo(@PathVariable String id) {
+        Optional<Grupo> gOpt = grupoService.buscarPorId(id);
+        if (gOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Grupo g = gOpt.get();
+        double carga = grupoService.consultarCargaAcademica(id);
+        boolean cupoDisponible = grupoService.verificarCupoDisponible(id);
+        int inscritos = grupoService.consultarEstudiantesInscritos(id).size();
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("grupoId", id);
+        resp.put("cargaPorcentaje", carga);
+        resp.put("cupoDisponible", cupoDisponible);
+        resp.put("inscritos", inscritos);
+        resp.put("cupoMaximo", g.getCupoMaximo());
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{id}/estudiantes")
-    public List<Estudiante> consultarEstudiantesInscritos(@PathVariable String id) {
-        return grupoService.consultarEstudiantesInscritos(id);
+    public ResponseEntity<?> consultarEstudiantesInscritos(@PathVariable String id) {
+        List<Estudiante> lista = grupoService.consultarEstudiantesInscritos(id);
+        return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/{id}/lista-espera")
-    public List<Estudiante> consultarListaEspera(@PathVariable String id) {
-        Optional<Grupo> grupoOpt = grupoService.buscarPorId(id);
-        if (grupoOpt.isPresent()) {
-            Grupo grupo = grupoOpt.get();
-            List<Estudiante> listaEspera = new ArrayList<>();
-            int cupoMaximo = grupo.getCupoMaximo();
-            int inscritosActuales = grupo.getEstudiantesInscritosIds().size();
-            if (inscritosActuales > cupoMaximo) {
-                for (int i = cupoMaximo; i < inscritosActuales && i < grupo.getEstudiantesInscritosIds().size(); i++) {
-                    Estudiante estudianteEnEspera = new Estudiante();
-                    estudianteEnEspera.setId(grupo.getEstudiantesInscritosIds().get(i));
-                    estudianteEnEspera.setNombre("Estudiante en espera " + (i + 1));
-                    estudianteEnEspera.setCodigo("COD" + (i + 1));
-                    listaEspera.add(estudianteEnEspera);
-                }
-            }
-            return listaEspera;
-        }
-        return new ArrayList<>();
+    @GetMapping("/{id}/inscritos/total")
+    public ResponseEntity<?> totalInscritos(@PathVariable String id) {
+        int total = grupoService.consultarEstudiantesInscritos(id).size();
+        return ResponseEntity.ok(Map.of("grupoId", id, "total", total));
     }
 
-    @PostMapping("/{id}/lista-espera/agregar/{estudianteId}")
-    public ResponseEntity<String> agregarAListaEspera(@PathVariable String id, @PathVariable String estudianteId) {
+    @GetMapping("/por-materia/{materiaId}")
+    public ResponseEntity<List<Grupo>> gruposPorMateria(@PathVariable String materiaId) {
+        return ResponseEntity.ok(grupoService.buscarPorMateria(materiaId));
+    }
+
+    @GetMapping("/por-profesor/{profesorId}")
+    public ResponseEntity<List<Grupo>> gruposPorProfesor(@PathVariable String profesorId) {
+        return ResponseEntity.ok(grupoService.buscarPorProfesor(profesorId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable String id) {
         try {
-            Optional<Grupo> grupoOpt = grupoService.buscarPorId(id);
-            if (grupoOpt.isPresent()) {
-                Grupo grupo = grupoOpt.get();
-                if (grupo.getEstudiantesInscritosIds().size() >= grupo.getCupoMaximo()) {
-                    if (!grupo.getEstudiantesInscritosIds().contains(estudianteId)) {
-                        grupo.getEstudiantesInscritosIds().add(estudianteId);
-                        grupoService.crear(grupo);
-                        return ResponseEntity.ok("Estudiante agregado a lista de espera del grupo " + id);
-                    } else {
-                        return ResponseEntity.badRequest().body("El estudiante ya está en el grupo o lista de espera");
-                    }
-                } else {
-                    return ResponseEntity.badRequest().body("El grupo aún tiene cupos disponibles");
-                }
-            }
-            return ResponseEntity.notFound().build();
+            grupoService.eliminarPorId(id);
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al agregar a lista de espera: " + e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @GetMapping("/alertas-capacidad")
-    public List<Grupo> consultarGruposConAlertaCapacidad(@RequestParam(defaultValue = "90") double porcentajeAlerta) {
-        return grupoService.obtenerGruposConAlertaCapacidad(porcentajeAlerta);
-    }
-
-    @GetMapping("/materia/{materiaId}")
-    public List<Grupo> buscarPorMateria(@PathVariable String materiaId) {
-        return grupoService.buscarPorMateria(materiaId);
-    }
-
-    @GetMapping("/profesor/{profesorId}")
-    public List<Grupo> buscarPorProfesor(@PathVariable String profesorId) {
-        return grupoService.buscarPorProfesor(profesorId);
-    }
 }

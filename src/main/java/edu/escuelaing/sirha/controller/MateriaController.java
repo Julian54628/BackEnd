@@ -64,43 +64,6 @@ public class MateriaController {
         }
     }
 
-    @GetMapping("/{materiaId}/grupos-disponibles")
-    public List<Grupo> consultarGruposDisponibles(@PathVariable String materiaId) {
-        return materiaService.consultarGruposDisponibles(materiaId);
-    }
-
-    @GetMapping("/{materiaId}/disponibilidad")
-    public ResponseEntity<Boolean> verificarDisponibilidad(@PathVariable String materiaId) {
-        boolean disponible = materiaService.verificarDisponibilidad(materiaId);
-        return ResponseEntity.ok(disponible);
-    }
-
-    @PutMapping("/{materiaId}/cupo")
-    public ResponseEntity<Void> modificarCuposMateria(@PathVariable String materiaId, @RequestParam int nuevoCupo) {
-        try {
-            materiaService.modificarCuposMateria(materiaId, nuevoCupo);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @PostMapping("/con-grupos")
-    public ResponseEntity<Materia> registrarMateriaConGrupos(@RequestBody Materia materia, @RequestBody List<Grupo> grupos) {
-        try {
-            Materia materiaCreada = materiaService.registrarMateriaConGrupos(materia, grupos);
-            return ResponseEntity.ok(materiaCreada);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @GetMapping("/{materiaId}/total-inscritos")
-    public ResponseEntity<Integer> consultarTotalInscritosPorMateria(@PathVariable String materiaId) {
-        int total = materiaService.consultarTotalInscritosPorMateria(materiaId);
-        return ResponseEntity.ok(total);
-    }
-
     @PostMapping("/grupos/{grupoId}/inscribir/{estudianteId}")
     public ResponseEntity<Grupo> inscribirEstudianteEnGrupo(@PathVariable String grupoId, @PathVariable String estudianteId) {
         try {
@@ -111,48 +74,47 @@ public class MateriaController {
         }
     }
 
-    @DeleteMapping("/grupos/{grupoId}/retirar/{estudianteId}")
-    public ResponseEntity<Grupo> retirarEstudianteDeGrupo(@PathVariable String grupoId, @PathVariable String estudianteId) {
+    @GetMapping("/{materiaId}/capacidad")
+    public ResponseEntity<?> getCapacidad(@PathVariable String materiaId) {
         try {
-            Grupo grupo = materiaService.retirarEstudianteDeGrupo(grupoId, estudianteId);
-            return ResponseEntity.ok(grupo);
+            Map<String, Object> res = new HashMap<>();
+            int inscritos = materiaService.consultarTotalInscritosPorMateria(materiaId);
+            boolean tieneDisponibilidad = materiaService.verificarDisponibilidad(materiaId);
+            int gruposDisponibles = materiaService.consultarGruposDisponibles(materiaId).size();
+
+            res.put("materiaId", materiaId);
+            res.put("inscritos", inscritos);
+            res.put("tieneDisponibilidad", tieneDisponibilidad);
+            res.put("gruposDisponibles", gruposDisponibles);
+            return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno"));
         }
     }
 
-    @PostMapping("/{materiaId}/asignar-estudiante/{estudianteId}")
-    public ResponseEntity<Boolean> asignarMateriaAEstudiante(@PathVariable String materiaId, @PathVariable String estudianteId) {
-        boolean asignado = materiaService.asignarMateriaAEstudiante(materiaId, estudianteId);
-        return ResponseEntity.ok(asignado);
-    }
-
-    @DeleteMapping("/{materiaId}/retirar-estudiante/{estudianteId}")
-    public ResponseEntity<Boolean> retirarMateriaDeEstudiante(@PathVariable String materiaId, @PathVariable String estudianteId) {
-        boolean retirado = materiaService.retirarMateriaDeEstudiante(materiaId, estudianteId);
-        return ResponseEntity.ok(retirado);
-    }
-
-    @GetMapping("/facultad/{facultad}")
-    public List<Materia> buscarPorFacultad(@PathVariable String facultad) {
-        return materiaService.buscarPorFacultad(facultad);
-    }
-
-    @GetMapping("/creditos/{creditos}")
-    public List<Materia> buscarPorCreditos(@PathVariable int creditos) {
-        return materiaService.buscarPorCreditos(creditos);
-    }
-
-    @GetMapping("/reportes/mas-solicitadas")
-    public List<Map<String, Object>> generarReporteMateriasMasSolicitadas() {
-        return new ArrayList<>();
-    }
-
-    @GetMapping("/{materiaId}/avance-plan")
-    public Map<String, Object> consultarAvancePlanEstudios(@PathVariable String materiaId) {
-        Map<String, Object> avance = new HashMap<>();
-        avance.put("materiaId", materiaId);
-        avance.put("totalInscritos", materiaService.consultarTotalInscritosPorMateria(materiaId));
-        return avance;
+    @PutMapping("/{materiaId}/cupo")
+    public ResponseEntity<?> updateCuposMateria(@PathVariable String materiaId, @RequestBody Map<String, Object> payload) {
+        if (payload == null || !payload.containsKey("nuevoCupo")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Falta campo 'nuevoCupo' en el body"));
+        }
+        try {
+            Object v = payload.get("nuevoCupo");
+            int nuevoCupo;
+            if (v instanceof Number) {
+                nuevoCupo = ((Number) v).intValue();
+            } else {
+                nuevoCupo = Integer.parseInt(String.valueOf(v));
+            }
+            materiaService.modificarCuposMateria(materiaId, nuevoCupo);
+            return ResponseEntity.ok(Map.of("materiaId", materiaId, "nuevoCupo", nuevoCupo));
+        } catch (NumberFormatException nfe) {
+            return ResponseEntity.badRequest().body(Map.of("error", "nuevoCupo debe ser numérico"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Error interno"));
+        }
     }
 }
