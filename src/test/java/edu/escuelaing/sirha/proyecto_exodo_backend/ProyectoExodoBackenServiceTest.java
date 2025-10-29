@@ -50,7 +50,6 @@ public class ProyectoExodoBackenServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // ========== ADMINISTRADOR SERVICE TESTS ==========
     @Test
     void testAdministradorServiceCRUD() {
         Administrador admin = new Administrador();
@@ -72,8 +71,6 @@ public class ProyectoExodoBackenServiceTest {
         List<Administrador> todos = administradorService.listarTodos();
         assertFalse(todos.isEmpty());
 
-        // Test eliminar
-        //assertDoesNotThrow(() -> administradorService.eliminarPorId("admin1"));
     }
 
     @Test
@@ -94,10 +91,8 @@ public class ProyectoExodoBackenServiceTest {
         assertEquals(EstadoMateria.APROBADA, resultado.get().getHistorialMaterias().get("materia1"));
     }
 
-    // ========== DECANATURA SERVICE TESTS ==========
     @Test
     void testDecanaturaServiceCompleto() {
-        // Configurar datos de prueba
         Decanatura decanatura = new Decanatura();
         decanatura.setId("dec1");
         decanatura.setNombre("Decanatura Sistemas");
@@ -199,7 +194,6 @@ public class ProyectoExodoBackenServiceTest {
         assertEquals(0.0, tasasVacias.get("tasaAprobacion"));
     }
 
-    // ========== ESTUDIANTE SERVICE TESTS ==========
     @Test
     void testEstudianteServiceCompleto() {
         Estudiante estudiante = new Estudiante();
@@ -265,7 +259,6 @@ public class ProyectoExodoBackenServiceTest {
         assertNotNull(gruposAlerta);
     }
 
-    // ========== HORARIO SERVICE TESTS ==========
     @Test
     void testHorarioServiceCompleto() {
         Horario horario = new Horario();
@@ -289,10 +282,8 @@ public class ProyectoExodoBackenServiceTest {
         assertFalse(horariosGrupo.isEmpty());
     }
 
-    // ========== MATERIA SERVICE TESTS ==========
     @Test
     void testMateriaServiceCompleto() {
-        // Crear materia VÁLIDA
         Materia materia = new Materia();
         materia.setId("mat1");
         materia.setCodigo("MAT101");
@@ -351,7 +342,6 @@ public class ProyectoExodoBackenServiceTest {
         assertNotNull(materiaConGrupos);
     }
 
-    // ========== PERIODO CAMBIO SERVICE TESTS ==========
     @Test
     void testPeriodoCambioServiceCompleto() {
         PeriodoCambio periodo = new PeriodoCambio();
@@ -373,10 +363,8 @@ public class ProyectoExodoBackenServiceTest {
         assertTrue(periodoActivo.isPresent());
     }
 
-    // ========== PROFESOR SERVICE TESTS ==========
     @Test
     void testProfesorServiceCompleto() {
-        // Configurar datos de prueba
         Profesor profesor = new Profesor();
         profesor.setId("prof1");
         profesor.setIdProfesor(1001);
@@ -422,7 +410,7 @@ public class ProyectoExodoBackenServiceTest {
 
         when(repositorioProfesor.findById("noExiste")).thenReturn(Optional.empty());
         Profesor nuevoProfesor = profesorService.actualizar("noExiste", profesor);
-        assertNotNull(nuevoProfesor); // Debería crear uno nuevo
+        assertNotNull(nuevoProfesor);
 
         assertDoesNotThrow(() -> profesorService.eliminarPorId("prof1"));
 
@@ -469,7 +457,6 @@ public class ProyectoExodoBackenServiceTest {
         assertFalse(codigoNull.isPresent());
     }
 
-    // ========== SEMAFORO ACADEMICO SERVICE TESTS ==========
     @Test
     void testSemaforoAcademicoServiceCompleto() {
         SemaforoAcademico semaforo = new SemaforoAcademico();
@@ -533,9 +520,9 @@ public class ProyectoExodoBackenServiceTest {
         Map<String, Object> foraneo = semaforoService.getForaneoEstudiante("est1");
         assertNotNull(foraneo);
         assertEquals(5, foraneo.get("semestreActual"));
-        assertEquals(1, foraneo.get("materiasAprobadas")); // Solo mat1 está como APROBADA
-        assertEquals(1, foraneo.get("materiasReprobadas")); // mat2 REPROBADA y mat5 CANCELADA
-        assertEquals(1, foraneo.get("materiasInscritas")); // mat3 INSCRITA
+        assertEquals(1, foraneo.get("materiasAprobadas"));
+        assertEquals(1, foraneo.get("materiasReprobadas"));
+        assertEquals(1, foraneo.get("materiasInscritas"));
         assertEquals(5, foraneo.get("totalMaterias"));
 
         Map<String, Object> foraneoSinSemaforo = semaforoService.getForaneoEstudiante("estSinSemaforo");
@@ -586,10 +573,8 @@ public class ProyectoExodoBackenServiceTest {
         assertEquals(EstadoSemaforo.ROJO, resultado.get("matCancelada"));
     }
 
-    // NUEVA PRUEBA: Test específico para SemaforoVisualizacion
     @Test
     void testSemaforoVisualizacionCalculos() {
-        // Configurar semáforo académico con datos específicos
         SemaforoAcademico semaforo = new SemaforoAcademico();
         semaforo.setId("sem2");
         semaforo.setEstudianteId("est2");
@@ -628,7 +613,6 @@ public class ProyectoExodoBackenServiceTest {
         assertTrue(visualizacion.getPorcentajeProgreso() >= 0);
     }
 
-    // NUEVA PRUEBA: Test para casos de error y borde
     @Test
     void testSemaforoAcademicoCasosBorde() {
         SemaforoAcademicoServiceImpl service = new SemaforoAcademicoServiceImpl();
@@ -665,7 +649,6 @@ public class ProyectoExodoBackenServiceTest {
         assertEquals(0, foraneoVacio.get("totalMaterias"));
     }
 
-    // ========== SOLICITUD CAMBIO SERVICE TESTS ==========
     @Test
     void testSolicitudCambioServiceCompleto() {
         SolicitudCambio solicitud = new SolicitudCambio();
@@ -718,7 +701,6 @@ public class ProyectoExodoBackenServiceTest {
         assertNotNull(rechazada);
     }
 
-    // ========== USUARIO SERVICE TESTS ==========
     @Test
     void testUsuarioServiceCompleto() {
         Usuario usuario = new Usuario();
@@ -744,7 +726,6 @@ public class ProyectoExodoBackenServiceTest {
         assertDoesNotThrow(() -> usuarioService.cambiarPassword("user1", "newPassword"));
     }
 
-    // ========== TEST CASOS BORDE Y ERROR ==========
     @Test
     void testCasosBordeYErrores() {
         when(repositorioEstudiante.findById("noExiste")).thenReturn(Optional.empty());
