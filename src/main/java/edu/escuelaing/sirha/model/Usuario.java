@@ -13,14 +13,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Usuario {
     @Id
     private String id;
-    private int idUsuario;
+
+    private Integer idUsuario;
+
     private String username;
     private String passwordHash;
     private String correoInstitucional;
     private Rol rol;
     private boolean activo = true;
 
-    public Usuario(int idUsuario, String username, String passwordHash, String correoInstitucional, Rol rol) {
+    public Usuario(Integer idUsuario, String username, String passwordHash,
+                   String correoInstitucional, Rol rol) {
         this.idUsuario = idUsuario;
         this.username = username;
         this.passwordHash = passwordHash;
