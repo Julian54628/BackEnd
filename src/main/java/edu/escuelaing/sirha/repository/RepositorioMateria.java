@@ -30,7 +30,7 @@ public interface RepositorioMateria extends MongoRepository<Materia, String> {
 
     List<Materia> findByPrerrequisitosIdsContaining(String prerrequisitosId);
 
-    @Query("materias con prerrequisitos")
+    @Query("{ 'prerrequisitosIds': { $size: 0 } }")
     List<Materia> findMateriasSinPrerrequisitos();
 
     boolean existsByCodigo(String codigo);

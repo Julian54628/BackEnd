@@ -20,14 +20,13 @@ public interface RepositorioGrupo extends MongoRepository<Grupo, String> {
 
     List<Grupo> findByCupoMaximoGreaterThanEqual(int cupoMinimo);
 
-    @Query("cantidad estudiantes inscritos en el grupo")
+    @Query("{ 'estudiantesInscritosIds': { $size: ?0 } }")
     List<Grupo> findByCantidadEstudiantes(int cantidad);
 
-    List<Grupo> findByEstudiantesInscritosIdsSizeGreaterThan(int cantidad);
+    @Query("{ $expr: { $gte: [ { $size: { $ifNull: ['$estudiantesInscritosIds', []] } }, ?0 ] } }")
+    List<Grupo> findByEstudiantesInscritosCountGreaterThanEqual(int minSize);
 
-    List<Grupo> findByEstudiantesInscritosIdsSizeLessThan(int cantidad);
-
-    @Query("grupos sin estudiantes inscritos")
+    @Query("{ 'estudiantesInscritosIds': { $size: 0 } }")
     List<Grupo> findGruposVacios();
 
     List<Grupo> findByEstudiantesInscritosIdsContaining(String estudianteId);

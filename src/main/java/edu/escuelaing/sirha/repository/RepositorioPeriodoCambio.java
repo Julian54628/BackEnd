@@ -21,10 +21,10 @@ public interface RepositorioPeriodoCambio extends MongoRepository<PeriodoCambio,
 
     List<PeriodoCambio> findByTipoAndActivoTrue(String tipo);
 
-    @Query("periodos vigentes en fecha")
+    @Query("{ 'fechaInicio': { $lte: ?0 }, 'fechaFin': { $gte: ?0 } }")
     List<PeriodoCambio> findPeriodosVigentesEnFecha(Date fecha);
 
-    @Query("periodo activo en fecha")
+    @Query("{ 'fechaInicio': { $lte: ?0 }, 'fechaFin': { $gte: ?0 }, 'activo': true }")
     Optional<PeriodoCambio> findPeriodoActivoEnFecha(Date fecha);
 
     @Query("periodos futuros")

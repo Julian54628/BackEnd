@@ -27,14 +27,14 @@ public interface RepositorioHorario extends MongoRepository<Horario, String> {
 
     List<Horario> findByHoraInicioBetween(Time horaInicio, Time horaFin);
 
-    @Query("horarios cruzados")
+    @Query("{ 'diaSemana': ?0, 'horaInicio': { $lt: ?2 }, 'horaFin': { $gt: ?1 } }")
     List<Horario> findHorariosQueSeCruzan(String diaSemana, Time horaInicio, Time horaFin);
 
     long countByDiaSemana(String diaSemana);
 
     long countBySalon(String salon);
 
-    @Query("{horarios conflictivos}")
+    @Query("{ 'diaSemana': ?0, 'salon': ?1, 'horaInicio': { $lt: ?3 }, 'horaFin': { $gt: ?2 } }")
     boolean existsHorarioConflictivo(String diaSemana, String salon, Time horaInicio, Time horaFin);
 
     boolean existsByIdHorario(int idHorario);
