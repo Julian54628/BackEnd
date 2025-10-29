@@ -20,7 +20,12 @@ public class Usuario {
     private Rol rol;
     private boolean activo = true;
 
-    public Usuario(int i, String nombre, String s, String correoInstitucional, Rol rol) {
+    public Usuario(int idUsuario, String username, String passwordHash, String correoInstitucional, Rol rol) {
+        this.idUsuario = idUsuario;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.correoInstitucional = correoInstitucional;
+        this.rol = rol;
     }
 
     public boolean esValido() {

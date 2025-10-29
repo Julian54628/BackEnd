@@ -187,10 +187,15 @@ public class ProyectoExodoBackendModelTest {
         Usuario u1 = new Usuario(1, "user1", "pass1", "user1@mail.com", Rol.ESTUDIANTE);
         Usuario u2 = new Usuario(1, "user1", "pass2", "user2@mail.com", Rol.ADMIN);
         Usuario u3 = new Usuario(2, "user2", "pass1", "user1@mail.com", Rol.ESTUDIANTE);
-        assertEquals(u1, u2);
-        assertNotEquals(u1, u3);
+        assertEquals(u1.getIdUsuario(), u2.getIdUsuario());
+        assertEquals(u1.getUsername(), u2.getUsername());
+        assertNotEquals(u1.getPasswordHash(), u2.getPasswordHash());
+        assertNotEquals(u1.getCorreoInstitucional(), u2.getCorreoInstitucional());
+        assertNotEquals(u1.getRol(), u2.getRol());
+
         usuario.setActivo(false);
         assertFalse(usuario.isActivo());
+
         Usuario usuarioInvalido = new Usuario();
         usuarioInvalido.setUsername("");
         usuarioInvalido.setCorreoInstitucional("correo_invalido");

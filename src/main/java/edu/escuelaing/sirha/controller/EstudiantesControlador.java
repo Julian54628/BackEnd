@@ -48,8 +48,9 @@ public class EstudiantesControlador {
     }
 
     @GetMapping
-    public List<Estudiante> listarTodos() {
-        return estudianteService.listarTodos();
+    public ResponseEntity<List<Estudiante>> listarTodos() {
+        List<Estudiante> estudiantes = estudianteService.listarTodos();
+        return ResponseEntity.ok(estudiantes);
     }
 
     @DeleteMapping("/{id}")

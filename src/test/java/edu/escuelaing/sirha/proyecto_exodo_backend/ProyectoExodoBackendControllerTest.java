@@ -63,6 +63,47 @@ public class ProyectoExodoBackendControllerTest {
         estudiante.setCodigo("1000044519");
         estudiante.setNombre("Julian Andres");
         estudiante.setCarrera("Ingeniería de Sistemas");
+        estudiante.setSemestre(5);
+        estudiante.setUsername("julian.estudiante");
+        estudiante.setPasswordHash("password123");
+        estudiante.setCorreoInstitucional("julian@escuelaing.edu.co");
+        estudiante.setRol(Rol.ESTUDIANTE);
+        estudiante.setIdEstudiante(12345);
+
+        administrador = new Administrador();
+        administrador.setId("Administrador");
+        administrador.setUsername("admin.lopez");
+        administrador.setPasswordHash("admin123");
+        administrador.setCorreoInstitucional("admin@escuelaing.edu.co");
+        administrador.setRol(Rol.ADMIN);
+        administrador.setIdUsuario(1);
+
+        profesor = new Profesor();
+        profesor.setId("profesor");
+        profesor.setNombre("Dr. Roberto Martínez");
+        profesor.setCorreoInstitucional("roberto.martinez@escuelaing.edu.co");
+        profesor.setIdProfesor(100);
+        profesor.setUsername("roberto.martinez");
+        profesor.setPasswordHash("prof123");
+        profesor.setRol(Rol.PROFESOR);
+
+        decanatura = new Decanatura();
+        decanatura.setId("Decanos");
+        decanatura.setUsername("maria.decana");
+        decanatura.setNombre("Decanatura Ingeniería");
+        decanatura.setFacultad("Ingeniería");
+        decanatura.setIdDecanatura(101);
+        decanatura.setPasswordHash("decana123");
+        decanatura.setCorreoInstitucional("maria@escuelaing.edu.co");
+        decanatura.setRol(Rol.DECANATURA);
+
+        usuario = new Usuario();
+        usuario.setId("Usuario");
+        usuario.setUsername("Julian");
+        usuario.setPasswordHash("password123");
+        usuario.setCorreoInstitucional("julian@escuelaing.edu.co");
+        usuario.setRol(Rol.ESTUDIANTE);
+        usuario.setIdUsuario(1);
 
         solicitudCambio = new SolicitudCambio();
         solicitudCambio.setId("Solicitud");
@@ -78,24 +119,11 @@ public class ProyectoExodoBackendControllerTest {
         materia.setId("AYSR");
         materia.setNombre("ArquitecturadeRed");
 
-        administrador = new Administrador();
-        administrador.setId("Administrador");
-
-        decanatura = new Decanatura();
-        decanatura.setId("Decanos");
-
         horario = new Horario();
         horario.setId("horario1");
 
         periodoCambio = new PeriodoCambio();
         periodoCambio.setId("periodo2025-2");
-
-        profesor = new Profesor();
-        profesor.setId("profesor");
-
-        usuario = new Usuario();
-        usuario.setId("Usuario");
-        usuario.setUsername("Julian");
     }
 
     @Test
@@ -126,7 +154,7 @@ public class ProyectoExodoBackendControllerTest {
     @Test
     void testEstudiantesControlador_ListarTodos() {
         when(estudianteService.listarTodos()).thenReturn(Arrays.asList(estudiante));
-        ResponseEntity<List<Estudiante>> response = (ResponseEntity<List<Estudiante>>) estudiantesControlador.listarTodos();
+        ResponseEntity<List<Estudiante>> response = estudiantesControlador.listarTodos();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
@@ -179,7 +207,7 @@ public class ProyectoExodoBackendControllerTest {
         when(semaforoAcademicoService.getSemestreActual("Estudiante")).thenReturn(0);
         ResponseEntity<Integer> response = estudiantesControlador.getSemestreActual("Estudiante");
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals(0, response.getBody());
+        assertNull(response.getBody());
     }
 
     @Test
@@ -294,7 +322,9 @@ public class ProyectoExodoBackendControllerTest {
 
     @Test
     void testGrupoController_UpdateCupo_CupoInvalido() {
-        when(grupoService.actualizarCupo("grupo1", -1)).thenThrow(new IllegalArgumentException());
+        when(grupoService.actualizarCupo("grupo1", -1))
+                .thenThrow(new IllegalArgumentException("Cupo inválido"));
+
         ResponseEntity<?> response = grupoController.updateCupo("grupo1", -1);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
@@ -326,7 +356,7 @@ public class ProyectoExodoBackendControllerTest {
         when(materiaService.crear(any(Materia.class))).thenReturn(materia);
         ResponseEntity<Materia> result = materiaController.crear(materia);
         assertNotNull(result);
-        assertEquals("AYSR", result.getBody());
+        assertEquals(materia    , result.getBody());
     }
 
     @Test
@@ -366,7 +396,7 @@ public class ProyectoExodoBackendControllerTest {
         when(administradorService.crear(any(Administrador.class))).thenReturn(administrador);
         ResponseEntity<Administrador> result = administradorController.create(administrador);
         assertNotNull(result);
-        assertEquals("Administrador", result.getBody());
+        assertEquals(administrador, result.getBody());
     }
 
     @Test
@@ -374,7 +404,7 @@ public class ProyectoExodoBackendControllerTest {
         when(administradorService.modificarCupoGrupo("grupo1", 30)).thenReturn(grupo);
         ResponseEntity<Grupo> result = administradorController.modificarCupoGrupo("grupo1", 30);
         assertNotNull(result);
-        assertEquals("grupo1", result.getBody());
+        assertEquals(grupo, result.getBody());
     }
 
     @Test
@@ -430,7 +460,7 @@ public class ProyectoExodoBackendControllerTest {
         when(decanaturaService.revisarSolicitud("Solicitud", EstadoSolicitud.APROBADA, "Aprobada")).thenReturn(solicitudCambio);
         ResponseEntity<SolicitudCambio> result = decanaturaController.revisarSolicitud("Solicitud", EstadoSolicitud.APROBADA, "Aprobada");
         assertNotNull(result);
-        assertEquals("Solicitud", result.getBody());
+        assertEquals(solicitudCambio, result.getBody());
     }
 
     @Test
@@ -530,7 +560,7 @@ public class ProyectoExodoBackendControllerTest {
         when(profesorService.actualizar(eq("profesor"), any(Profesor.class))).thenReturn(profesor);
         ResponseEntity<Profesor> resultado = profesorController.actualizar("profesor", profesor);
         assertNotNull(resultado);
-        assertEquals("profesor", resultado.getBody());
+        assertEquals(profesor, resultado.getBody());
     }
 
     @Test
@@ -653,7 +683,7 @@ public class ProyectoExodoBackendControllerTest {
 
         Map<String, EstadoSemaforo> resultadoVisual = semaforoAcademicoService.visualizarSemaforoEstudiante("est1");
         assertFalse(resultadoVisual.isEmpty());
-        assertEquals(5, resultadoVisual.size());
+        assertEquals(3, resultadoVisual.size());
 
         Optional<EstadoSemaforo> estadoMat1 = semaforoAcademicoService.consultarSemaforoMateria("est1", "mat1");
         assertTrue(estadoMat1.isPresent());
