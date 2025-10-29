@@ -48,16 +48,6 @@ public class DecanaturaController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable String id) {
-        try {
-            decanaturaService.eliminarPorId(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/solicitudes/pendientes")
     public List<SolicitudCambio> consultarSolicitudesPendientes() {
         return decanaturaService.consultarSolicitudesPendientes();
@@ -74,65 +64,5 @@ public class DecanaturaController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @PutMapping("/solicitudes/{solicitudId}/aprobar-especial")
-    public ResponseEntity<Void> aprobarSolicitudEspecial(@PathVariable String solicitudId) {
-        try {
-            decanaturaService.aprobarSolicitudEspecial(solicitudId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/{id}/otorgar-admin")
-    public ResponseEntity<Decanatura> otorgarPermisosAdministrador(@PathVariable String id) {
-        try {
-            Decanatura decanatura = decanaturaService.otorgarPermisosAdministrador(id);
-            return ResponseEntity.ok(decanatura);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/{id}/revocar-admin")
-    public ResponseEntity<Decanatura> revocarPermisosAdministrador(@PathVariable String id) {
-        try {
-            Decanatura decanatura = decanaturaService.revocarPermisosAdministrador(id);
-            return ResponseEntity.ok(decanatura);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/solicitudes/{solicitudId}/responder")
-    public ResponseEntity<SolicitudCambio> responderSolicitud(
-            @PathVariable String solicitudId,
-            @RequestParam EstadoSolicitud estado,
-            @RequestParam(required = false) String respuesta,
-            @RequestParam(required = false) String justificacion) {
-        try {
-            String respuestaFinal = respuesta != null ? respuesta : "";
-            SolicitudCambio solicitud = decanaturaService.revisarSolicitud(solicitudId, estado, respuestaFinal);
-            return ResponseEntity.ok(solicitud);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/{decanaturaId}/solicitudes/prioridad")
-    public List<SolicitudCambio> consultarSolicitudesPorPrioridad(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarSolicitudesPorDecanaturaYPrioridad(decanaturaId);
-    }
-
-    @GetMapping("/{decanaturaId}/solicitudes/fecha")
-    public List<SolicitudCambio> consultarSolicitudesPorFechaLlegada(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarSolicitudesPorDecanaturaYFechaLlegada(decanaturaId);
-    }
-
-    @GetMapping("/{decanaturaId}/tasas-aprobacion")
-    public Map<String, Object> consultarTasasAprobacionRechazo(@PathVariable String decanaturaId) {
-        return decanaturaService.consultarTasaAprobacionRechazo(decanaturaId);
     }
 }

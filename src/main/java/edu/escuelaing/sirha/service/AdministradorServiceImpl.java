@@ -1,5 +1,8 @@
 package edu.escuelaing.sirha.service;
 
+import edu.escuelaing.sirha.model.Administrador;
+import edu.escuelaing.sirha.repository.RepositorioAdministrador;
+import edu.escuelaing.sirha.repository.RepositorioDecanatura;
 import edu.escuelaing.sirha.repository.*;
 import edu.escuelaing.sirha.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -84,26 +88,36 @@ public class AdministradorServiceImpl implements AdministradorService {
         return repositorioSolicitudCambio.findAll();
     }
 
+
     @Override
-    public Administrador crearDesdeDecanatura(String decanaturaId) {
-        return repositorioDecanatura.findById(decanaturaId)
-                .map(decanatura -> {
-                    Administrador admin = new Administrador();
-                    admin.setUsername(decanatura.getUsername());
-                    admin.setPasswordHash(decanatura.getPasswordHash());
-                    admin.setCorreoInstitucional(decanatura.getCorreoInstitucional());
-                    admin.setActivo(true);
-                    return repositorioAdministrador.save(admin);
-                })
-                .orElseThrow(() -> new IllegalArgumentException("Decanatura no encontrada: " + decanaturaId));
+    public List<SolicitudCambio> listCasosExcepcionales() {
+        return repositorioSolicitudCambio.findAll();
     }
 
     @Override
-    public boolean eliminarAdministrador(String id) {
-        if (repositorioAdministrador.existsById(id)) {
-            repositorioAdministrador.deleteById(id);
-            return true;
-        }
-        return false;
+    public Object aprobarCasoEspecial(Long id, Map<String, Object> payload) {
+        return repositorioSolicitudCambio.findById(String.valueOf(id))
+                .map(solicitud -> {
+                    return repositorioSolicitudCambio.save(solicitud);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Caso no encontrado: " + id));
+    }
+
+    @Override
+    public Object rechazarCasoEspecial(Long id, Map<String, Object> payload) {
+        return repositorioSolicitudCambio.findById(String.valueOf(id))
+                .map(solicitud -> {
+                    return repositorioSolicitudCambio.save(solicitud);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Caso no encontrado: " + id));
+    }
+
+    @Override
+    public Object solicitarInfoCasoEspecial(Long id, Map<String, Object> info) {
+        return repositorioSolicitudCambio.findById(String.valueOf(id))
+                .map(solicitud -> {
+                    return repositorioSolicitudCambio.save(solicitud);
+                })
+                .orElseThrow(() -> new IllegalArgumentException("Caso no encontrado: " + id));
     }
 }

@@ -1,6 +1,7 @@
 package edu.escuelaing.sirha.controller;
 
 import edu.escuelaing.sirha.model.EstadoSemaforo;
+import edu.escuelaing.sirha.model.SemaforoVisualizacion;
 import edu.escuelaing.sirha.service.SemaforoAcademicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/v1/semaforo")
@@ -23,7 +25,7 @@ public class SemaforoAcademicoController {
     @GetMapping("/estudiante/{estudianteId}")
     public ResponseEntity<Map<String, EstadoSemaforo>> visualizarSemaforoEstudiante(@PathVariable String estudianteId) {
         Map<String, EstadoSemaforo> resultado = semaforoAcademicoService.visualizarSemaforoEstudiante(estudianteId);
-        return resultado.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(resultado);
+        return (resultado == null || resultado.isEmpty()) ? ResponseEntity.noContent().build() : ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/estudiante/{estudianteId}/materia/{materiaId}")
@@ -32,63 +34,32 @@ public class SemaforoAcademicoController {
         return estado.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/estudiante/{estudianteId}/foraneo")
-    public ResponseEntity<Map<String, Object>> consultarForaneoEstudiante(@PathVariable String estudianteId) {
-        try {
-            Map<String, Object> foraneo = semaforoAcademicoService.getForaneoEstudiante(estudianteId);
-            return foraneo.get("semestreActual").equals(0) ? ResponseEntity.notFound().build() : ResponseEntity.ok(foraneo);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+    @GetMapping("/estudiante/{estudianteId}/actual")
+    public ResponseEntity<Map<String, Object>> semestreActual(@PathVariable String estudianteId) {
+        int semestre = semaforoAcademicoService.getSemestreActual(estudianteId);
+        if (semestre <= 0) {
+            return ResponseEntity.notFound().build();
         }
+        Map<String, Object> res = new HashMap<>();
+        res.put("semestreActual", semestre);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/estudiante/{estudianteId}/anteriores")
+    public ResponseEntity<Map<String, Object>> semestresAnteriores(@PathVariable String estudianteId) {
+        Map<String, Object> res = semaforoAcademicoService.getForaneoEstudiante(estudianteId);
+        return (res == null || res.isEmpty()) ? ResponseEntity.noContent().build() : ResponseEntity.ok(res);
     }
 
     @GetMapping("/estudiante/{estudianteId}/completo")
-    public ResponseEntity<?> obtenerSemaforoCompleto(@PathVariable String estudianteId) {
-        try {
-            Object semaforo = semaforoAcademicoService.obtenerSemaforoCompleto(estudianteId);
-            return ResponseEntity.ok(semaforo);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<SemaforoVisualizacion> semaforoCompleto(@PathVariable String estudianteId) {
+        SemaforoVisualizacion vis = semaforoAcademicoService.obtenerSemaforoCompleto(estudianteId);
+        return vis == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(vis);
     }
 
     @GetMapping("/estudiante/{estudianteId}/detallado")
-    public ResponseEntity<?> obtenerSemaforoDetallado(@PathVariable String estudianteId) {
-        try {
-            Object semaforo = semaforoAcademicoService.obtenerSemaforoDetallado(estudianteId);
-            return ResponseEntity.ok(semaforo);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping("/estudiante/{estudianteId}/semestre-actual")
-    public ResponseEntity<Integer> getSemestreActual(@PathVariable String estudianteId) {
-        try {
-            int semestre = semaforoAcademicoService.getSemestreActual(estudianteId);
-            return semestre > 0 ? ResponseEntity.ok(semestre) : ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/estudiante/{estudianteId}/promedio")
-    public ResponseEntity<Double> obtenerPromedioEstudiante(@PathVariable String estudianteId) {
-        try {
-            Double promedio = semaforoAcademicoService.obtenerPromedioEstudiante(estudianteId);
-            return promedio != null ? ResponseEntity.ok(promedio) : ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/estudiante/{estudianteId}/progreso")
-    public ResponseEntity<Map<String, Object>> obtenerProgresoAcademico(@PathVariable String estudianteId) {
-        try {
-            Map<String, Object> progreso = semaforoAcademicoService.obtenerProgresoAcademico(estudianteId);
-            return ResponseEntity.ok(progreso);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity<SemaforoVisualizacion> semaforoDetallado(@PathVariable String estudianteId) {
+        SemaforoVisualizacion vis = semaforoAcademicoService.obtenerSemaforoDetallado(estudianteId);
+        return vis == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(vis);
     }
 }

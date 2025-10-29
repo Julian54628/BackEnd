@@ -17,4 +17,10 @@ public interface EstudianteService {
     List<SolicitudCambio> consultarSolicitudes(String estudianteId);
     List<Estudiante> buscarPorCarrera(String carrera);
     List<Estudiante> buscarPorSemestre(int semestre);
+
+    Object getStudentFullInfo(String estudianteId);
+    Object getPastSemestersForum(String estudianteId);
+    Object getCurrentSemesterForum(String estudianteId);
+    Object assignMateriaToStudent(String estudianteId, String materiaId);
+    void removeMateriaFromStudent(String estudianteId, String materiaId);
 }

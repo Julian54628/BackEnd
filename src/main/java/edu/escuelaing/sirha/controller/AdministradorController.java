@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/administradores")
+@CrossOrigin(origins = "*")
 public class AdministradorController {
 
     @Autowired
@@ -40,8 +41,15 @@ public class AdministradorController {
     }
 
     @PostMapping
-    public Administrador create(@RequestBody Administrador administrador) {
-        return administradorService.crear(administrador);
+    public ResponseEntity<Administrador> create(@RequestBody Administrador administrador) {
+        try {
+            Administrador creado = administradorService.crear(administrador);
+            return ResponseEntity.ok(creado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @PutMapping("/grupo/{grupoId}/cupo")
@@ -51,6 +59,8 @@ public class AdministradorController {
             return ResponseEntity.ok(grupo);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -72,53 +82,68 @@ public class AdministradorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/desde-decanatura/{decanaturaId}")
-    public ResponseEntity<Administrador> crearDesdeDecanatura(@PathVariable String decanaturaId) {
+    @GetMapping("/casos-excepcionales")
+    public ResponseEntity<?> listCasosExcepcionales() {
         try {
-            Administrador admin = administradorService.crearDesdeDecanatura(decanaturaId);
-            return ResponseEntity.ok(admin);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            List<?> casos = administradorService.listCasosExcepcionales();
+            return ResponseEntity.ok(casos);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarAdministrador(@PathVariable String id) {
-        boolean eliminado = administradorService.eliminarAdministrador(id);
-        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    @PostMapping("/casos-excepcionales/{id}/aprobar")
+    public ResponseEntity<?> aprobarCaso(@PathVariable String id, @RequestBody(required = false) Map<String, Object> payload) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().body("Id de caso inválido");
+        }
+        try {
+            Long lid = Long.parseLong(id);
+            Object res = administradorService.aprobarCasoEspecial(lid, payload);
+            return ResponseEntity.ok(res);
+        } catch (NumberFormatException nfe) {
+            return ResponseEntity.badRequest().body("Id de caso debe ser numérico");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
-    @GetMapping("/semaforo/estudiante/{estudianteId}/completo")
-    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoCompleto(@PathVariable String estudianteId) {
-        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoCompleto(estudianteId);
-        return semaforo.getEstudianteId() != null ? ResponseEntity.ok(semaforo) : ResponseEntity.notFound().build();
+    @PostMapping("/casos-excepcionales/{id}/rechazar")
+    public ResponseEntity<?> rechazarCaso(@PathVariable String id, @RequestBody(required = false) Map<String, Object> payload) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().body("Id de caso inválido");
+        }
+        try {
+            Long lid = Long.parseLong(id);
+            Object res = administradorService.rechazarCasoEspecial(lid, payload);
+            return ResponseEntity.ok(res);
+        } catch (NumberFormatException nfe) {
+            return ResponseEntity.badRequest().body("Id de caso debe ser numérico");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
-    @GetMapping("/semaforo/estudiante/{estudianteId}/detallado")
-    public ResponseEntity<SemaforoVisualizacion> obtenerSemaforoDetallado(@PathVariable String estudianteId) {
-        SemaforoVisualizacion semaforo = semaforoAcademicoService.obtenerSemaforoDetallado(estudianteId);
-        return semaforo.getEstudianteId() != null ? ResponseEntity.ok(semaforo) : ResponseEntity.notFound().build();
+    @PostMapping("/casos-excepcionales/{id}/solicitar-info")
+    public ResponseEntity<?> solicitarInfo(@PathVariable String id, @RequestBody Map<String, Object> info) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().body("Id de caso inválido");
+        }
+        try {
+            Long lid = Long.parseLong(id);
+            Object res = administradorService.solicitarInfoCasoEspecial(lid, info);
+            return ResponseEntity.ok(res);
+        } catch (NumberFormatException nfe) {
+            return ResponseEntity.badRequest().body("Id de caso debe ser numérico");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
-    @GetMapping("/reportes/grupos-solicitados")
-    public List<Map<String, Object>> generarReporteGruposMasSolicitados() {
-        List<SolicitudCambio> solicitudes = solicitudCambioService.obtenerTodasLasSolicitudes();
-        Map<String, Long> conteoPorGrupo = solicitudes.stream()
-                .filter(s -> s.getGrupoDestinoId() != null)
-                .collect(Collectors.groupingBy(SolicitudCambio::getGrupoDestinoId, Collectors.counting()));
-
-        return conteoPorGrupo.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .map(entry -> {
-                    Map<String, Object> reporte = new HashMap<>();
-                    reporte.put("grupoId", entry.getKey());
-                    reporte.put("totalSolicitudes", entry.getValue());
-                    return reporte;
-                }).collect(Collectors.toList());
-    }
-
-    @GetMapping("/reportes/estadisticas-reasignacion")
-    public Map<String, Object> generarReporteEstadisticasReasignacion() {
-        return solicitudCambioService.obtenerEstadisticasSolicitudes();
-    }
 }

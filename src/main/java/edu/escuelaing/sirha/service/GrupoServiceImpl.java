@@ -114,7 +114,7 @@ public class GrupoServiceImpl implements GrupoService {
         List<Grupo> grupos = repositorioGrupo.findAll();
         for (Grupo g : grupos) {
             int capacidad = g.getCupoMaximo();
-            int inscritos = g.getCantidadInscritos();
+            int inscritos = g.getEstudiantesInscritosIds() == null ? 0 : g.getEstudiantesInscritosIds().size();
             if (capacidad > 0) {
                 double ratio = (double) inscritos / capacidad;
                 if (ratio >= 0.9) {

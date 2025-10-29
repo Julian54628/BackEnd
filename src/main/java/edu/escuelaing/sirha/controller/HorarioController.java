@@ -58,13 +58,4 @@ public class HorarioController {
         return horarioService.consultarHorariosPorGrupo(grupoId);
     }
 
-    @GetMapping("/dia/{diaSemana}")
-    public List<Horario> consultarHorariosPorDia(@PathVariable String diaSemana) {
-        return horarioService.consultarHorariosPorDia(diaSemana);
-    }
-
-    @GetMapping("/salon/{salon}")
-    public List<Horario> consultarHorariosPorSalon(@PathVariable String salon) {
-        return horarioService.consultarHorariosPorSalon(salon);
-    }
 }
