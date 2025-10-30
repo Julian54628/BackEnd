@@ -22,10 +22,16 @@ public class HorarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Horario> buscarPorId(@PathVariable String id) {
-        return horarioService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> buscarPorId(@PathVariable String id) {
+        try {
+            return horarioService.buscarPorId(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(java.util.Map.of("error", e.getMessage(), "tipo", e.getClass().getName()));
+        }
     }
 
     @GetMapping

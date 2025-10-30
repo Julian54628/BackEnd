@@ -3,6 +3,7 @@ package edu.escuelaing.sirha.proyecto_exodo_backend;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -14,7 +15,7 @@ import edu.escuelaing.sirha.model.*;
 public class ProyectoExodoBackendModelTests {
 
     @Test
-    public void testAdministradorCompleto() {
+    public void ProyectoExodoBackendServiceTest() {
         Administrador admin = new Administrador(1, "admin", "password", "admin@escuelaing.edu.co");
 
         assertEquals(1, admin.getIdUsuario());
@@ -111,14 +112,12 @@ public class ProyectoExodoBackendModelTests {
 
     @Test
     public void testHorarioValido() {
-        Horario horario = new Horario(1, "Lunes", Time.valueOf("08:00:00"), Time.valueOf("10:00:00"), "A101");
-
+        Horario horario = new Horario(1, "Lunes", LocalTime.parse("08:00:00"), LocalTime.parse("10:00:00"), "A101");
         assertTrue(horario.esValido());
         assertEquals("Lunes", horario.getDiaSemana());
         assertEquals("A101", horario.getSalon());
 
-        Horario horario2 = new Horario(1, "Martes", Time.valueOf("09:00:00"), Time.valueOf("11:00:00"), "A102");
-        assertEquals(horario, horario2);
+        Horario horario2 = new Horario(1, "Martes", LocalTime.parse("09:00:00"), LocalTime.parse("11:00:00"), "A102");        assertEquals(horario, horario2);
         assertEquals(horario.hashCode(), horario2.hashCode());
     }
 

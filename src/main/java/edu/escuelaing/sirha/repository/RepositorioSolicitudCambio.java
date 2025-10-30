@@ -33,13 +33,11 @@ public interface RepositorioSolicitudCambio extends MongoRepository<SolicitudCam
 
     List<SolicitudCambio> findAllByOrderByFechaCreacionDesc();
 
-    // Comprueba si existe una solicitud con estados 'activos' (pendiente o en revisión)
     default boolean existsSolicitudActivaParaMateria(String estudianteId, String materiaDestinoId) {
         List<EstadoSolicitud> activos = Arrays.asList(EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_REVISION);
         return !findByEstudianteIdAndMateriaDestinoIdAndEstadoIn(estudianteId, materiaDestinoId, activos).isEmpty();
     }
 
-    // Devuelve solicitudes posteriores a una fecha, ordenadas por fecha de creación (más recientes primero)
     List<SolicitudCambio> findByFechaCreacionAfterOrderByFechaCreacionDesc(Date fechaLimite);
 
     List<SolicitudCambio> findByDecanaturaId(String decanaturaId);

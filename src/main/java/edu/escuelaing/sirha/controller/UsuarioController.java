@@ -18,7 +18,6 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
         try {
-            // MongoDB generará el ID automáticamente
             Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
             return ResponseEntity.ok(usuarioCreado);
         } catch (IllegalArgumentException e) {
@@ -36,7 +35,7 @@ public class UsuarioController {
             if (usuarioOpt.isPresent()) {
                 return ResponseEntity.ok(usuarioOpt.get());
             } else {
-                return ResponseEntity.status(401).build(); // No autorizado
+                return ResponseEntity.status(401).build();
             }
         } catch (Exception e) {
             e.printStackTrace();

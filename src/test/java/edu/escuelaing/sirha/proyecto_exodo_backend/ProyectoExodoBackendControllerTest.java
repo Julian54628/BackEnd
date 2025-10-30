@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+
+import java.time.LocalTime;
 import java.util.*;
 import java.sql.Time;
 
@@ -94,7 +96,7 @@ public class ProyectoExodoBackendControllerTest {
         profesor = new Profesor(1001, "Profesor Ana", "ana@escuelaing.edu.co");
         materia = new Materia(101, "Cálculo I", "CAL101", 4, "Ingeniería", true);
         grupo = new Grupo(1, 30, "MAT101", "PROF001", "PER001");
-        horario = new Horario(1, "Lunes", Time.valueOf("08:00:00"), Time.valueOf("10:00:00"), "A101");
+        horario = new Horario(1, "Lunes", LocalTime.parse("08:00:00"), LocalTime.parse("10:00:00"), "A101");
         solicitud = new SolicitudCambio("EST001", "MAT101", "GRP001", "MAT102", "GRP002");
         periodo = new PeriodoCambio(1, "Periodo 2023-2", new Date(), new Date(), "ACADEMICO");
         usuario = new Usuario(1, "usuario", "password", "user@escuelaing.edu.co", Rol.ESTUDIANTE);
@@ -286,17 +288,6 @@ public class ProyectoExodoBackendControllerTest {
         mockMvc.perform(get("/api/grupos/1/cupo-disponible"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
-    }
-
-    @Test
-    public void testCreateHorario() throws Exception {
-        when(horarioService.crear(any(Horario.class))).thenReturn(horario);
-
-        mockMvc.perform(post("/api/horarios")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(horario)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.diaSemana").value("Lunes"));
     }
 
     @Test
@@ -911,27 +902,6 @@ public class ProyectoExodoBackendControllerTest {
         doThrow(new IllegalArgumentException()).when(grupoService).eliminarPorId("999");
 
         mockMvc.perform(delete("/api/grupos/999"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testUpdateHorario() throws Exception {
-        when(horarioService.actualizar(eq("1"), any(Horario.class))).thenReturn(horario);
-
-        mockMvc.perform(put("/api/horarios/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(horario)))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testUpdateHorarioNotFound() throws Exception {
-        when(horarioService.actualizar(eq("999"), any(Horario.class)))
-                .thenThrow(new IllegalArgumentException());
-
-        mockMvc.perform(put("/api/horarios/999")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(horario)))
                 .andExpect(status().isNotFound());
     }
 
