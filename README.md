@@ -110,6 +110,80 @@ El diagrama de clases representa la estructura estática del sistema SIRHA, most
 - Separación de Responsabilidades: Cada clase tiene una responsabilidad única y clara.
 - Validaciones Incorporadas: Métodos esValido() en cada clase para mantener la integridad de datos.
 - Enumeraciones para Estados: Uso de enums para garantizar consistencia en estados del sistema.
+
+### 1. Factory Pattern (Patrón Fábrica)
+
+UsuarioFactory.java
+Centraliza la creación de objetos Usuario y sus subtipos (Administrador, Estudiante, Decanatura, Profesor)
+
+- Beneficios:
+  - Encapsulación: Oculta la lógica compleja de creación
+  - Consistencia: Todos los objetos se crean de forma uniforme
+  - Mantenibilidad: Un solo lugar para modificar la creación
+  - Flexibilidad: Fácil añadir nuevos tipos de usuario
+
+
+### 2. Builder Pattern (Patrón Constructor)
+
+SemaforoVisualizacionBuilder.java
+Construye objetos complejos paso a paso de forma fluida
+
+- Beneficios:
+  - Legibilidad: Código claro y expresivo
+  - Flexibilidad: Puedes omitir parámetros opcionales
+  - Inmutabilidad: Objeto se construye completamente antes de usarse
+  - Validación: Puedes validar en el método build()
+
+### 3. Template Method Pattern (Patrón Método Plantilla)
+
+Estudiante.java, Decanatura.java
+Define el esqueleto de un algoritmo (validación) y delega pasos específicos a subclases
+
+- Beneficios:
+  - Reutilización: Lógica común en la clase padre
+  - Extensibilidad: Fácil añadir nuevos tipos de validación
+  - Control: Estructura consistente en todas las subclases
+
+
+### 4. Strategy Pattern (Patrón Estrategia)
+
+UsuarioValidator.java, EstudianteValidator.java, etc.
+Define una familia de algoritmos (validadores) que son intercambiables
+
+- Beneficios:
+  - Modularidad: Cada validador tiene una responsabilidad única
+  - Testabilidad: Fácil probar validadores individualmente
+  - Extensibilidad: Añadir nuevas estrategias sin afectar existentes
+  - Reutilización: Validadores pueden usarse en diferentes contextos
+
+### 5. Chain of Responsibility (Cadena de Responsabilidad)
+
+Encadena validaciones de forma secuencial
+
+- Aportes
+  - Separación de preocupaciones: Cada validador se enfoca en su ámbito
+  - Flexibilidad: Puedes cambiar el orden o añadir validaciones
+  - Mantenibilidad: Fácil modificar una validación sin afectar otras
+
+## - Beneficios
+- Para el Desarrollador:
+  - Código Limpio: Patrones bien definidos y comprensibles
+  - Fácil Mantenimiento: Cambios localizados en un solo lugar
+  - Testing Simplificado: Puedes testear cada componente por separado
+
+- Para la Aplicación:
+  - Escalabilidad: Fácil añadir nuevas funcionalidades
+  - Robustez: Validaciones consistentes en toda la aplicación
+  - Flexibilidad: Puedes cambiar implementaciones sin afectar clientes
+
+- Para el Negocio:
+  - Desarrollo Más Rápido: Patrones reutilizables
+  - Menos Bugs: Validaciones exhaustivas
+  - Crecimiento Sostenible: Arquitectura que escala con el negocio
+
+Esta combinación de patrones crea una arquitectura sólida, mantenible y extensible que sigue los principios SOLID y 
+las mejores prácticas de desarrollo de software.
+
 #### Imagen del Diagrama
 ![diagramaClases.png](img/diagramas/diagramaClases.png) 
 ### Diagrama de Casos de Uso
@@ -220,7 +294,15 @@ implementación real del código. Muestra las collections exactas, campos, tipos
 tal como están definidas en las entidades con anotaciones @Document de Spring Data MongoDB.
 #### Imagen del Diagrama
 ![diagramaBaseDatos.png](img%2Fdiagramas%2FdiagramaBaseDatos.png)
-### Diagramas de Secuencia 
 
+### Despliegue del backend
+
+![img.png](img.png)
+
+### Despliegue de frontend
+
+![img_1.png](img_1.png)
+
+### Diagramas de Secuencia
 - Link del repositorio de los diagrama de Secuencia:
   - https://www.pdffiller.com/s/EQNk5O-lGh

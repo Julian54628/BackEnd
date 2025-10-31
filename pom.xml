@@ -26,7 +26,7 @@
         <sonar.projectKey>bankify</sonar.projectKey>
         <sonar.projectName>Bankify</sonar.projectName>
         <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.token>squ_08ed7fc541e7904dc965cc81afb219d0ca02d8b6</sonar.token>
+        <sonar.token>sqa_e98a67e5390ded6e9a110d0ae7304508c48593ad</sonar.token>
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <jacoco.version>0.8.10</jacoco.version>
     </properties>
@@ -59,7 +59,6 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- ✅ AGREGAR ESTA DEPENDENCIA PARA SWAGGER/OPENAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

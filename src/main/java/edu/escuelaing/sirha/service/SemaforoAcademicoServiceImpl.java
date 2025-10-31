@@ -179,5 +179,7 @@ public class SemaforoAcademicoServiceImpl implements SemaforoAcademicoService {
 
         return vis;
     }
+
+
 }
 
